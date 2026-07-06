@@ -57,14 +57,14 @@ All types are exported from `src/domain/index.ts`.
 Orchestration. Turns the declarative pipeline defined in `src/domain/pipeline.ts` into a runnable execution flow.
 
 Contains:
-- `index.ts` — the public `run()` entry point called by `cli.ts`; re-exports orchestrator types.
+- `index.ts` — the public `run()` entry point called by `cli.ts`; prints config summary and technology profile; re-exports orchestrator types.
 - `pipeline-orchestrator.ts` — `executePipeline()`, per-step status tracking, console progress output, and the application-level execution types (`ExecutedPipelineStep`, `PipelineExecutionResult`, `PipelineExecutionError`).
 
-Does not contain scanner logic, AI calls, or file I/O. When future modules are implemented, `executePipeline` calls their exported functions — the logic stays in those modules, not here.
+Does not contain scanner logic, detection logic, AI calls, or file I/O. When future modules are implemented, `executePipeline` calls their exported functions — the logic stays in those modules, not here.
 
-**When to modify:** When the overall execution flow changes — a new pipeline stage is wired in, step ordering changes, or conditional logic (e.g. skip AI if no key) is added.
+**When to modify:** When the overall execution flow changes — a new pipeline stage is wired in, step ordering changes, or conditional logic is added.
 
-**Status:** ✅ Orchestration skeleton done. All steps run as placeholders; real handlers are planned.
+**Status:** ✅ Orchestration skeleton done. Steps 2 (Load Repository Metadata) and 4 (Detect Technologies) use real handlers. All other steps run as placeholders.
 
 ---
 
@@ -84,13 +84,32 @@ Exports: `RuntimeConfig`, `resolveConfig()`, `printHelp()`, `isHelpRequested()`.
 
 ### `src/scanner/`
 
-Everything related to reading the target repository from disk. Produces `RepositoryInfo` and `RepositoryNode` (tree) as defined in `src/domain/`.
+Everything related to reading the target repository from disk. Produces `RepositoryInfo` and (planned) `RepositoryNode` tree as defined in `src/domain/`.
 
-Does not interpret what it finds — that is the AI's job. Does not call `run()` or touch the orchestrator.
+Does not interpret what it finds — that is `src/detectors/` and `src/ai/`'s job.
 
-**When to modify:** When the set of things we read from the target repository changes.
+Contains:
+- `repository-loader.ts` — `loadRepositoryMetadata(config)` reads top-level directory entries and returns `RepositoryInfo`.
 
-**Status:** Planned. Implement against `RepositoryInfo` and `RepositoryNode` from `src/domain/`. Wire into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
+**When to modify:** When the set of things we read from the target repository changes (new key files, deeper scanning, ignore-rule support).
+
+**Status:** Minimal implementation done. Full directory tree walk (for step 3, Scan Repository Structure) is planned.
+
+---
+
+### `src/detectors/`
+
+Technology detection from top-level repository metadata. Consumes `RepositoryInfo`, produces `TechnologyProfile` as defined in `src/domain/`.
+
+Does not walk directories recursively. Reads only well-known top-level files (`package.json`, lockfiles, `tsconfig.json`, `Dockerfile`).
+
+Contains:
+- `technology-detector.ts` — `detectTechnologies(repositoryInfo)` builds a full `TechnologyProfile`.
+- `package-manager-detector.ts` — `detectPackageManager(repositoryInfo)` returns the package manager name from lockfile presence.
+
+**When to modify:** When support for new frameworks, languages, tooling, or package managers is added. When deeper config-file-based detection is introduced. Do not add directory-walking logic here.
+
+**Status:** ✅ Done — detects TypeScript, JavaScript, Docker; Angular, React, Vue, Svelte, Next.js, Nuxt, NestJS, Express; Vite, Jest, Vitest, Cypress, Playwright, ESLint, Prettier; pnpm, yarn, npm, bun.
 
 ---
 
@@ -147,3 +166,4 @@ Human- and agent-readable documentation about the project itself.
 - **Build artifacts.** `dist/` is in `.gitignore`.
 - **Temporary files.** Use the OS temp directory; never committed.
 - **Scanner logic in `src/core/`.** Directory walks, `fs` reads, and file pattern matching belong in `src/scanner/`, not in the orchestrator.
+- **Detection logic in `src/scanner/`.** Interpreting what files mean (TypeScript, Docker, React) belongs in `src/detectors/`.

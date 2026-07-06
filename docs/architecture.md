@@ -16,7 +16,8 @@ Each stage of the pipeline is isolated in its own module. No module reaches into
 │  src/config/         Arg parsing, env vars      │
 │  src/core/           Pipeline orchestration     │  ✅ done
 ├─────────────────────────────────────────────────┤
-│  src/scanner/        File system reading        │  planned
+│  src/scanner/        File system reading        │  ✅ minimal — top-level metadata
+│  src/detectors/      Technology detection       │  ✅ done — top-level detection
 │  src/ai/             OpenRouter integration     │  planned
 │  src/docs/           Documentation writing      │  planned
 ├─────────────────────────────────────────────────┤
@@ -35,9 +36,9 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 
 ```
  1. Resolve Configuration      process.argv, process.env       → RuntimeConfig
- 2. Load Repository Metadata   targetProjectPath               → RepositoryInfo
+ 2. Load Repository Metadata   targetProjectPath               → RepositoryInfo       ✅
  3. Scan Repository Structure  RepositoryInfo                  → RepositoryNode (tree)
- 4. Detect Technologies        RepositoryNode, RepositoryInfo  → TechnologyProfile
+ 4. Detect Technologies        RepositoryNode, RepositoryInfo  → TechnologyProfile    ✅
  5. Build Repository Model     RepositoryInfo + tree + profile → ProjectContext
  6. Analyze Architecture       ProjectContext                  → AnalysisResult
  7. Generate Documentation     ProjectContext, AnalysisResult  → DocumentModel[]
@@ -46,7 +47,7 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 10. Save Incremental State     ProjectContext, DocumentModel[] → .ai-docs/.state.json
 ```
 
-Step 1 is fully implemented (in `src/config/`). Steps 2–10 have placeholder handlers in the orchestrator skeleton; real implementations are planned.
+Steps 1, 2, and 4 are implemented. Steps 3 and 5–10 have placeholder handlers.
 
 ---
 
@@ -61,13 +62,28 @@ The pipeline exists in two distinct forms, each in a different layer:
 
 `ANALYSIS_PIPELINE` in the domain layer is documentation. It can be read, inspected, and validated without running anything. The orchestrator reads that documentation at runtime and drives execution against it.
 
-This separation means that adding a new pipeline step involves two changes: add the step to the domain definition, then wire its real handler into the orchestrator.
+Adding a new pipeline step involves two changes: add the step to the domain definition, then wire its real handler into the orchestrator.
+
+---
+
+## Technology detection
+
+`src/detectors/` bridges the gap between raw repository metadata (step 2) and the AI analysis (step 6). It runs after `RepositoryInfo` is built and before the AI is called.
+
+Detection sources at this stage:
+- **Top-level filenames** — `tsconfig.json`, `Dockerfile`, `docker-compose.yml` → languages and tooling
+- **Lockfiles** — `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`, `bun.lockb` → package manager
+- **`package.json` deps** — framework and tooling identification from `dependencies`/`devDependencies`
+
+Detection intentionally avoids recursive directory scanning. The top-level metadata alone provides enough signal for the AI stage to choose the right documentation strategy. Deeper analysis (module boundaries, architectural patterns) is the AI's responsibility.
+
+Result: `TechnologyProfile { languages, frameworks, packageManagers, tooling, confidence }`.
 
 ---
 
 ## Placeholder execution
 
-Until a real handler is implemented for a step, `executePipeline` calls `runPlaceholderStep` for that step. The placeholder returns immediately with a message and marks the step `completed`. This keeps the full pipeline runnable, the output visible, and the overall execution flow testable before any scanner, AI, or docs logic exists.
+Until a real handler is implemented for a step, `executePipeline` calls `runPlaceholderStep` for that step. The placeholder returns immediately and marks the step `completed`. This keeps the full pipeline runnable and traceable before all implementations exist.
 
 Real handlers are plugged in by replacing the placeholder call for the relevant step inside `executePipeline`. Handler logic should never be added directly to `cli.ts` or `run()`.
 
@@ -84,6 +100,7 @@ interface PipelineExecutionResult {
   startedAt: string;               // ISO 8601
   finishedAt: string;
   errors: PipelineExecutionError[];
+  technologyProfile?: TechnologyProfile;  // populated after step 4 runs
 }
 ```
 
@@ -98,7 +115,7 @@ All data flowing through the pipeline has an explicit type defined in `src/domai
 | Type | Produced by step | Consumed by step |
 |---|---|---|
 | `RuntimeConfig` | 1 — Resolve Configuration | all steps |
-| `RepositoryInfo` | 2 — Load Metadata | 3, 5 |
+| `RepositoryInfo` | 2 — Load Metadata | 3, 4, 5 |
 | `RepositoryNode` | 3 — Scan Structure | 4, 5 |
 | `TechnologyProfile` | 4 — Detect Technologies | 5 |
 | `ProjectContext` | 5 — Build Repository Model | 6, 7 |
@@ -122,22 +139,22 @@ cli.ts
                             │
                             ▼
                          config/index.ts
-                            ├─ parseArgs()          — extracts flags from argv
-                            ├─ resolveApiKey()      — flag beats OPENROUTER_API_KEY env var
-                            ├─ validate target path — required, must exist, must be directory
-                            └─ validate docsDir     — must not be empty
+                            ├─ parseArgs()
+                            ├─ resolveApiKey()
+                            ├─ validate target path
+                            └─ validate docsDir
                             │
                             ▼
-                         RuntimeConfig { targetProjectPath, docsDir, openRouterApiKey? }
+                         RuntimeConfig
                             │
                             ▼
                          core/index.ts → run(config)
-                            ├─ prints config summary
                             └─ executePipeline(config)
-                                 ├─ for each ANALYSIS_PIPELINE step:
-                                 │    mark running → call handler → mark completed/failed
-                                 │    print ✓/✗ step name
-                                 └─ return PipelineExecutionResult
+                                 ├─ Load Repository Metadata
+                                 │    scanner/repository-loader → RepositoryInfo
+                                 ├─ Detect Technologies
+                                 │    detectors/technology-detector → TechnologyProfile
+                                 └─ (all other steps: placeholder)
 ```
 
 Key invariant: `process.argv` and `process.env` are read only inside `src/config/`. Every other module receives a `RuntimeConfig` or a domain type.
@@ -150,15 +167,17 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 
 **Pipeline over monolith.** Each stage produces a plain data structure consumed by the next. Stages are independently testable and replaceable.
 
-**Declarative definition, separate execution.** The pipeline definition in `src/domain/` is pure data. The orchestrator in `src/core/` is the only place that knows how to execute it. Agents adding new stages should never collapse these two concerns.
+**Declarative definition, separate execution.** The pipeline definition in `src/domain/` is pure data. The orchestrator in `src/core/` is the only place that knows how to execute it.
 
-**Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`. Every other module receives a typed struct.
+**Detection before AI.** Technology detection runs from top-level metadata before the AI stage. This provides a cheap, high-confidence signal that lets the AI focus on architecture analysis rather than inferring the stack from source code.
 
-**Placeholder skeleton before real handlers.** The full pipeline runs end-to-end with placeholder steps. This validates the execution flow before any I/O or AI logic exists and gives future implementors a clear location to plug in real behavior.
+**Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`.
 
-**Fail fast, fail clearly.** Configuration validation runs before any I/O. Invalid inputs produce specific error messages at the CLI layer. A failed step marks the pipeline `success: false` and surfaces a `PipelineExecutionError` — it does not swallow the failure.
+**Placeholder skeleton before real handlers.** The full pipeline runs end-to-end with placeholder steps for unimplemented stages. This validates the execution flow and gives future implementors a clear location to plug in real behavior.
 
-**Incremental updates by design.** Step 10 (Save Incremental State) is part of the pipeline from the start. Re-running the tool on a repository that hasn't changed significantly should be cheap.
+**Fail fast, fail clearly.** Configuration validation runs before any I/O. A failed step marks the pipeline `success: false` and surfaces a `PipelineExecutionError`.
+
+**Incremental updates by design.** Step 10 (Save Incremental State) is part of the pipeline from the start.
 
 ---
 

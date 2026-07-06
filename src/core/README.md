@@ -111,10 +111,10 @@ When implementing a real handler for a step, replace the call inside the loop wi
 
 ```
 executePipeline(config)
-  ├─ Resolve Configuration        → placeholder ✓
-  ├─ Load Repository Metadata     → placeholder ✓
+  ├─ Resolve Configuration        → (done in config layer before run() is called)
+  ├─ Load Repository Metadata     → scanner/repository-loader → RepositoryInfo        ✅
   ├─ Scan Repository Structure    → placeholder ✓
-  ├─ Detect Technologies          → placeholder ✓
+  ├─ Detect Technologies          → detectors/technology-detector → TechnologyProfile  ✅
   ├─ Build Repository Model       → placeholder ✓
   ├─ Analyze Architecture         → placeholder ✓
   ├─ Generate Documentation Plan  → placeholder ✓
@@ -128,9 +128,9 @@ executePipeline(config)
 ```
 executePipeline(config)
   ├─ Resolve Configuration        → (done in config layer before run() is called)
-  ├─ Load Repository Metadata     → scanner.loadMetadata(config)
-  ├─ Scan Repository Structure    → scanner.scan(repositoryInfo)
-  ├─ Detect Technologies          → scanner.detectTechnologies(tree, repositoryInfo)
+  ├─ Load Repository Metadata     → scanner.loadMetadata(config)                       ✅
+  ├─ Scan Repository Structure    → scanner.scanTree(repositoryInfo)
+  ├─ Detect Technologies          → detectors.detectTechnologies(repositoryInfo)        ✅
   ├─ Build Repository Model       → assembleContext(repositoryInfo, tree, profile)
   ├─ Analyze Architecture         → ai.analyze(projectContext)
   ├─ Generate Documentation Plan  → ai.planDocumentation(projectContext, analysisResult)

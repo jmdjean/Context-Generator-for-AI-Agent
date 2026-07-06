@@ -2,34 +2,56 @@
 
 **Responsibility:** Reading the target repository from disk.
 
-This module walks the target directory and produces a `RepositorySnapshot` — a structured, in-memory representation of what is in the repository. It does not interpret the contents; it only collects them.
+This module reads the target directory and produces structured in-memory representations of what the repository contains. It does not interpret what it finds — interpretation belongs to `src/ai/` and `src/detectors/`.
+
+---
+
+## Files
+
+| File | Role |
+|---|---|
+| `repository-loader.ts` | Loads top-level `RepositoryInfo` from a `RuntimeConfig` |
+
+---
+
+## Exports
+
+### `loadRepositoryMetadata(config: RuntimeConfig): RepositoryInfo`
+
+Reads the target directory and returns a `RepositoryInfo`:
+
+- `name` — derived from the basename of `targetProjectPath`
+- `rootPath` — the resolved absolute path from `RuntimeConfig`
+- `detectedFiles` — all top-level entries (files and directories) returned by `fs.readdirSync`
+- `ignoredPaths` — empty in this step; ignore-rule support is planned
+
+`detectedFiles` feeds `src/detectors/` so technology detection can run without additional I/O.
+
+---
 
 ## What belongs here
 
-- Directory walking (depth-limited, respecting `.gitignore` patterns).
-- Key file detection (`package.json`, `tsconfig.json`, `go.mod`, `Cargo.toml`, lock files, etc.).
-- File content sampling (reading the first N lines of important files to avoid loading huge binaries).
-- Building the `RepositorySnapshot` data structure.
+- Reading directory entries (`readdirSync`, depth-limited walks when implemented).
+- Building `RepositoryInfo` and `RepositoryNode` as defined in `src/domain/`.
+- Key file detection (`package.json`, `tsconfig.json`, lock files, etc.).
+- File content sampling for important files (planned).
+- Respecting `.gitignore` patterns (planned).
 
 ## What does NOT belong here
 
-- Analysis or interpretation of what was found — that is the AI's job.
-- Writing files — that belongs in `docs/`.
+- Interpreting what was found — that belongs in `src/detectors/` and `src/ai/`.
+- Technology detection logic — that belongs in `src/detectors/`.
+- Writing files — that belongs in `src/docs/`.
 - Making network requests.
+
+---
 
 ## Current status
 
-Not yet implemented. Placeholder for the scanner layer.
+Minimal implementation: `loadRepositoryMetadata` reads top-level directory entries and returns a `RepositoryInfo`. This is enough to support the technology detection step.
 
-## Expected interface (planned)
+Planned additions:
 
-```typescript
-export interface RepositorySnapshot {
-  rootPath: string;
-  tree: DirectoryNode[];
-  keyFiles: Record<string, string>;  // filename → sampled content
-  detectedLanguages: string[];
-}
-
-export async function scan(targetPath: string): Promise<RepositorySnapshot>
-```
+- Full directory tree walk (depth-limited, respecting `.gitignore`) → `RepositoryNode` tree for the Scan Repository Structure step (step 3).
+- Key file content sampling → reads first N lines of `package.json`, `tsconfig.json`, etc.
+- Ignore-rule loading from `.gitignore` and `.ai-docs-ignore`.

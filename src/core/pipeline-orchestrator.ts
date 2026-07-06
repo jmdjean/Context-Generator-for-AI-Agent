@@ -1,5 +1,13 @@
 import { RuntimeConfig } from '../config';
-import { ANALYSIS_PIPELINE, AnalysisPipelineStep, PipelineStepStatus } from '../domain';
+import {
+  ANALYSIS_PIPELINE,
+  AnalysisPipelineStep,
+  PipelineStepStatus,
+  RepositoryInfo,
+  TechnologyProfile,
+} from '../domain';
+import { loadRepositoryMetadata } from '../scanner/repository-loader';
+import { detectTechnologies } from '../detectors/technology-detector';
 
 export interface ExecutedPipelineStep {
   name: string;
@@ -22,6 +30,7 @@ export interface PipelineExecutionResult {
   startedAt: string;
   finishedAt: string;
   errors: PipelineExecutionError[];
+  technologyProfile?: TechnologyProfile;
 }
 
 function initializeSteps(): ExecutedPipelineStep[] {
@@ -43,11 +52,14 @@ function printStep(step: ExecutedPipelineStep): void {
 }
 
 export async function executePipeline(
-  _config: RuntimeConfig,
+  config: RuntimeConfig,
 ): Promise<PipelineExecutionResult> {
   const startedAt = new Date().toISOString();
   const errors: PipelineExecutionError[] = [];
   const steps = initializeSteps();
+
+  let repositoryInfo: RepositoryInfo | undefined;
+  let technologyProfile: TechnologyProfile | undefined;
 
   console.log('');
   console.log('Pipeline:');
@@ -60,7 +72,22 @@ export async function executePipeline(
     step.startedAt = new Date().toISOString();
 
     try {
-      const message = await runPlaceholderStep(domainStep);
+      let message: string;
+
+      if (domainStep.name === 'Load Repository Metadata') {
+        repositoryInfo = loadRepositoryMetadata(config);
+        message = `loaded metadata for "${repositoryInfo.name}"`;
+      } else if (domainStep.name === 'Detect Technologies') {
+        if (repositoryInfo) {
+          technologyProfile = detectTechnologies(repositoryInfo);
+          message = `detected ${technologyProfile.languages.length} language(s)`;
+        } else {
+          message = await runPlaceholderStep(domainStep);
+        }
+      } else {
+        message = await runPlaceholderStep(domainStep);
+      }
+
       step.status = 'completed';
       step.finishedAt = new Date().toISOString();
       step.message = message;
@@ -81,5 +108,6 @@ export async function executePipeline(
     startedAt,
     finishedAt: new Date().toISOString(),
     errors,
+    technologyProfile,
   };
 }

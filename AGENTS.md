@@ -29,10 +29,11 @@ Do not start from `src/` without reading the above. You will make wrong assumpti
 All data that flows through the pipeline is typed in `src/domain/`. Before implementing any feature, read the relevant types:
 
 - **Implementing the scanner?** Read `src/domain/repository.ts`. Your code must produce `RepositoryInfo` and `RepositoryNode`.
+- **Adding a new detector?** Read `src/domain/technology.ts`. Your code must contribute to `TechnologyProfile`.
 - **Implementing the AI integration?** Read `src/domain/analysis.ts` and `src/domain/context.ts`. Consume `ProjectContext`, produce `AnalysisResult`.
 - **Implementing the docs writer?** Read `src/domain/documentation.ts`. Consume `DocumentModel[]`.
 - **Understanding the full pipeline?** Read `src/domain/pipeline.ts`. The `ANALYSIS_PIPELINE` constant is the authoritative description of every step, its input, and its output.
-- **Wiring a real handler into execution?** Read `src/core/pipeline-orchestrator.ts`. Replace `runPlaceholderStep` for the relevant step and import the handler from the appropriate module.
+- **Wiring a real handler into execution?** Read `src/core/pipeline-orchestrator.ts`. Replace the placeholder call for the relevant step and import the handler from the appropriate module.
 
 Do not invent intermediate types for concepts that already have a domain type. Do not modify domain types to fit an implementation detail — adapt the implementation to fit the domain.
 
@@ -49,10 +50,10 @@ The pipeline appears in two places. Do not confuse them:
 
 When you add a new pipeline step:
 1. Add it to `ANALYSIS_PIPELINE` in `src/domain/pipeline.ts`.
-2. Add a real handler in the appropriate module (`src/scanner/`, `src/ai/`, or `src/docs/`).
+2. Add a real handler in the appropriate module (`src/scanner/`, `src/detectors/`, `src/ai/`, or `src/docs/`).
 3. Wire the handler into `executePipeline` in `src/core/pipeline-orchestrator.ts`.
 
-Never put scanner logic, AI calls, or file writes directly inside `src/cli.ts` or `src/core/index.ts`.
+Never put scanner logic, detection logic, AI calls, or file writes directly inside `src/cli.ts` or `src/core/index.ts`.
 
 ---
 
@@ -74,8 +75,9 @@ Never put scanner logic, AI calls, or file writes directly inside `src/cli.ts` o
 - `src/cli.ts` — argument routing only. Delegates immediately to `config/` and `core/`. No logic.
 - `src/domain/` — pure types only. No behavior, no Node.js imports, no dependencies on other `src/` modules.
 - `src/config/` — all configuration concerns. **The only place that reads `process.argv` and `process.env`.**
-- `src/core/` — orchestration only. Receives `RuntimeConfig`, drives `executePipeline`, calls stage handlers in order. No scanner logic, no AI calls, no file I/O.
+- `src/core/` — orchestration only. Receives `RuntimeConfig`, drives `executePipeline`, calls stage handlers in order. No scanner logic, no detection logic, no AI calls, no file I/O.
 - `src/scanner/` — reads the target repository from disk, produces `RepositoryInfo` and `RepositoryNode`.
+- `src/detectors/` — detects technology stack from `RepositoryInfo`, produces `TechnologyProfile`. No directory walking.
 - `src/docs/` — writes documentation files to disk, consumes `DocumentModel[]`.
 - `src/ai/` — calls OpenRouter, consumes `ProjectContext`, produces `AnalysisResult`.
 - `src/utils/` — pure utility functions with no side effects and no domain knowledge.
@@ -109,9 +111,11 @@ All runtime configuration flows through `src/config/index.ts`. It is the single 
 The project has:
 - A working CLI with full argument parsing and runtime configuration resolution.
 - A complete domain model (`src/domain/`) defining all types and the declarative pipeline.
-- A pipeline orchestrator skeleton (`src/core/pipeline-orchestrator.ts`) that runs all 10 steps as placeholders and returns a structured `PipelineExecutionResult`.
+- A pipeline orchestrator skeleton (`src/core/`) that runs all 10 steps and returns `PipelineExecutionResult`.
+- Step 2 (Load Repository Metadata) implemented in `src/scanner/repository-loader.ts`.
+- Step 4 (Detect Technologies) implemented in `src/detectors/technology-detector.ts` and `src/detectors/package-manager-detector.ts`.
 
-The scanner, AI, and docs modules are scaffolded but not yet implemented. Before implementing any planned feature, check [`README.md`](README.md) for the current status table.
+The scanner full tree walk (step 3), the AI integration (step 6), and the docs writer (steps 7–10) are not yet implemented.
 
 ---
 
@@ -120,7 +124,7 @@ The scanner, AI, and docs modules are scaffolded but not yet implemented. Before
 ```bash
 npm install
 npm run build          # compiles TypeScript to dist/ with zero errors
-node dist/cli.js .     # verify the CLI resolves config and runs the pipeline skeleton
+node dist/cli.js .     # runs the pipeline against this project; shows detected technologies
 node dist/cli.js --help
 ```
 
@@ -138,4 +142,5 @@ The build must succeed with zero TypeScript errors before any commit.
 - Do not add abstractions for hypothetical future requirements.
 - Do not skip updating documentation when you change structure or behavior.
 - Do not add scanner logic, directory walks, or `fs` reads to `src/cli.ts` or `src/core/`. Those belong in `src/scanner/`.
+- Do not add technology detection logic to `src/scanner/`. Detection belongs in `src/detectors/`.
 - Do not put real handler logic directly into `executePipeline`. Import and call handler functions from their respective modules.
