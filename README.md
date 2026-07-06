@@ -26,18 +26,65 @@ The goal is not to replace code comments or wikis. It is to create a structured,
 ## Usage
 
 ```bash
-npx ai-project-docs ./my-project
+npx ai-project-docs <target-path> [options]
 ```
 
-The tool accepts a path to any local software project.
+### Arguments
+
+| Argument | Description |
+|---|---|
+| `<target-path>` | Path to the project directory to analyze (required) |
+
+### Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--openrouter-key <key>` | OpenRouter API key for AI-powered analysis | `OPENROUTER_API_KEY` env var |
+| `--docs-dir <name>` | Output docs folder name | `.ai-docs` |
+| `--help` | Show usage information | — |
+
+### Examples
+
+```bash
+# Analyze a project (API key resolved from environment variable)
+ai-project-docs ./my-project
+
+# Pass the API key directly
+ai-project-docs ./my-project --openrouter-key sk-or-xxx
+
+# Use a custom docs folder name
+ai-project-docs ./my-project --docs-dir .project-docs
+
+# All options combined
+ai-project-docs ./my-project --openrouter-key sk-or-xxx --docs-dir .project-docs
+
+# Show help
+ai-project-docs --help
+```
 
 ### Example output
 
 ```
 AI Project Docs
 
-Target project: ./my-project
-Status: project foundation ready
+Target project: /absolute/path/to/my-project
+Docs directory: .ai-docs
+OpenRouter key: detected
+Status: configuration resolved
+```
+
+If the API key is not provided:
+
+```
+AI Project Docs
+
+Target project: /absolute/path/to/my-project
+Docs directory: .ai-docs
+OpenRouter key: missing
+
+Warning: OPENROUTER_API_KEY was not provided. AI-powered analysis will be skipped in future steps.
+
+Status: configuration resolved
 ```
 
 ---
@@ -49,13 +96,14 @@ Status: project foundation ready
 | CLI entry point | ✅ Done |
 | Project structure | ✅ Done |
 | Initial documentation | ✅ Done |
+| Argument parsing | ✅ Done |
+| Runtime configuration resolver | ✅ Done |
 | Target path validation | ✅ Done |
+| OpenRouter key resolution (flag + env) | ✅ Done |
 | Repository scanner | 🔜 Planned |
 | OpenRouter integration | 🔜 Planned |
 | `.ai-docs/` generation | 🔜 Planned |
 | Incremental updates | 🔜 Planned |
-
-This is the **project foundation** phase. The CLI accepts a target path and confirms it was provided. No scanning or documentation generation occurs yet.
 
 ---
 
@@ -75,13 +123,13 @@ node dist/cli.js ./my-project
 
 ```
 src/
-  cli.ts          — CLI entry point
-  core/           — Orchestration logic
-  config/         — Configuration loading and validation
+  cli.ts          — CLI entry point (argument parsing, delegates to core)
+  core/           — Orchestration (runs the pipeline in order)
+  config/         — Configuration resolver (flags, env vars, validation)
   scanner/        — Repository analysis (planned)
   docs/           — Documentation generation (planned)
   ai/             — OpenRouter integration (planned)
-  utils/          — Shared utilities
+  utils/          — Shared utilities (filesystem helpers, etc.)
 docs/
   architecture.md        — System architecture
   folder-structure.md    — Folder responsibility map

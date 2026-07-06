@@ -25,42 +25,50 @@ The source tree follows a pipeline model. Each sub-folder owns exactly one stage
 
 ### `src/cli.ts`
 
-The CLI entry point. Parses `process.argv`, validates that a target path was provided, and delegates to `src/core/`. Contains no business logic.
+The CLI entry point. Reads `process.argv`, checks for `--help`, delegates to `config/` for validation, and delegates to `core/` for execution. Contains no logic of its own.
 
-**When to modify:** Only when the user-facing interface changes (new flags, new output format). Logic changes go in `core/` or the relevant domain module.
+**When to modify:** Only when the top-level user-facing interface changes (new flag routing, different exit behavior). All logic changes go in `config/` or `core/`.
 
 ---
 
 ### `src/core/`
 
-Orchestration. Assembles the pipeline by calling config, scanner, AI, and docs modules in order. Contains no domain logic of its own — it only coordinates.
+Orchestration. Receives a validated `RuntimeConfig` and runs the pipeline by calling scanner, AI, and docs modules in order. Contains no domain logic of its own.
 
-**When to modify:** When the overall execution flow changes (new stage, changed order, new branching).
+**When to modify:** When the overall execution flow changes (new pipeline stage, changed order, new branching based on config).
 
 ---
 
 ### `src/config/`
 
-Everything related to reading and validating user configuration. Responsible for:
-- Reading CLI flags
-- Reading environment variables (e.g. `OPENROUTER_API_KEY`)
-- Reading any config file (e.g. `.ai-docs.json`)
-- Producing a single validated `Config` object
+Everything related to resolving runtime configuration. This is the only module that reads `process.argv` and `process.env`.
 
-**When to modify:** When a new configuration option is added or validation rules change.
+Responsible for:
+- Parsing CLI flags (`--openrouter-key`, `--docs-dir`, `--help`)
+- Reading environment variables (`OPENROUTER_API_KEY`)
+- Applying defaults (`docsDir` → `.ai-docs`)
+- Validating all inputs (path exists, is a directory, docs dir not empty)
+- Producing the typed `RuntimeConfig` object
+
+Exports: `RuntimeConfig`, `resolveConfig()`, `printHelp()`, `isHelpRequested()`.
+
+**When to modify:** When a new configuration option is added, a new environment variable is supported, or validation rules change.
 
 ---
 
 ### `src/scanner/`
 
 Everything related to reading the target repository from disk. Responsible for:
-- Walking the directory tree
+- Walking the directory tree (depth-limited, respecting `.gitignore`)
 - Identifying key files (`package.json`, `tsconfig.json`, lock files, etc.)
+- Sampling file content
 - Building a `RepositorySnapshot` data structure
 
-Does not interpret or analyze what it finds — that is the AI's job.
+Does not interpret what it finds — that is the AI's job.
 
 **When to modify:** When the set of things we read from the target repository changes.
+
+**Status:** Planned.
 
 ---
 
@@ -71,9 +79,11 @@ Everything related to writing the `.ai-docs/` documentation folder. Responsible 
 - Writing each documentation section to a file
 - Managing incremental updates (only rewrite sections that changed)
 
-Reads from the AI module's output. Does not call the AI directly.
+Does not call the AI. Reads from the AI module's output.
 
 **When to modify:** When the output format, folder structure, or file naming changes.
+
+**Status:** Planned.
 
 ---
 
@@ -89,13 +99,18 @@ Contains no file I/O. Receives a snapshot and returns documentation content.
 
 **When to modify:** When the AI provider, model, prompt strategy, or response format changes.
 
+**Status:** Planned.
+
 ---
 
 ### `src/utils/`
 
-Shared utility functions. Contains only pure functions with no side effects and no domain knowledge. Examples: path helpers, string formatters, retry logic.
+Shared utility functions with no side effects and no domain knowledge.
 
-**When to modify:** When you need a utility shared by two or more modules. Do not add utilities that are only used in one place — keep them in that module.
+Currently contains:
+- `fs.ts` — `resolveAbsolutePath`, `pathExists`, `isDirectory` (thin wrappers over `node:fs` / `node:path` used by multiple modules)
+
+**When to modify:** When you need a utility used by two or more modules. Functions used in only one module stay in that module.
 
 ---
 
@@ -105,7 +120,7 @@ Human- and agent-readable documentation about the project itself.
 
 | File | Contents |
 |---|---|
-| `architecture.md` | System design, pipeline overview, key decisions |
+| `architecture.md` | System design, pipeline overview, CLI/config flow, key decisions |
 | `folder-structure.md` | This file — folder responsibility map |
 | `context-engineering.md` | Core philosophy behind the documentation approach |
 
@@ -117,4 +132,4 @@ Human- and agent-readable documentation about the project itself.
 
 - **Generated output.** The `.ai-docs/` folder is written into the *target* repository, not this one.
 - **Build artifacts.** `dist/` is in `.gitignore`.
-- **Temporary files.** Use the OS temp directory or a local scratch directory, never committed.
+- **Temporary files.** Use the OS temp directory; never committed.

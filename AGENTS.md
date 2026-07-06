@@ -36,14 +36,32 @@ Do not start from `src/` without reading the above. You will make wrong assumpti
 - Only add a comment when the *why* is non-obvious: a hidden constraint, a workaround, or a subtle invariant.
 
 ### Folder ownership
-- `src/core/` — orchestration only. It calls other modules; it does not implement logic.
-- `src/config/` — everything related to reading and validating user configuration.
+
+- `src/cli.ts` — argument parsing only. Delegates immediately to `config/` and `core/`. No logic.
+- `src/config/` — all configuration concerns: parsing CLI flags, reading environment variables, validation, and the `RuntimeConfig` type. **The rest of the application never reads `process.argv` or `process.env` directly.**
+- `src/core/` — orchestration only. Receives a validated `RuntimeConfig` and runs the pipeline in order.
 - `src/scanner/` — everything related to reading the target repository on disk.
 - `src/docs/` — everything related to generating or writing documentation files.
 - `src/ai/` — everything related to calling the AI provider (OpenRouter).
 - `src/utils/` — pure utility functions with no side effects and no domain knowledge.
 
 Cross-cutting concerns belong in `utils/`. Business logic belongs in the owning module.
+
+### Configuration
+
+All runtime configuration flows through `src/config/index.ts`. It exports:
+- `RuntimeConfig` — the validated configuration type passed to the rest of the application.
+- `resolveConfig(argv)` — reads flags, falls back to environment variables, validates, and returns `RuntimeConfig`.
+- `printHelp()` — prints usage information.
+- `isHelpRequested(argv)` — checks for `--help` / `-h`.
+
+When adding a new configuration option:
+1. Add it to `RuntimeConfig`.
+2. Add its CLI flag to the parser in `config/index.ts`.
+3. Add its environment variable fallback if applicable.
+4. Update validation logic.
+5. Update `printHelp()`.
+6. Update `src/config/README.md` and `docs/architecture.md`.
 
 ### Dependencies
 - Prefer the Node.js standard library over third-party packages.
@@ -60,7 +78,7 @@ Cross-cutting concerns belong in `utils/`. Business logic belongs in the owning 
 
 ## Implementation status
 
-The project is in the **foundation phase**. The CLI is wired up but does not yet scan or generate documentation.
+The project has a working CLI with full argument parsing and runtime configuration resolution. The scanner, AI, and docs modules are scaffolded but not yet implemented.
 
 Before implementing any planned feature, check [`README.md`](README.md) for the current status table so you know what is already done.
 
@@ -70,8 +88,9 @@ Before implementing any planned feature, check [`README.md`](README.md) for the 
 
 ```bash
 npm install
-npm run build      # compiles TypeScript to dist/
-node dist/cli.js ./some-path   # verify the CLI runs
+npm run build          # compiles TypeScript to dist/ with zero errors
+node dist/cli.js .     # verify the CLI resolves config for the current directory
+node dist/cli.js --help
 ```
 
 The build must succeed with zero TypeScript errors before any commit.
@@ -81,6 +100,7 @@ The build must succeed with zero TypeScript errors before any commit.
 ## What to avoid
 
 - Do not modify files in `dist/` — it is a build artifact.
+- Do not read `process.argv` or `process.env` outside of `src/config/`.
 - Do not add error handling for scenarios that cannot happen given the surrounding code.
 - Do not add abstractions for hypothetical future requirements.
 - Do not skip updating documentation when you change structure or behavior.
