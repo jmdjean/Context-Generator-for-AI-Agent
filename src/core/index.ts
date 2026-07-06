@@ -1,5 +1,6 @@
 import { RuntimeConfig } from '../config';
 import { TechnologyProfile } from '../domain';
+import { DocumentationPlan } from '../docs/documentation-plan';
 import { executePipeline } from './pipeline-orchestrator';
 
 export { executePipeline };
@@ -34,6 +35,31 @@ function printTechnologyProfile(profile: TechnologyProfile): void {
   }
 }
 
+function printDocumentationPlan(plan: DocumentationPlan): void {
+  console.log('');
+  console.log('Documentation plan:');
+
+  const required = plan.documents.filter(
+    (d) => d.source === 'core' || d.source === 'agent',
+  );
+  const technology = plan.documents.filter((d) => d.source === 'technology');
+
+  if (required.length > 0) {
+    console.log('Required documents:');
+    for (const doc of required) {
+      console.log(`- ${doc.relativePath}`);
+    }
+  }
+
+  if (technology.length > 0) {
+    console.log('');
+    console.log('Technology documents:');
+    for (const doc of technology) {
+      console.log(`- ${doc.relativePath}`);
+    }
+  }
+}
+
 export async function run(config: RuntimeConfig): Promise<void> {
   console.log(`Target project: ${config.targetProjectPath}`);
   console.log(`Docs directory: ${config.docsDir}`);
@@ -43,6 +69,10 @@ export async function run(config: RuntimeConfig): Promise<void> {
 
   if (result.technologyProfile) {
     printTechnologyProfile(result.technologyProfile);
+  }
+
+  if (result.documentationPlan) {
+    printDocumentationPlan(result.documentationPlan);
   }
 
   console.log('');

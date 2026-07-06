@@ -19,7 +19,7 @@ Each stage of the pipeline is isolated in its own module. No module reaches into
 │  src/scanner/        File system reading        │  ✅ minimal — top-level metadata
 │  src/detectors/      Technology detection       │  ✅ done — top-level detection
 │  src/ai/             OpenRouter integration     │  planned
-│  src/docs/           Documentation writing      │  planned
+│  src/docs/           Documentation planning/writing│  ✅ planning done
 ├─────────────────────────────────────────────────┤
 │  src/domain/         Types only — no behavior   │  ✅ done
 │  src/utils/          Pure shared helpers        │  ✅ done
@@ -41,13 +41,13 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
  4. Detect Technologies        RepositoryNode, RepositoryInfo  → TechnologyProfile    ✅
  5. Build Repository Model     RepositoryInfo + tree + profile → ProjectContext
  6. Analyze Architecture       ProjectContext                  → AnalysisResult
- 7. Generate Documentation     ProjectContext, AnalysisResult  → DocumentModel[]
+ 7. Generate Documentation     ProjectContext, AnalysisResult  → DocumentModel[]      ✅ (plan)
  8. Write Documentation        DocumentModel[]                 → .ai-docs/ files
  9. Validate Documentation     DocumentModel[], file paths     → validation report
 10. Save Incremental State     ProjectContext, DocumentModel[] → .ai-docs/.state.json
 ```
 
-Steps 1, 2, and 4 are implemented. Steps 3 and 5–10 have placeholder handlers.
+Steps 1, 2, 4, and 7 are implemented (step 7 produces a `DocumentationPlan`; full content generation is planned). Steps 3, 5, 6, 8, 9, and 10 have placeholder handlers.
 
 ---
 
@@ -81,6 +81,27 @@ Result: `TechnologyProfile { languages, frameworks, packageManagers, tooling, co
 
 ---
 
+## Documentation planning
+
+`src/docs/documentation-planner.ts` implements step 7 (Generate Documentation Plan). It receives `RuntimeConfig`, `RepositoryInfo`, and `TechnologyProfile` and returns a `DocumentationPlan` — a deterministic, typed manifest of which documents will be written to `.ai-docs/`.
+
+**Planning is separate from generation.** The plan commits to a file list before any AI calls or file writes happen. This allows:
+- Future steps (Write Documentation, Validate Documentation) to work against a known manifest.
+- Agents to understand what context files will exist before any are written.
+- The plan to be logged, cached, or inspected independently.
+
+**Plan structure:**
+
+| Source | Documents |
+|---|---|
+| `core` | README.md, architecture.md, folder-structure.md, agent-navigation.md, conventions.md, dependency-map.md, change-log.md |
+| `agent` | AGENTS.md, ai-context.md, implementation-guide.md |
+| `technology` | Framework-specific docs based on `TechnologyProfile.frameworks` |
+
+The `strategy` field on `DocumentationPlan` encodes which technology-specific document set was activated (e.g. `standard-angular`, `standard-react-nestjs`, or `standard` for no known framework).
+
+---
+
 ## Placeholder execution
 
 Until a real handler is implemented for a step, `executePipeline` calls `runPlaceholderStep` for that step. The placeholder returns immediately and marks the step `completed`. This keeps the full pipeline runnable and traceable before all implementations exist.
@@ -96,11 +117,12 @@ Real handlers are plugged in by replacing the placeholder call for the relevant 
 ```typescript
 interface PipelineExecutionResult {
   success: boolean;
-  steps: ExecutedPipelineStep[];   // one record per pipeline step
-  startedAt: string;               // ISO 8601
+  steps: ExecutedPipelineStep[];      // one record per pipeline step
+  startedAt: string;                  // ISO 8601
   finishedAt: string;
   errors: PipelineExecutionError[];
-  technologyProfile?: TechnologyProfile;  // populated after step 4 runs
+  technologyProfile?: TechnologyProfile;   // populated after step 4 runs
+  documentationPlan?: DocumentationPlan;   // populated after step 7 runs
 }
 ```
 
@@ -154,6 +176,8 @@ cli.ts
                                  │    scanner/repository-loader → RepositoryInfo
                                  ├─ Detect Technologies
                                  │    detectors/technology-detector → TechnologyProfile
+                                 ├─ Generate Documentation Plan
+                                 │    docs/documentation-planner → DocumentationPlan
                                  └─ (all other steps: placeholder)
 ```
 
@@ -170,6 +194,8 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 **Declarative definition, separate execution.** The pipeline definition in `src/domain/` is pure data. The orchestrator in `src/core/` is the only place that knows how to execute it.
 
 **Detection before AI.** Technology detection runs from top-level metadata before the AI stage. This provides a cheap, high-confidence signal that lets the AI focus on architecture analysis rather than inferring the stack from source code.
+
+**Plan before generate.** The documentation plan (step 7) commits to a deterministic file manifest before any content is generated or written. Future generation steps work against this manifest rather than deciding on-the-fly which files to create.
 
 **Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`.
 

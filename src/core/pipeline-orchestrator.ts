@@ -8,6 +8,8 @@ import {
 } from '../domain';
 import { loadRepositoryMetadata } from '../scanner/repository-loader';
 import { detectTechnologies } from '../detectors/technology-detector';
+import { createDocumentationPlan } from '../docs/documentation-planner';
+import { DocumentationPlan } from '../docs/documentation-plan';
 
 export interface ExecutedPipelineStep {
   name: string;
@@ -31,6 +33,7 @@ export interface PipelineExecutionResult {
   finishedAt: string;
   errors: PipelineExecutionError[];
   technologyProfile?: TechnologyProfile;
+  documentationPlan?: DocumentationPlan;
 }
 
 function initializeSteps(): ExecutedPipelineStep[] {
@@ -60,6 +63,7 @@ export async function executePipeline(
 
   let repositoryInfo: RepositoryInfo | undefined;
   let technologyProfile: TechnologyProfile | undefined;
+  let documentationPlan: DocumentationPlan | undefined;
 
   console.log('');
   console.log('Pipeline:');
@@ -81,6 +85,13 @@ export async function executePipeline(
         if (repositoryInfo) {
           technologyProfile = detectTechnologies(repositoryInfo);
           message = `detected ${technologyProfile.languages.length} language(s)`;
+        } else {
+          message = await runPlaceholderStep(domainStep);
+        }
+      } else if (domainStep.name === 'Generate Documentation Plan') {
+        if (repositoryInfo && technologyProfile) {
+          documentationPlan = createDocumentationPlan(config, repositoryInfo, technologyProfile);
+          message = `planned ${documentationPlan.documents.length} documents (strategy: ${documentationPlan.strategy})`;
         } else {
           message = await runPlaceholderStep(domainStep);
         }
@@ -109,5 +120,6 @@ export async function executePipeline(
     finishedAt: new Date().toISOString(),
     errors,
     technologyProfile,
+    documentationPlan,
   };
 }

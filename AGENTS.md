@@ -30,6 +30,7 @@ All data that flows through the pipeline is typed in `src/domain/`. Before imple
 
 - **Implementing the scanner?** Read `src/domain/repository.ts`. Your code must produce `RepositoryInfo` and `RepositoryNode`.
 - **Adding a new detector?** Read `src/domain/technology.ts`. Your code must contribute to `TechnologyProfile`.
+- **Adding a new document type or framework plan?** Read `src/docs/documentation-plan.ts` and `src/docs/documentation-planner.ts`. Add a new function returning `PlannedDocument[]` and call it from `buildTechnologyDocuments`.
 - **Implementing the AI integration?** Read `src/domain/analysis.ts` and `src/domain/context.ts`. Consume `ProjectContext`, produce `AnalysisResult`.
 - **Implementing the docs writer?** Read `src/domain/documentation.ts`. Consume `DocumentModel[]`.
 - **Understanding the full pipeline?** Read `src/domain/pipeline.ts`. The `ANALYSIS_PIPELINE` constant is the authoritative description of every step, its input, and its output.
@@ -78,7 +79,7 @@ Never put scanner logic, detection logic, AI calls, or file writes directly insi
 - `src/core/` — orchestration only. Receives `RuntimeConfig`, drives `executePipeline`, calls stage handlers in order. No scanner logic, no detection logic, no AI calls, no file I/O.
 - `src/scanner/` — reads the target repository from disk, produces `RepositoryInfo` and `RepositoryNode`.
 - `src/detectors/` — detects technology stack from `RepositoryInfo`, produces `TechnologyProfile`. No directory walking.
-- `src/docs/` — writes documentation files to disk, consumes `DocumentModel[]`.
+- `src/docs/` — documentation planning and (planned) writing. `documentation-planner.ts` decides which files to generate; the writer (planned) writes them to disk. Do not add framework-detection logic here.
 - `src/ai/` — calls OpenRouter, consumes `ProjectContext`, produces `AnalysisResult`.
 - `src/utils/` — pure utility functions with no side effects and no domain knowledge.
 
@@ -114,8 +115,9 @@ The project has:
 - A pipeline orchestrator skeleton (`src/core/`) that runs all 10 steps and returns `PipelineExecutionResult`.
 - Step 2 (Load Repository Metadata) implemented in `src/scanner/repository-loader.ts`.
 - Step 4 (Detect Technologies) implemented in `src/detectors/technology-detector.ts` and `src/detectors/package-manager-detector.ts`.
+- Step 7 (Generate Documentation Plan) implemented in `src/docs/documentation-planner.ts` — produces a `DocumentationPlan` with core, agent, and technology-specific documents.
 
-The scanner full tree walk (step 3), the AI integration (step 6), and the docs writer (steps 7–10) are not yet implemented.
+The scanner full tree walk (step 3), the AI integration (step 6), and the docs writer (steps 8–10) are not yet implemented.
 
 ---
 
@@ -144,3 +146,4 @@ The build must succeed with zero TypeScript errors before any commit.
 - Do not add scanner logic, directory walks, or `fs` reads to `src/cli.ts` or `src/core/`. Those belong in `src/scanner/`.
 - Do not add technology detection logic to `src/scanner/`. Detection belongs in `src/detectors/`.
 - Do not put real handler logic directly into `executePipeline`. Import and call handler functions from their respective modules.
+- Do not add new document templates to `src/core/` or `src/detectors/`. Document template functions belong in `src/docs/documentation-planner.ts`.

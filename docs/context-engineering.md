@@ -95,6 +95,24 @@ This separation exists for the same reason domain types exist: to make intent ex
 
 ---
 
+## Documentation planning — deciding before generating
+
+Step 7 (Generate Documentation Plan) produces a `DocumentationPlan` before any content is written. This is not an optimisation — it is a structural principle.
+
+**Why plan first?** Documentation generation is expensive. Before calling the AI or writing any files, the pipeline commits to a deterministic file manifest based solely on `TechnologyProfile`. This manifest answers the same questions a reader would ask when opening `.ai-docs/` for the first time:
+
+- What files will exist?
+- What is each file's purpose?
+- Which are required for all projects vs. specific to this stack?
+
+**How technology detection influences the plan.** The `frameworks` array in `TechnologyProfile` selects which technology document suite to include: Angular, React, NestJS, or the generic fallback. Multiple frameworks produce multiple suites simultaneously. The plan's `strategy` field records which path was taken (`standard`, `standard-angular`, `standard-react-nestjs`, etc.).
+
+**How agents use the plan.** An agent working in a repository that has a `DocumentationPlan` in the pipeline result knows exactly what `.ai-docs/` files will exist before they are written. It can reason about the final context layer structure, report missing files, or decide which documents to load for a given task — all without reading any already-written files.
+
+**Where new document templates go.** New framework support is added to `src/docs/documentation-planner.ts` as a new function (e.g. `vueDocuments()`). The planner calls it when the framework is detected. This keeps the pipeline orchestrator clean and the document set extensible without touching any other module.
+
+---
+
 ## Placeholder handlers and why they exist
 
 Steps that haven't been implemented yet run a placeholder handler that returns immediately without doing real work. This is not a shortcut — it is a deliberate design decision:

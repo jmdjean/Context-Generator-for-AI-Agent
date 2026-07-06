@@ -115,11 +115,17 @@ Contains:
 
 ### `src/docs/`
 
-Everything related to writing the `.ai-docs/` documentation folder. Consumes `DocumentModel[]` as defined in `src/domain/` and writes files to disk.
+Documentation planning and (planned) writing. Decides which files to generate and eventually writes them into the target repository's `.ai-docs/` folder.
 
-**When to modify:** When the output format, folder structure, or file naming changes.
+Contains:
+- `documentation-plan.ts` — application-level types: `DocumentationPlan`, `PlannedDocument`, `DocumentPriority`, `DocumentSource`.
+- `documentation-planner.ts` — `createDocumentationPlan(config, repositoryInfo, technologyProfile)` returns a deterministic `DocumentationPlan` based on the detected technology stack.
 
-**Status:** Planned. Implement against `DocumentModel` and `DocumentSection` from `src/domain/`. Wire into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
+The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). Document templates for new frameworks are added here as new functions.
+
+**When to modify:** When new document types are added, new framework document sets are supported, or the writing/rendering logic is implemented.
+
+**Status:** Planning implemented (step 7). Writing not yet implemented. Wire the writer into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
 
 ---
 
@@ -167,3 +173,4 @@ Human- and agent-readable documentation about the project itself.
 - **Temporary files.** Use the OS temp directory; never committed.
 - **Scanner logic in `src/core/`.** Directory walks, `fs` reads, and file pattern matching belong in `src/scanner/`, not in the orchestrator.
 - **Detection logic in `src/scanner/`.** Interpreting what files mean (TypeScript, Docker, React) belongs in `src/detectors/`.
+- **Documentation planning in `src/core/`.** Deciding which files to generate belongs in `src/docs/documentation-planner.ts`, not in the orchestrator.

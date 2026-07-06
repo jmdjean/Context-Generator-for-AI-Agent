@@ -117,7 +117,7 @@ executePipeline(config)
   ├─ Detect Technologies          → detectors/technology-detector → TechnologyProfile  ✅
   ├─ Build Repository Model       → placeholder ✓
   ├─ Analyze Architecture         → placeholder ✓
-  ├─ Generate Documentation Plan  → placeholder ✓
+  ├─ Generate Documentation Plan  → docs/documentation-planner → DocumentationPlan     ✅
   ├─ Write Documentation          → placeholder ✓
   ├─ Validate Documentation       → placeholder ✓
   └─ Save Incremental State       → placeholder ✓
@@ -133,7 +133,7 @@ executePipeline(config)
   ├─ Detect Technologies          → detectors.detectTechnologies(repositoryInfo)        ✅
   ├─ Build Repository Model       → assembleContext(repositoryInfo, tree, profile)
   ├─ Analyze Architecture         → ai.analyze(projectContext)
-  ├─ Generate Documentation Plan  → ai.planDocumentation(projectContext, analysisResult)
+  ├─ Generate Documentation Plan  → docs.createDocumentationPlan(...)                  ✅
   ├─ Write Documentation          → docs.write(documentModels, config)
   ├─ Validate Documentation       → docs.validate(documentModels)
   └─ Save Incremental State       → docs.saveState(projectContext, documentModels)
