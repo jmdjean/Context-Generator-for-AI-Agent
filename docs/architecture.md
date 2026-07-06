@@ -14,7 +14,7 @@ Each stage of the pipeline is isolated in its own module. No module reaches into
 ┌─────────────────────────────────────────────────┐
 │  src/cli.ts          CLI surface                │
 │  src/config/         Arg parsing, env vars      │
-│  src/core/           Pipeline orchestration     │
+│  src/core/           Pipeline orchestration     │  ✅ done
 ├─────────────────────────────────────────────────┤
 │  src/scanner/        File system reading        │  planned
 │  src/ai/             OpenRouter integration     │  planned
@@ -46,7 +46,48 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 10. Save Incremental State     ProjectContext, DocumentModel[] → .ai-docs/.state.json
 ```
 
-Steps 1 and (partially) 5 are implemented. Steps 2–4 and 6–10 are planned.
+Step 1 is fully implemented (in `src/config/`). Steps 2–10 have placeholder handlers in the orchestrator skeleton; real implementations are planned.
+
+---
+
+## Declarative pipeline vs execution orchestrator
+
+The pipeline exists in two distinct forms, each in a different layer:
+
+| Concern | Location | What it contains |
+|---|---|---|
+| **What** the pipeline does | `src/domain/pipeline.ts` | Step names, descriptions, input/output types — pure data, no runtime behavior |
+| **How** the pipeline executes | `src/core/pipeline-orchestrator.ts` | Step loop, handler calls, status tracking, progress output, error collection |
+
+`ANALYSIS_PIPELINE` in the domain layer is documentation. It can be read, inspected, and validated without running anything. The orchestrator reads that documentation at runtime and drives execution against it.
+
+This separation means that adding a new pipeline step involves two changes: add the step to the domain definition, then wire its real handler into the orchestrator.
+
+---
+
+## Placeholder execution
+
+Until a real handler is implemented for a step, `executePipeline` calls `runPlaceholderStep` for that step. The placeholder returns immediately with a message and marks the step `completed`. This keeps the full pipeline runnable, the output visible, and the overall execution flow testable before any scanner, AI, or docs logic exists.
+
+Real handlers are plugged in by replacing the placeholder call for the relevant step inside `executePipeline`. Handler logic should never be added directly to `cli.ts` or `run()`.
+
+---
+
+## Execution result
+
+`executePipeline` returns a `PipelineExecutionResult`:
+
+```typescript
+interface PipelineExecutionResult {
+  success: boolean;
+  steps: ExecutedPipelineStep[];   // one record per pipeline step
+  startedAt: string;               // ISO 8601
+  finishedAt: string;
+  errors: PipelineExecutionError[];
+}
+```
+
+Each `ExecutedPipelineStep` carries the step name, its final `PipelineStepStatus`, timestamps, and an optional message. `PipelineExecutionError` records the step name, a human-readable message, and the original cause.
 
 ---
 
@@ -68,7 +109,7 @@ All data flowing through the pipeline has an explicit type defined in `src/domai
 
 ---
 
-## CLI / Config flow (current implementation)
+## CLI / Config / Core flow
 
 ```
 process.argv
@@ -91,7 +132,12 @@ cli.ts
                             │
                             ▼
                          core/index.ts → run(config)
-                            └─ prints summary; warns if API key is absent
+                            ├─ prints config summary
+                            └─ executePipeline(config)
+                                 ├─ for each ANALYSIS_PIPELINE step:
+                                 │    mark running → call handler → mark completed/failed
+                                 │    print ✓/✗ step name
+                                 └─ return PipelineExecutionResult
 ```
 
 Key invariant: `process.argv` and `process.env` are read only inside `src/config/`. Every other module receives a `RuntimeConfig` or a domain type.
@@ -104,13 +150,15 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 
 **Pipeline over monolith.** Each stage produces a plain data structure consumed by the next. Stages are independently testable and replaceable.
 
+**Declarative definition, separate execution.** The pipeline definition in `src/domain/` is pure data. The orchestrator in `src/core/` is the only place that knows how to execute it. Agents adding new stages should never collapse these two concerns.
+
 **Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`. Every other module receives a typed struct.
 
-**Fail fast, fail clearly.** Configuration validation runs before any I/O. Invalid inputs produce specific error messages at the CLI layer.
+**Placeholder skeleton before real handlers.** The full pipeline runs end-to-end with placeholder steps. This validates the execution flow before any I/O or AI logic exists and gives future implementors a clear location to plug in real behavior.
+
+**Fail fast, fail clearly.** Configuration validation runs before any I/O. Invalid inputs produce specific error messages at the CLI layer. A failed step marks the pipeline `success: false` and surfaces a `PipelineExecutionError` — it does not swallow the failure.
 
 **Incremental updates by design.** Step 10 (Save Incremental State) is part of the pipeline from the start. Re-running the tool on a repository that hasn't changed significantly should be cheap.
-
-**Scanner is deliberately not yet implemented.** The domain types define what the scanner must produce. Implementing the scanner against those contracts — rather than letting the scanner define them — keeps the design clean and the consumer modules stable.
 
 ---
 
@@ -130,6 +178,7 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 - Validate configuration before doing any I/O.
 - Fail fast with a specific, actionable error message.
 - Do not swallow errors silently.
+- A failed pipeline step is recorded in `PipelineExecutionResult.errors` and causes `success: false`.
 - AI provider network errors will be retried with exponential back-off (planned).
 
 ---

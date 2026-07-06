@@ -41,20 +41,30 @@ Defines:
 - `AnalysisResult` — output of the AI analysis stage
 - `DocumentSection`, `DocumentModel` — the documentation being generated
 - `AgentInstruction` — structured instructions for AI agents
-- `PipelineStepStatus`, `AnalysisPipelineStep`, `ANALYSIS_PIPELINE` — the declarative pipeline
+- `PipelineStepStatus`, `AnalysisPipelineStep`, `ANALYSIS_PIPELINE` — the declarative pipeline definition
 - `ProjectContext` — the central aggregate passed through the pipeline
 
 All types are exported from `src/domain/index.ts`.
 
 **When to modify:** When a new concept is introduced, an existing concept needs a new field, or a type needs to be renamed. Domain changes require updating any module that implements the changed contract.
 
+**Status:** ✅ Done.
+
 ---
 
 ### `src/core/`
 
-Orchestration. Receives a validated `RuntimeConfig` and runs the pipeline by calling scanner, AI, and docs modules in order. Contains no domain logic of its own.
+Orchestration. Turns the declarative pipeline defined in `src/domain/pipeline.ts` into a runnable execution flow.
 
-**When to modify:** When the overall execution flow changes (new pipeline stage, changed order, new branching based on config).
+Contains:
+- `index.ts` — the public `run()` entry point called by `cli.ts`; re-exports orchestrator types.
+- `pipeline-orchestrator.ts` — `executePipeline()`, per-step status tracking, console progress output, and the application-level execution types (`ExecutedPipelineStep`, `PipelineExecutionResult`, `PipelineExecutionError`).
+
+Does not contain scanner logic, AI calls, or file I/O. When future modules are implemented, `executePipeline` calls their exported functions — the logic stays in those modules, not here.
+
+**When to modify:** When the overall execution flow changes — a new pipeline stage is wired in, step ordering changes, or conditional logic (e.g. skip AI if no key) is added.
+
+**Status:** ✅ Orchestration skeleton done. All steps run as placeholders; real handlers are planned.
 
 ---
 
@@ -68,17 +78,19 @@ Exports: `RuntimeConfig`, `resolveConfig()`, `printHelp()`, `isHelpRequested()`.
 
 **When to modify:** When a new configuration option is added, a new environment variable is supported, or validation rules change.
 
+**Status:** ✅ Done.
+
 ---
 
 ### `src/scanner/`
 
 Everything related to reading the target repository from disk. Produces `RepositoryInfo` and `RepositoryNode` (tree) as defined in `src/domain/`.
 
-Does not interpret what it finds — that is the AI's job.
+Does not interpret what it finds — that is the AI's job. Does not call `run()` or touch the orchestrator.
 
 **When to modify:** When the set of things we read from the target repository changes.
 
-**Status:** Planned. Implement against `RepositoryInfo` and `RepositoryNode` from `src/domain/`.
+**Status:** Planned. Implement against `RepositoryInfo` and `RepositoryNode` from `src/domain/`. Wire into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
 
 ---
 
@@ -88,7 +100,7 @@ Everything related to writing the `.ai-docs/` documentation folder. Consumes `Do
 
 **When to modify:** When the output format, folder structure, or file naming changes.
 
-**Status:** Planned. Implement against `DocumentModel` and `DocumentSection` from `src/domain/`.
+**Status:** Planned. Implement against `DocumentModel` and `DocumentSection` from `src/domain/`. Wire into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
 
 ---
 
@@ -100,7 +112,7 @@ Contains no file I/O.
 
 **When to modify:** When the AI provider, model, prompt strategy, or response format changes.
 
-**Status:** Planned. Implement against `ProjectContext` and `AnalysisResult` from `src/domain/`.
+**Status:** Planned. Implement against `ProjectContext` and `AnalysisResult` from `src/domain/`. Wire into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
 
 ---
 
@@ -134,3 +146,4 @@ Human- and agent-readable documentation about the project itself.
 - **Generated output.** The `.ai-docs/` folder is written into the *target* repository, not this one.
 - **Build artifacts.** `dist/` is in `.gitignore`.
 - **Temporary files.** Use the OS temp directory; never committed.
+- **Scanner logic in `src/core/`.** Directory walks, `fs` reads, and file pattern matching belong in `src/scanner/`, not in the orchestrator.

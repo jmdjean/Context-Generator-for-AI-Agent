@@ -67,6 +67,30 @@ The domain layer is the single source of truth for the shape of data in this app
 
 ---
 
+## Declarative pipeline vs execution skeleton
+
+The pipeline exists in two distinct forms:
+
+**`src/domain/pipeline.ts`** defines the pipeline as a data structure — step names, descriptions, input types, output types. It is documentation that can be read and reasoned about without running any code.
+
+**`src/core/pipeline-orchestrator.ts`** implements how those steps are executed — the step loop, handler dispatch, status tracking, error collection, and console progress output. It reads the declarative pipeline at runtime and drives execution against it.
+
+This separation exists for the same reason domain types exist: to make intent explicit and prevent implementation details from leaking into the wrong layer. Agents should never add scanner logic, AI calls, or file writes directly to `src/cli.ts` or `run()`. Those concerns belong in their respective modules (`src/scanner/`, `src/ai/`, `src/docs/`); the orchestrator calls them.
+
+---
+
+## Placeholder handlers and why they exist
+
+Every pipeline step currently runs a placeholder handler that returns immediately without doing real work. This is not a shortcut — it is a deliberate design decision:
+
+1. **Visible flow.** The full pipeline output is observable from day one, before any I/O or AI logic is written.
+2. **Safe iteration.** Future implementors know exactly where to plug in real behavior: replace `runPlaceholderStep` for the relevant step in `executePipeline`.
+3. **No silent gaps.** A step that hasn't been implemented yet still appears in the progress output and in `PipelineExecutionResult`. Nothing is hidden.
+
+Placeholder handlers are not shipped as permanent stubs. They are replaced step by step as real implementations are added.
+
+---
+
 ## How the pipeline supports incremental documentation
 
 Generating documentation for a large repository is expensive. Doing it on every save is impractical. The pipeline addresses this with step 10 (Save Incremental State):
@@ -86,8 +110,10 @@ Before implementing any pipeline stage:
 1. Read `src/domain/README.md` to understand the full type landscape.
 2. Find the pipeline step you are implementing in `ANALYSIS_PIPELINE` (in `src/domain/pipeline.ts`). Read its `input` and `output` fields — these are your contract.
 3. Find the domain types your step produces and consumes. Read their interface definitions.
-4. Implement the stage to accept the declared input type and return the declared output type.
-5. Do not modify domain types to fit your implementation. Adapt the implementation to fit the domain.
+4. Implement the stage in the correct module (`src/scanner/`, `src/ai/`, or `src/docs/`) to accept the declared input type and return the declared output type.
+5. Wire the new handler into `src/core/pipeline-orchestrator.ts` — replace the placeholder call for that step.
+6. Do not modify domain types to fit your implementation. Adapt the implementation to fit the domain.
+7. Do not add scanner, AI, or docs logic to `src/cli.ts` or `src/core/index.ts`.
 
 This sequence prevents the most common agent failure: implementing something that works in isolation but doesn't connect cleanly to the rest of the pipeline.
 
@@ -97,7 +123,7 @@ This sequence prevents the most common agent failure: implementing something tha
 
 Good context is:
 
-- **Specific to the project.** Not generic ("this is a Node.js project") but precise ("the main orchestration flow starts in `src/core/index.ts` and will delegate to scanner, AI, and docs modules once implemented — see `ANALYSIS_PIPELINE` in `src/domain/pipeline.ts`").
+- **Specific to the project.** Not generic ("this is a Node.js project") but precise ("the main orchestration flow starts in `src/core/pipeline-orchestrator.ts` — see `executePipeline` and `ANALYSIS_PIPELINE` in `src/domain/pipeline.ts`").
 - **Structured for navigation.** An agent reading `navigation-guide.md` should know in two minutes where to make a change.
 - **Honest about what is incomplete.** If a section is unimplemented, the documentation says so explicitly. Agents should not assume that silence means completeness.
 - **Written at the right altitude.** Architecture docs describe the system; folder docs describe a module; convention docs describe a pattern. Mixing altitudes produces noise.
