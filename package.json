@@ -1,0 +1,30 @@
+{
+  "name": "ai-project-docs",
+  "version": "0.1.0",
+  "description": "Context Engineering CLI — analyzes software repositories and generates AI-readable documentation",
+  "main": "dist/cli.js",
+  "bin": {
+    "ai-project-docs": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "ai",
+    "context-engineering",
+    "documentation",
+    "cli",
+    "agents"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
