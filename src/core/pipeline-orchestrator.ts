@@ -10,6 +10,7 @@ import { loadRepositoryMetadata } from '../scanner/repository-loader';
 import { detectTechnologies } from '../detectors/technology-detector';
 import { createDocumentationPlan } from '../docs/documentation-planner';
 import { DocumentationPlan } from '../docs/documentation-plan';
+import { writeDocumentation } from '../docs/documentation-writer';
 
 export interface ExecutedPipelineStep {
   name: string;
@@ -92,6 +93,23 @@ export async function executePipeline(
         if (repositoryInfo && technologyProfile) {
           documentationPlan = createDocumentationPlan(config, repositoryInfo, technologyProfile);
           message = `planned ${documentationPlan.documents.length} documents (strategy: ${documentationPlan.strategy})`;
+        } else {
+          message = await runPlaceholderStep(domainStep);
+        }
+      } else if (domainStep.name === 'Write Documentation') {
+        if (repositoryInfo && technologyProfile && documentationPlan) {
+          const writeResult = writeDocumentation(
+            config,
+            repositoryInfo,
+            technologyProfile,
+            documentationPlan,
+          );
+          console.log('');
+          console.log('Documentation writer:');
+          console.log(`Written: ${writeResult.writtenCount}`);
+          console.log(`Skipped: ${writeResult.skippedCount}`);
+          console.log(`Docs directory: ${writeResult.docsDirectoryPath}`);
+          message = `written ${writeResult.writtenCount}, skipped ${writeResult.skippedCount}`;
         } else {
           message = await runPlaceholderStep(domainStep);
         }

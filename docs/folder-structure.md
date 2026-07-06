@@ -120,12 +120,14 @@ Documentation planning and (planned) writing. Decides which files to generate an
 Contains:
 - `documentation-plan.ts` — application-level types: `DocumentationPlan`, `PlannedDocument`, `DocumentPriority`, `DocumentSource`.
 - `documentation-planner.ts` — `createDocumentationPlan(config, repositoryInfo, technologyProfile)` returns a deterministic `DocumentationPlan` based on the detected technology stack.
+- `document-template.ts` — deterministic Markdown renderer for a `PlannedDocument` plus known project metadata.
+- `documentation-writer.ts` — `writeDocumentation(config, repositoryInfo, technologyProfile, documentationPlan)` writes planned docs into the target project's docs directory.
 
-The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). Document templates for new frameworks are added here as new functions.
+The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). The writer currently renders deterministic placeholder content only and uses a generated-file marker to distinguish tool-managed files from user-managed files.
 
 **When to modify:** When new document types are added, new framework document sets are supported, or the writing/rendering logic is implemented.
 
-**Status:** Planning implemented (step 7). Writing not yet implemented. Wire the writer into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
+**Status:** Planning implemented (step 7). Deterministic writing implemented (step 8). Future AI enrichment, validation, and incremental state handling remain planned.
 
 ---
 
@@ -168,7 +170,7 @@ Human- and agent-readable documentation about the project itself.
 
 ## What does NOT belong here
 
-- **Generated output.** The `.ai-docs/` folder is written into the *target* repository, not this one.
+- **Generated output.** The `.ai-docs/` folder is written into the *target* repository, not this one. Tool-managed files are identified by a marker comment so user-created files can be preserved safely.
 - **Build artifacts.** `dist/` is in `.gitignore`.
 - **Temporary files.** Use the OS temp directory; never committed.
 - **Scanner logic in `src/core/`.** Directory walks, `fs` reads, and file pattern matching belong in `src/scanner/`, not in the orchestrator.

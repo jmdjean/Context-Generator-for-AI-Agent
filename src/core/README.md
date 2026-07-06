@@ -26,7 +26,7 @@ Called by `src/cli.ts`. Prints the configuration summary, delegates execution to
 Drives the full pipeline. For each step in `ANALYSIS_PIPELINE`:
 1. Initializes an `ExecutedPipelineStep` as `pending`.
 2. Marks it `running` and records `startedAt`.
-3. Calls the step's handler (currently a placeholder for all steps).
+3. Calls the step's handler (real handlers for metadata loading, technology detection, documentation planning, and deterministic documentation writing; placeholders for the remaining steps).
 4. Marks it `completed` (or `failed` on error) and records `finishedAt`.
 5. Prints `✓ <name>` or `✗ <name>` to the console.
 
@@ -73,7 +73,7 @@ This separation means the pipeline definition can be read as documentation witho
 
 ## Placeholder execution
 
-Every pipeline step currently runs `runPlaceholderStep()`, which returns immediately with a status message. This is intentional — the skeleton exists so the execution flow is visible, traceable, and testable before real handlers exist.
+Unimplemented pipeline steps run `runPlaceholderStep()`, which returns immediately with a status message. This is intentional — the skeleton exists so the execution flow is visible, traceable, and testable before real handlers exist.
 
 When implementing a real handler for a step, replace the call inside the loop with a call to the appropriate module (`src/scanner/`, `src/ai/`, `src/docs/`). Do not add handler logic directly to the orchestrator.
 
@@ -118,7 +118,7 @@ executePipeline(config)
   ├─ Build Repository Model       → placeholder ✓
   ├─ Analyze Architecture         → placeholder ✓
   ├─ Generate Documentation Plan  → docs/documentation-planner → DocumentationPlan     ✅
-  ├─ Write Documentation          → placeholder ✓
+  ├─ Write Documentation          → docs/documentation-writer → DocumentationWriteResult ✅
   ├─ Validate Documentation       → placeholder ✓
   └─ Save Incremental State       → placeholder ✓
 ```
@@ -134,7 +134,7 @@ executePipeline(config)
   ├─ Build Repository Model       → assembleContext(repositoryInfo, tree, profile)
   ├─ Analyze Architecture         → ai.analyze(projectContext)
   ├─ Generate Documentation Plan  → docs.createDocumentationPlan(...)                  ✅
-  ├─ Write Documentation          → docs.write(documentModels, config)
+  ├─ Write Documentation          → docs.writeDocumentation(config, repositoryInfo, technologyProfile, documentationPlan)
   ├─ Validate Documentation       → docs.validate(documentModels)
   └─ Save Incremental State       → docs.saveState(projectContext, documentModels)
 ```

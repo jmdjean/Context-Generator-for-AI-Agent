@@ -14,7 +14,7 @@ The domain layer makes every concept explicit and shared:
 
 - `scanner/` produces a `RepositoryNode` — not "some object with file info".
 - `ai/` produces an `AnalysisResult` — not "a string from the model".
-- `docs/` renders a `DocumentModel` — not "whatever the AI said".
+- `docs/` writes a `DocumentationPlan` deterministically today — and will later enrich those files from structured analysis rather than "whatever the AI said".
 
 When every module's input and output is a named, typed interface, there is nothing to guess.
 
@@ -92,6 +92,7 @@ Before implementing any pipeline stage, read the relevant type in this module an
 
 - Implementing `scanner/`? Produce `RepositoryInfo` and `RepositoryNode`. The shape is already defined.
 - Implementing `ai/`? Consume `ProjectContext`, produce `AnalysisResult`. The shape is already defined.
-- Implementing `docs/`? Consume `DocumentModel[]` and write files. The shape is already defined.
+- Implementing deterministic `docs/` writing? Consume `DocumentationPlan` plus known metadata and preserve the generated-file marker policy.
+- Implementing future rich `docs/` generation? Consume `DocumentModel[]` and write files. The shape is already defined.
 
 Do not invent intermediate types for things that already have a domain type. Do not modify domain types to fit an implementation detail — change the implementation to fit the domain contract.

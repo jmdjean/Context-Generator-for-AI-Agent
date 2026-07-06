@@ -60,16 +60,16 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
   {
     name: 'Generate Documentation Plan',
     description:
-      'Determine which documentation files to create and what each section should contain. Produces a list of DocumentModels without writing any files yet.',
-    input: 'ProjectContext, AnalysisResult',
-    output: 'DocumentModel[]',
+      'Determine which documentation files to create and what each document is for. Produces a DocumentationPlan without writing any files yet.',
+    input: 'RepositoryInfo, TechnologyProfile',
+    output: 'DocumentationPlan',
     status: 'pending',
   },
   {
     name: 'Write Documentation',
     description:
-      'Render each DocumentModel to Markdown and write it into the .ai-docs/ folder inside the target repository. Only overwrite sections that have changed.',
-    input: 'DocumentModel[], RuntimeConfig.docsDir',
+      'Render deterministic Markdown for each planned document and write it into the .ai-docs/ folder inside the target repository. Only overwrite tool-managed files marked as safe to update.',
+    input: 'DocumentationPlan, RepositoryInfo, TechnologyProfile, RuntimeConfig.docsDir',
     output: '.ai-docs/ directory contents',
     status: 'pending',
   },
@@ -85,7 +85,7 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     name: 'Save Incremental State',
     description:
       'Persist a snapshot of the current analysis so that future runs can skip unchanged sections and only regenerate what has actually changed in the repository.',
-    input: 'ProjectContext, DocumentModel[]',
+    input: 'ProjectContext, DocumentationPlan',
     output: 'Incremental state file (.ai-docs/.state.json)',
     status: 'pending',
   },
