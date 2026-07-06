@@ -1,2 +1,145 @@
-# Context-Generator-for-AI-Agent
-Context Generator for AI Agent
+# AI Project Docs
+
+A local CLI tool that analyzes any software repository and generates high-quality, AI-readable documentation so that AI coding agents can understand the project architecture before modifying code.
+
+---
+
+## Vision
+
+AI coding agents often fail not because they lack capability, but because they lack context. They read files blindly, guess at conventions, and hallucinate structure.
+
+**AI Project Docs** solves this by generating a `.ai-docs/` folder inside any target repository. That folder becomes the authoritative context layer for agents: it tells them where to start, what each module does, what the conventions are, and what has changed recently.
+
+The goal is not to replace code comments or wikis. It is to create a structured, always-current documentation layer that agents can load *before* they touch any code.
+
+---
+
+## Core Principles
+
+- **Agents should not read the whole repository blindly.** They need a guided entry point.
+- **Structure guides context.** Each folder should explain its own responsibility.
+- **Documentation reduces hallucination.** The more precise the context, the fewer the mistakes.
+- **Documentation is part of the source code.** It must be maintained like any other module.
+
+---
+
+## Usage
+
+```bash
+npx ai-project-docs <target-path> [options]
+```
+
+### Arguments
+
+| Argument | Description |
+|---|---|
+| `<target-path>` | Path to the project directory to analyze (required) |
+
+### Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--openrouter-key <key>` | OpenRouter API key for AI-powered analysis | `OPENROUTER_API_KEY` env var |
+| `--docs-dir <name>` | Output docs folder name | `.ai-docs` |
+| `--help` | Show usage information | — |
+
+### Examples
+
+```bash
+# Analyze a project (API key resolved from environment variable)
+ai-project-docs ./my-project
+
+# Pass the API key directly
+ai-project-docs ./my-project --openrouter-key sk-or-xxx
+
+# Use a custom docs folder name
+ai-project-docs ./my-project --docs-dir .project-docs
+
+# All options combined
+ai-project-docs ./my-project --openrouter-key sk-or-xxx --docs-dir .project-docs
+
+# Show help
+ai-project-docs --help
+```
+
+### Example output
+
+```
+AI Project Docs
+
+Target project: /absolute/path/to/my-project
+Docs directory: .ai-docs
+OpenRouter key: detected
+Status: configuration resolved
+```
+
+If the API key is not provided:
+
+```
+AI Project Docs
+
+Target project: /absolute/path/to/my-project
+Docs directory: .ai-docs
+OpenRouter key: missing
+
+Warning: OPENROUTER_API_KEY was not provided. AI-powered analysis will be skipped in future steps.
+
+Status: configuration resolved
+```
+
+---
+
+## Current Implementation Status
+
+| Feature | Status |
+|---|---|
+| CLI entry point | ✅ Done |
+| Project structure | ✅ Done |
+| Initial documentation | ✅ Done |
+| Argument parsing | ✅ Done |
+| Runtime configuration resolver | ✅ Done |
+| Target path validation | ✅ Done |
+| OpenRouter key resolution (flag + env) | ✅ Done |
+| Repository scanner | 🔜 Planned |
+| OpenRouter integration | 🔜 Planned |
+| `.ai-docs/` generation | 🔜 Planned |
+| Incremental updates | 🔜 Planned |
+
+---
+
+## Installation (development)
+
+```bash
+git clone <repo-url>
+cd context-generator-for-ai-agent
+npm install
+npm run build
+node dist/cli.js ./my-project
+```
+
+---
+
+## Project Structure
+
+```
+src/
+  cli.ts          — CLI entry point (argument parsing, delegates to core)
+  core/           — Orchestration (runs the pipeline in order)
+  config/         — Configuration resolver (flags, env vars, validation)
+  scanner/        — Repository analysis (planned)
+  docs/           — Documentation generation (planned)
+  ai/             — OpenRouter integration (planned)
+  utils/          — Shared utilities (filesystem helpers, etc.)
+docs/
+  architecture.md        — System architecture
+  folder-structure.md    — Folder responsibility map
+  context-engineering.md — Documentation philosophy
+```
+
+See [`docs/folder-structure.md`](docs/folder-structure.md) for a full breakdown.
+
+---
+
+## Contributing
+
+Read [`AGENTS.md`](AGENTS.md) before making any changes. It explains how to navigate this codebase and what conventions to follow.
