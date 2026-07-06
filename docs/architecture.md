@@ -4,108 +4,133 @@
 
 `ai-project-docs` is a CLI tool with a pipeline architecture. The user runs a single command; the tool reads a target repository, sends relevant context to an AI provider, and writes structured documentation into a `.ai-docs/` folder inside that repository.
 
-Each stage of the pipeline is isolated in its own module. No module reaches into another module's internals.
+Each stage of the pipeline is isolated in its own module. No module reaches into another module's internals. All data passed between stages is expressed as types defined in `src/domain/`.
 
 ---
 
-## Pipeline
+## Layers
 
 ```
-CLI input (process.argv)
-   │
-   ▼
-Argument parsing + config resolution  (src/config/)
-   │  Parses flags, reads env variables, validates inputs.
-   │  Produces a RuntimeConfig object.
-   │  Fails fast with a clear error if inputs are invalid.
-   ▼
-Orchestration  (src/core/)
-   │  Receives RuntimeConfig.
-   │  Calls scanner, AI, and docs modules in order.
-   │  Surfaces errors from any stage to the CLI layer.
-   ▼
-Repository scanning  (src/scanner/)              [planned]
-   │  Reads the target directory on disk.
-   │  Produces a RepositorySnapshot.
-   ▼
-AI analysis  (src/ai/)                           [planned]
-   │  Sends the snapshot to OpenRouter.
-   │  Returns structured documentation content.
-   ▼
-Documentation writing  (src/docs/)               [planned]
-   │  Writes .ai-docs/ files into the target repository.
-   │  Manages incremental updates.
-   ▼
-CLI output
-     Prints a summary of what was generated.
+┌─────────────────────────────────────────────────┐
+│  src/cli.ts          CLI surface                │
+│  src/config/         Arg parsing, env vars      │
+│  src/core/           Pipeline orchestration     │
+├─────────────────────────────────────────────────┤
+│  src/scanner/        File system reading        │  planned
+│  src/ai/             OpenRouter integration     │  planned
+│  src/docs/           Documentation writing      │  planned
+├─────────────────────────────────────────────────┤
+│  src/domain/         Types only — no behavior   │  ✅ done
+│  src/utils/          Pure shared helpers        │  ✅ done
+└─────────────────────────────────────────────────┘
 ```
+
+The domain layer sits beneath everything. It has no dependencies on any other layer. All other layers depend on it.
 
 ---
 
-## CLI / Config flow (current)
+## Analysis pipeline
 
-This is the part of the pipeline that is fully implemented.
+The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALYSIS_PIPELINE`. It is the authoritative description of what the tool does, step by step.
+
+```
+ 1. Resolve Configuration      process.argv, process.env       → RuntimeConfig
+ 2. Load Repository Metadata   targetProjectPath               → RepositoryInfo
+ 3. Scan Repository Structure  RepositoryInfo                  → RepositoryNode (tree)
+ 4. Detect Technologies        RepositoryNode, RepositoryInfo  → TechnologyProfile
+ 5. Build Repository Model     RepositoryInfo + tree + profile → ProjectContext
+ 6. Analyze Architecture       ProjectContext                  → AnalysisResult
+ 7. Generate Documentation     ProjectContext, AnalysisResult  → DocumentModel[]
+ 8. Write Documentation        DocumentModel[]                 → .ai-docs/ files
+ 9. Validate Documentation     DocumentModel[], file paths     → validation report
+10. Save Incremental State     ProjectContext, DocumentModel[] → .ai-docs/.state.json
+```
+
+Steps 1 and (partially) 5 are implemented. Steps 2–4 and 6–10 are planned.
+
+---
+
+## Domain model
+
+All data flowing through the pipeline has an explicit type defined in `src/domain/`:
+
+| Type | Produced by step | Consumed by step |
+|---|---|---|
+| `RuntimeConfig` | 1 — Resolve Configuration | all steps |
+| `RepositoryInfo` | 2 — Load Metadata | 3, 5 |
+| `RepositoryNode` | 3 — Scan Structure | 4, 5 |
+| `TechnologyProfile` | 4 — Detect Technologies | 5 |
+| `ProjectContext` | 5 — Build Repository Model | 6, 7 |
+| `AnalysisResult` | 6 — Analyze Architecture | 7, 10 |
+| `DocumentModel[]` | 7 — Generate Plan | 8, 9, 10 |
+
+`ProjectContext` is the central aggregate. It is built progressively: each pipeline stage adds its result to the context before passing it forward. Optional fields on `ProjectContext` encode which stages have completed.
+
+---
+
+## CLI / Config flow (current implementation)
 
 ```
 process.argv
    │
    ▼
 cli.ts
-   ├─ No args → print usage error, exit 1
-   ├─ --help → printHelp(), exit 0
-   └─ Otherwise → resolveConfig(argv)
-         │
-         ▼
-      config/index.ts
-         ├─ parseArgs()  — extracts flags and positional from argv
-         ├─ resolveApiKey()  — flag value takes priority over OPENROUTER_API_KEY env var
-         ├─ validate target path (required, must exist, must be directory)
-         └─ validate docsDir (must not be empty)
-         │
-         ▼
-      RuntimeConfig { targetProjectPath, docsDir, openRouterApiKey? }
-         │
-         ▼
-      core/index.ts → run(config)
-         └─ Prints summary; warns if API key is missing.
+   ├─ No args        → usage error, exit 1
+   ├─ --help         → printHelp(), exit 0
+   └─ Otherwise      → resolveConfig(argv)
+                            │
+                            ▼
+                         config/index.ts
+                            ├─ parseArgs()          — extracts flags from argv
+                            ├─ resolveApiKey()      — flag beats OPENROUTER_API_KEY env var
+                            ├─ validate target path — required, must exist, must be directory
+                            └─ validate docsDir     — must not be empty
+                            │
+                            ▼
+                         RuntimeConfig { targetProjectPath, docsDir, openRouterApiKey? }
+                            │
+                            ▼
+                         core/index.ts → run(config)
+                            └─ prints summary; warns if API key is absent
 ```
 
-Key constraint: **`process.argv` and `process.env` are only read inside `src/config/`.** Every other module receives a `RuntimeConfig` and never touches raw environment state.
+Key invariant: `process.argv` and `process.env` are read only inside `src/config/`. Every other module receives a `RuntimeConfig` or a domain type.
 
 ---
 
 ## Key design decisions
 
-**Pipeline over monolith.** Each stage produces a plain data structure that the next stage consumes. This makes each stage independently testable and replaceable.
+**Domain types before implementation.** `src/domain/` was created before any scanner, AI, or docs logic. This means every implementation has a precise contract to fulfill rather than inventing its own intermediate types.
 
-**Config is explicit.** There is no global configuration object. The validated `RuntimeConfig` is passed explicitly to every function that needs it.
+**Pipeline over monolith.** Each stage produces a plain data structure consumed by the next. Stages are independently testable and replaceable.
 
-**Config owns all environment reads.** `src/config/index.ts` is the single place that reads `process.argv` and `process.env`. This makes the configuration contract explicit and easy to test.
+**Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`. Every other module receives a typed struct.
 
-**Fail fast, fail clearly.** Configuration is validated before any I/O. If the target path does not exist or is not readable, the CLI exits immediately with a specific error message. Silent failures are not acceptable.
+**Fail fast, fail clearly.** Configuration validation runs before any I/O. Invalid inputs produce specific error messages at the CLI layer.
 
-**Scanner produces a snapshot, not a stream.** For the repository sizes this tool targets, loading the full structure into memory before calling the AI is simpler and produces better prompts than streaming.
+**Incremental updates by design.** Step 10 (Save Incremental State) is part of the pipeline from the start. Re-running the tool on a repository that hasn't changed significantly should be cheap.
 
-**`.ai-docs/` is owned by the tool.** The generated folder is not meant to be hand-edited. It is regenerated (or partially updated) on every run. Users who want to customize should use configuration options, not edit the output directly.
+**Scanner is deliberately not yet implemented.** The domain types define what the scanner must produce. Implementing the scanner against those contracts — rather than letting the scanner define them — keeps the design clean and the consumer modules stable.
 
 ---
 
 ## Configuration sources and priority
 
-| Priority | Source |
-|---|---|
-| 1 (highest) | CLI flag (`--openrouter-key`) |
-| 2 | Environment variable (`OPENROUTER_API_KEY`) |
-| 3 (lowest) | Project config file (`.ai-docs.json`) — planned |
+| Priority | Source | Applies to |
+|---|---|---|
+| 1 (highest) | CLI flag `--openrouter-key` | `openRouterApiKey` |
+| 2 | Environment variable `OPENROUTER_API_KEY` | `openRouterApiKey` |
+| 3 | Default value | `docsDir` → `.ai-docs` |
+| 4 (planned) | Project config file `.ai-docs.json` | multiple fields |
 
 ---
 
 ## Error handling strategy
 
 - Validate configuration before doing any I/O.
-- Fail fast with a clear, specific error message when validation fails.
-- Do not swallow errors silently. Surface them at the CLI layer.
-- Network errors from the AI provider will be retried with exponential back-off (planned).
+- Fail fast with a specific, actionable error message.
+- Do not swallow errors silently.
+- AI provider network errors will be retried with exponential back-off (planned).
 
 ---
 
@@ -113,8 +138,8 @@ Key constraint: **`process.argv` and `process.env` are only read inside `src/con
 
 | Concern | Choice | Reason |
 |---|---|---|
-| Language | TypeScript (strict) | Type safety, wide ecosystem, first-class Node.js support |
-| Runtime | Node.js ≥ 18 | LTS, built-in `fs/promises`, no extra build tooling |
+| Language | TypeScript (strict) | Type safety, wide ecosystem, Node.js support |
+| Runtime | Node.js ≥ 18 | LTS, built-in `fs/promises` |
+| Domain layer | Plain interfaces, no classes | Framework-agnostic, easy to test, easy for agents to understand |
 | AI provider | OpenRouter (planned) | Single API surface for multiple models |
-| CLI parsing | Manual (`process.argv`, no framework) | Simple surface; avoids a dependency |
-| Filesystem utilities | Node.js `node:fs` (no framework) | No abstraction needed at this scale |
+| CLI parsing | Manual `process.argv` parsing | Simple interface; no framework dependency |
