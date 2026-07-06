@@ -67,6 +67,64 @@ The domain layer is the single source of truth for the shape of data in this app
 
 ---
 
+## How technology detection helps AI agents choose the right strategy
+
+A `TechnologyProfile` is computed in step 4 before the AI stage runs (step 6). It answers:
+
+- Is this a TypeScript project? → generate typed interface docs, avoid generic JS conventions.
+- Is this an Angular project? → document NgModules, services, dependency injection patterns.
+- Is this a Next.js project? → document pages, API routes, server components, data fetching.
+- Is this a NestJS API? → document controllers, modules, providers, guards.
+- Does it use Jest? → include testing conventions in the documentation.
+
+Without this pre-computed signal, the AI stage would need to infer the stack by reading source files — wasting tokens and increasing the chance of hallucination. `TechnologyProfile` provides a reliable, high-confidence input that narrows the AI's focus to what actually matters for this project.
+
+Detection is intentionally shallow at this stage. It reads only top-level config files and `package.json` dependencies. This is fast, safe, and reliable. Deeper architecture analysis (module boundaries, patterns, conventions) is the AI stage's responsibility.
+
+---
+
+## Declarative pipeline vs execution skeleton
+
+The pipeline exists in two distinct forms:
+
+**`src/domain/pipeline.ts`** defines the pipeline as a data structure — step names, descriptions, input types, output types. It is documentation that can be read and reasoned about without running any code.
+
+**`src/core/pipeline-orchestrator.ts`** implements how those steps are executed — the step loop, handler dispatch, status tracking, error collection, and console progress output. It reads the declarative pipeline at runtime and drives execution against it.
+
+This separation exists for the same reason domain types exist: to make intent explicit and prevent implementation details from leaking into the wrong layer. Agents should never add scanner logic, detection logic, AI calls, or file writes directly to `src/cli.ts` or `run()`. Those concerns belong in their respective modules; the orchestrator calls them.
+
+---
+
+## Documentation planning — deciding before generating
+
+Step 7 (Generate Documentation Plan) produces a `DocumentationPlan` before any content is written. This is not an optimisation — it is a structural principle.
+
+**Why plan first?** Documentation generation is expensive. Before calling the AI or writing any files, the pipeline commits to a deterministic file manifest based solely on `TechnologyProfile`. This manifest answers the same questions a reader would ask when opening `.ai-docs/` for the first time:
+
+- What files will exist?
+- What is each file's purpose?
+- Which are required for all projects vs. specific to this stack?
+
+**How technology detection influences the plan.** The `frameworks` array in `TechnologyProfile` selects which technology document suite to include: Angular, React, NestJS, or the generic fallback. Multiple frameworks produce multiple suites simultaneously. The plan's `strategy` field records which path was taken (`standard`, `standard-angular`, `standard-react-nestjs`, etc.).
+
+**How agents use the plan.** An agent working in a repository that has a `DocumentationPlan` in the pipeline result knows exactly what `.ai-docs/` files will exist before they are written. It can reason about the final context layer structure, report missing files, or decide which documents to load for a given task — all without reading any already-written files.
+
+**Where new document templates go.** New framework support is added to `src/docs/documentation-planner.ts` as a new function (e.g. `vueDocuments()`). The planner calls it when the framework is detected. This keeps the pipeline orchestrator clean and the document set extensible without touching any other module.
+
+---
+
+## Placeholder handlers and why they exist
+
+Steps that haven't been implemented yet run a placeholder handler that returns immediately without doing real work. This is not a shortcut — it is a deliberate design decision:
+
+1. **Visible flow.** The full pipeline output is observable from day one, before all I/O or AI logic is written.
+2. **Safe iteration.** Future implementors know exactly where to plug in real behavior: replace the placeholder call for the relevant step in `executePipeline`.
+3. **No silent gaps.** A step that hasn't been implemented yet still appears in the progress output and in `PipelineExecutionResult`. Nothing is hidden.
+
+Placeholder handlers are replaced step by step as real implementations are added.
+
+---
+
 ## How the pipeline supports incremental documentation
 
 Generating documentation for a large repository is expensive. Doing it on every save is impractical. The pipeline addresses this with step 10 (Save Incremental State):
@@ -86,8 +144,10 @@ Before implementing any pipeline stage:
 1. Read `src/domain/README.md` to understand the full type landscape.
 2. Find the pipeline step you are implementing in `ANALYSIS_PIPELINE` (in `src/domain/pipeline.ts`). Read its `input` and `output` fields — these are your contract.
 3. Find the domain types your step produces and consumes. Read their interface definitions.
-4. Implement the stage to accept the declared input type and return the declared output type.
-5. Do not modify domain types to fit your implementation. Adapt the implementation to fit the domain.
+4. Implement the stage in the correct module (`src/scanner/`, `src/detectors/`, `src/ai/`, or `src/docs/`) to accept the declared input type and return the declared output type.
+5. Wire the new handler into `src/core/pipeline-orchestrator.ts` — replace the placeholder call for that step.
+6. Do not modify domain types to fit your implementation. Adapt the implementation to fit the domain.
+7. Do not add scanner, detection, AI, or docs logic to `src/cli.ts` or `src/core/index.ts`.
 
 This sequence prevents the most common agent failure: implementing something that works in isolation but doesn't connect cleanly to the rest of the pipeline.
 
@@ -97,7 +157,7 @@ This sequence prevents the most common agent failure: implementing something tha
 
 Good context is:
 
-- **Specific to the project.** Not generic ("this is a Node.js project") but precise ("the main orchestration flow starts in `src/core/index.ts` and will delegate to scanner, AI, and docs modules once implemented — see `ANALYSIS_PIPELINE` in `src/domain/pipeline.ts`").
+- **Specific to the project.** Not generic ("this is a Node.js project") but precise ("this is a Next.js 14 app using the App Router, TypeScript, Vitest for unit tests, and Playwright for e2e tests — see `TechnologyProfile` in the pipeline result").
 - **Structured for navigation.** An agent reading `navigation-guide.md` should know in two minutes where to make a change.
 - **Honest about what is incomplete.** If a section is unimplemented, the documentation says so explicitly. Agents should not assume that silence means completeness.
 - **Written at the right altitude.** Architecture docs describe the system; folder docs describe a module; convention docs describe a pattern. Mixing altitudes produces noise.
