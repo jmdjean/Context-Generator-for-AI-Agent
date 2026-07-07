@@ -9,7 +9,9 @@ Guides AI agents to the right files for any task type
 ## Project
 
 - Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-06T21:01:51.360Z
+- Generated: 2026-07-07T00:08:53.444Z
+- PKM schema: 1.0.0
+- Analysis status: partial
 - Status: initial deterministic documentation
 - Source: core
 - Priority: required
@@ -26,7 +28,7 @@ This file is intentionally deterministic. It captures currently known repository
 ## Current known context
 
 - Project root: `C:\projeto\Context-Generator-for-AI-Agent`
-- Detected top-level files: 11
+- Detected top-level files: 12
 - Languages: TypeScript
 - Frameworks: None detected yet
 - Package managers: npm

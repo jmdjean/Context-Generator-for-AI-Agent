@@ -1,16 +1,6 @@
 import { RuntimeConfig } from '../config';
-import {
-  ANALYSIS_PIPELINE,
-  AnalysisPipelineStep,
-  PipelineStepStatus,
-  RepositoryInfo,
-  TechnologyProfile,
-} from '../domain';
-import { loadRepositoryMetadata } from '../scanner/repository-loader';
-import { detectTechnologies } from '../detectors/technology-detector';
-import { createDocumentationPlan } from '../docs/documentation-planner';
-import { DocumentationPlan } from '../docs/documentation-plan';
-import { writeDocumentation } from '../docs/documentation-writer';
+import { ANALYSIS_PIPELINE, PipelineStepStatus } from '../domain';
+import { PipelineContext, runStepHandler } from './pipeline-handlers';
 
 export interface ExecutedPipelineStep {
   name: string;
@@ -33,8 +23,7 @@ export interface PipelineExecutionResult {
   startedAt: string;
   finishedAt: string;
   errors: PipelineExecutionError[];
-  technologyProfile?: TechnologyProfile;
-  documentationPlan?: DocumentationPlan;
+  projectKnowledge?: PipelineContext['projectKnowledge'];
 }
 
 function initializeSteps(): ExecutedPipelineStep[] {
@@ -45,14 +34,20 @@ function initializeSteps(): ExecutedPipelineStep[] {
   }));
 }
 
-// Placeholder — replace with a real handler when implementing this step.
-async function runPlaceholderStep(_step: AnalysisPipelineStep): Promise<string> {
-  return 'placeholder: ready for implementation';
+function printStep(step: ExecutedPipelineStep): void {
+  const icon =
+    step.status === 'completed' ? '✓' : step.status === 'skipped' ? '○' : '✗';
+  console.log(`${icon} ${step.name}`);
 }
 
-function printStep(step: ExecutedPipelineStep): void {
-  const icon = step.status === 'completed' ? '✓' : '✗';
-  console.log(`${icon} ${step.name}`);
+function markRemainingStepsSkipped(
+  steps: ExecutedPipelineStep[],
+  startIndex: number,
+): void {
+  for (let i = startIndex; i < steps.length; i++) {
+    steps[i].status = 'skipped';
+    steps[i].message = 'skipped: previous step failed';
+  }
 }
 
 export async function executePipeline(
@@ -61,10 +56,7 @@ export async function executePipeline(
   const startedAt = new Date().toISOString();
   const errors: PipelineExecutionError[] = [];
   const steps = initializeSteps();
-
-  let repositoryInfo: RepositoryInfo | undefined;
-  let technologyProfile: TechnologyProfile | undefined;
-  let documentationPlan: DocumentationPlan | undefined;
+  const context: PipelineContext = { config };
 
   console.log('');
   console.log('Pipeline:');
@@ -77,55 +69,20 @@ export async function executePipeline(
     step.startedAt = new Date().toISOString();
 
     try {
-      let message: string;
+      const result = await runStepHandler(context, domainStep);
 
-      if (domainStep.name === 'Load Repository Metadata') {
-        repositoryInfo = loadRepositoryMetadata(config);
-        message = `loaded metadata for "${repositoryInfo.name}"`;
-      } else if (domainStep.name === 'Detect Technologies') {
-        if (repositoryInfo) {
-          technologyProfile = detectTechnologies(repositoryInfo);
-          message = `detected ${technologyProfile.languages.length} language(s)`;
-        } else {
-          message = await runPlaceholderStep(domainStep);
-        }
-      } else if (domainStep.name === 'Generate Documentation Plan') {
-        if (repositoryInfo && technologyProfile) {
-          documentationPlan = createDocumentationPlan(config, repositoryInfo, technologyProfile);
-          message = `planned ${documentationPlan.documents.length} documents (strategy: ${documentationPlan.strategy})`;
-        } else {
-          message = await runPlaceholderStep(domainStep);
-        }
-      } else if (domainStep.name === 'Write Documentation') {
-        if (repositoryInfo && technologyProfile && documentationPlan) {
-          const writeResult = writeDocumentation(
-            config,
-            repositoryInfo,
-            technologyProfile,
-            documentationPlan,
-          );
-          console.log('');
-          console.log('Documentation writer:');
-          console.log(`Written: ${writeResult.writtenCount}`);
-          console.log(`Skipped: ${writeResult.skippedCount}`);
-          console.log(`Docs directory: ${writeResult.docsDirectoryPath}`);
-          message = `written ${writeResult.writtenCount}, skipped ${writeResult.skippedCount}`;
-        } else {
-          message = await runPlaceholderStep(domainStep);
-        }
-      } else {
-        message = await runPlaceholderStep(domainStep);
-      }
-
-      step.status = 'completed';
+      step.status = result.status;
       step.finishedAt = new Date().toISOString();
-      step.message = message;
+      step.message = result.message;
     } catch (err) {
       step.status = 'failed';
       step.finishedAt = new Date().toISOString();
       const message = err instanceof Error ? err.message : String(err);
       step.message = message;
       errors.push({ stepName: step.name, message, cause: err });
+      printStep(step);
+      markRemainingStepsSkipped(steps, i + 1);
+      break;
     }
 
     printStep(step);
@@ -137,7 +94,6 @@ export async function executePipeline(
     startedAt,
     finishedAt: new Date().toISOString(),
     errors,
-    technologyProfile,
-    documentationPlan,
+    projectKnowledge: context.projectKnowledge,
   };
 }

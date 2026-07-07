@@ -1,10 +1,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { RuntimeConfig } from '../config';
-import { RepositoryInfo, TechnologyProfile } from '../domain';
+import { getDocsDir, getDocumentationPlan, getProjectRoot, ProjectKnowledge } from '../knowledge';
 import { resolvePathWithinRoot } from '../utils/fs';
 import { GENERATED_FILE_MARKER, renderDeterministicDocument } from './document-template';
-import { DocumentationPlan, PlannedDocument } from './documentation-plan';
+import { PlannedDocument } from '../domain/documentation-plan';
 
 export interface DocumentationWriteResult {
   writtenCount: number;
@@ -36,9 +35,7 @@ function readFileIfPresent(targetPath: string): string | undefined {
 function writePlannedDocument(
   document: PlannedDocument,
   docsRootPath: string,
-  repositoryInfo: RepositoryInfo,
-  technologyProfile: TechnologyProfile,
-  generatedAt: string,
+  knowledge: ProjectKnowledge,
 ): 'written' | 'skipped' {
   const outputPath = resolvePathWithinRoot(docsRootPath, document.relativePath);
   const existingContent = readFileIfPresent(outputPath);
@@ -50,26 +47,15 @@ function writePlannedDocument(
 
   ensureDirectory(path.dirname(outputPath));
 
-  const markdown = renderDeterministicDocument(document, {
-    generatedAt,
-    repositoryInfo,
-    technologyProfile,
-  });
+  const markdown = renderDeterministicDocument(document, knowledge);
 
   fs.writeFileSync(outputPath, markdown, 'utf-8');
   return 'written';
 }
 
-export function writeDocumentation(
-  config: RuntimeConfig,
-  repositoryInfo: RepositoryInfo,
-  technologyProfile: TechnologyProfile,
-  documentationPlan: DocumentationPlan,
-): DocumentationWriteResult {
-  const docsRootPath = resolvePathWithinRoot(
-    config.targetProjectPath,
-    documentationPlan.docsDir,
-  );
+export function writeDocumentation(knowledge: ProjectKnowledge): DocumentationWriteResult {
+  const documentationPlan = getDocumentationPlan(knowledge);
+  const docsRootPath = resolvePathWithinRoot(getProjectRoot(knowledge), getDocsDir(knowledge));
 
   ensureDirectory(docsRootPath);
 
@@ -77,13 +63,7 @@ export function writeDocumentation(
   const skippedPaths: string[] = [];
 
   for (const document of documentationPlan.documents) {
-    const outcome = writePlannedDocument(
-      document,
-      docsRootPath,
-      repositoryInfo,
-      technologyProfile,
-      documentationPlan.generatedAt,
-    );
+    const outcome = writePlannedDocument(document, docsRootPath, knowledge);
 
     if (outcome === 'written') {
       writtenPaths.push(document.relativePath);
@@ -95,7 +75,7 @@ export function writeDocumentation(
   return {
     writtenCount: writtenPaths.length,
     skippedCount: skippedPaths.length,
-    docsDirectoryPath: config.docsDir,
+    docsDirectoryPath: getDocsDir(knowledge),
     writtenPaths,
     skippedPaths,
   };

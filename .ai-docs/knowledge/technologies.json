@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "languages": [
+    "TypeScript"
+  ],
+  "frameworks": [],
+  "packageManagers": [
+    "npm"
+  ],
+  "tooling": [
+    "TypeScript"
+  ],
+  "confidence": "high"
+}

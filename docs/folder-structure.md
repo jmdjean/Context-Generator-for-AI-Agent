@@ -64,7 +64,7 @@ Does not contain scanner logic, detection logic, AI calls, or file I/O. When fut
 
 **When to modify:** When the overall execution flow changes — a new pipeline stage is wired in, step ordering changes, or conditional logic is added.
 
-**Status:** ✅ Orchestration skeleton done. Steps 2 (Load Repository Metadata) and 4 (Detect Technologies) use real handlers. All other steps run as placeholders.
+**Status:** ✅ Orchestration skeleton done. Steps 2, 3, 4, 7, 8, 9, 10, and 12 use real handlers. Steps 5, 6, and 11 run as placeholders.
 
 ---
 
@@ -84,16 +84,20 @@ Exports: `RuntimeConfig`, `resolveConfig()`, `printHelp()`, `isHelpRequested()`.
 
 ### `src/scanner/`
 
-Everything related to reading the target repository from disk. Produces `RepositoryInfo` and (planned) `RepositoryNode` tree as defined in `src/domain/`.
+Everything related to reading the target repository from disk. Produces `RepositoryInfo` and `RepositoryNode` tree as defined in `src/domain/`.
 
 Does not interpret what it finds — that is `src/detectors/` and `src/ai/`'s job.
 
 Contains:
 - `repository-loader.ts` — `loadRepositoryMetadata(config)` reads top-level directory entries and returns `RepositoryInfo`.
+- `repository-boundary.ts` — safe path resolution within the target repository root.
+- `ignore-rules.ts` — default ignored paths, `.gitignore` loading, entry filtering.
+- `scanner-options.ts` — `ScannerOptions` with depth, file count, and hidden-file limits.
+- `repository-scanner.ts` — `scanRepository(repositoryInfo)` walks the tree and returns a `RepositoryNode`.
 
 **When to modify:** When the set of things we read from the target repository changes (new key files, deeper scanning, ignore-rule support).
 
-**Status:** Minimal implementation done. Full directory tree walk (for step 3, Scan Repository Structure) is planned.
+**Status:** ✅ Done — top-level metadata loader and full recursive tree scan with ignore rules and safety limits.
 
 ---
 
@@ -113,21 +117,63 @@ Contains:
 
 ---
 
+### `src/analyzers/`
+
+Deterministic repository analyzers that enrich the Project Knowledge Model without re-scanning the filesystem or calling OpenRouter.
+
+Contains:
+- `folder-classifier.ts` — maps folder names and file signals to `FolderClassification`
+- `folder-analyzer.ts` — walks `knowledge.repository.repositoryTree` and produces `FolderKnowledge[]`
+- `module-constants.ts` — module path patterns, responsibilities, and structural helpers
+- `module-classifier.ts` — maps structural paths to `ModuleType` using deterministic heuristics
+- `module-analyzer.ts` — discovers `ModuleKnowledge[]` from folder knowledge
+- `import-parser.ts` — lightweight regex-based TypeScript/JavaScript import extraction
+- `dependency-graph-analyzer.ts` — builds `DependencyGraphKnowledge` from module imports
+- `index.ts` — public exports
+
+**Integration rule:** Analyzers consume `ProjectKnowledge` and write results into PKM sections (e.g. `knowledge.analysis.folderContexts`, `knowledge.analysis.modules`, `knowledge.analysis.dependencyGraph`). They must not re-scan the repository, call OpenRouter, or write Markdown.
+
+**When to modify:** When adding a new deterministic analyzer (framework-specific module detection, AST-based import parsing) or extending classification rules.
+
+**Status:** ✅ Folder knowledge analyzer (step 9), module discovery analyzer (step 10), and dependency graph analyzer (step 11) implemented.
+
+---
+
+### `src/knowledge/`
+
+The Project Knowledge Model (PKM). Defines `ProjectKnowledge` and the pure mapping logic that assembles it from pipeline outputs.
+
+Contains:
+- `project-knowledge.ts` — PKM types
+- `knowledge-builder.ts` — `buildProjectKnowledge()` pure mapping
+- `knowledge-paths.ts` — safe path resolution for `.ai-docs/knowledge/`
+- `knowledge-writer.ts` — `persistProjectKnowledge()` writes JSON snapshots
+- `accessors.ts` — read helpers for generators
+- `index.ts` — public exports
+
+**Integration rule:** Generators consume `ProjectKnowledge`. Persistence belongs here — not in `src/docs/` or `src/scanner/`.
+
+**When to modify:** When a new knowledge section is added, when persistence format changes, or when schema version changes.
+
+**Status:** ✅ Done — types, builder, persistence, pipeline integration.
+
+---
+
 ### `src/docs/`
 
 Documentation planning and (planned) writing. Decides which files to generate and eventually writes them into the target repository's `.ai-docs/` folder.
 
 Contains:
 - `documentation-plan.ts` — application-level types: `DocumentationPlan`, `PlannedDocument`, `DocumentPriority`, `DocumentSource`.
-- `documentation-planner.ts` — `createDocumentationPlan(config, repositoryInfo, technologyProfile)` returns a deterministic `DocumentationPlan` based on the detected technology stack.
+- `documentation-planner.ts` — `createDocumentationPlan(docsDir, technologyProfile)` returns a deterministic `DocumentationPlan` based on the detected technology stack.
 - `document-template.ts` — deterministic Markdown renderer for a `PlannedDocument` plus known project metadata.
-- `documentation-writer.ts` — `writeDocumentation(config, repositoryInfo, technologyProfile, documentationPlan)` writes planned docs into the target project's docs directory.
+- `documentation-writer.ts` — `writeDocumentation(knowledge)` writes planned docs from `ProjectKnowledge` into the target project's docs directory.
 
 The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). The writer currently renders deterministic placeholder content only and uses a generated-file marker to distinguish tool-managed files from user-managed files.
 
 **When to modify:** When new document types are added, new framework document sets are supported, or the writing/rendering logic is implemented.
 
-**Status:** Planning implemented (step 7). Deterministic writing implemented (step 8). Future AI enrichment, validation, and incremental state handling remain planned.
+**Status:** Planning implemented (step 7). Deterministic Markdown writing implemented (step 9). PKM JSON persistence is in `src/knowledge/` (step 11), not here.
 
 ---
 

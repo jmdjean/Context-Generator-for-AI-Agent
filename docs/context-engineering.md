@@ -10,9 +10,47 @@ Without good answers, the agent either reads too much (wastes tokens, loses focu
 
 ---
 
+## The Project Knowledge Model
+
+The tool does not send agents directly to raw repository files. It first assembles a **Project Knowledge Model (PKM)** — a structured snapshot of everything currently known about the project.
+
+The PKM lives in `src/knowledge/` as `ProjectKnowledge`. It contains:
+
+- **Repository facts** — name, root path, detected config files, repository tree, ignore rules
+- **Technology signals** — languages, frameworks, tooling, confidence
+- **Documentation plan** — which context files will exist and why
+- **Analysis** — folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`); architecture and navigation graph (future)
+
+Generators (the Markdown writer today; Cursor rules, skills, and agent packs later) read from the PKM. They do not scan the repository or re-detect technologies themselves.
+
+After each pipeline run, the PKM is **persisted** to `.ai-docs/knowledge/` as JSON. That folder is the machine-readable source of truth on disk. Markdown files in `.ai-docs/` are a derived, human/agent-friendly output — not the canonical stored knowledge.
+
+---
+
 ## The documentation layer
 
-The output of `ai-project-docs` is a `.ai-docs/` folder inside the target repository. This folder is not a wiki. It is a structured context layer designed specifically for agents.
+The output of `ai-project-docs` is a `.ai-docs/` folder inside the target repository. This folder has two roles:
+
+1. **`knowledge/`** — machine-readable JSON snapshots of `ProjectKnowledge` (canonical persisted state).
+2. **Markdown files** — agent-readable context derived from the PKM (one output format among many).
+
+### Persisted knowledge (`.ai-docs/knowledge/`)
+
+| File | Purpose |
+|---|---|
+| `project-knowledge.json` | Full PKM snapshot — load this for complete context |
+| `repository.json` | Repository facts only (tree in `repository-tree.json`) |
+| `repository-tree.json` | Repository tree only (when scan completed) |
+| `technologies.json` | Detected stack only |
+| `documentation.json` | Documentation plan only |
+| `analysis.json` | Analysis section including `folderContexts`, `modules`, and `dependencyGraph` |
+| `folders.json` | Folder knowledge only (when analysis ran) |
+| `modules.json` | Module knowledge only (when module analysis ran) |
+| `dependencies.json` | Dependency graph only (when dependency graph analysis ran) |
+
+Future generators and external tools should prefer loading persisted JSON over re-analyzing the repository. Incremental updates, diff-based refresh, and validation will compare these files across runs.
+
+### Markdown context files
 
 It answers the questions an agent asks at the start of every task:
 
@@ -41,13 +79,49 @@ The folder structure of a project communicates intent. The documentation layer m
 
 Vague documentation produces confident but wrong answers. Every documentation section should be specific enough that an agent reading it makes the same decision a human expert would make.
 
-This principle also applies to how this project is built. The `src/domain/` layer defines explicit types for every concept before any implementation code is written. When the scanner returns a `RepositoryNode`, the AI module receives an `AnalysisResult`, and the docs module consumes a `DocumentModel[]` — there is no ambiguity about what data flows between stages. Named, typed contracts eliminate the gaps that hallucination fills.
+This principle also applies to how this project is built. The **Project Knowledge Model** defines explicit, typed sections for every fact about a repository. When the scanner returns a `RepositoryInfo`, the knowledge builder maps it into `knowledge.repository`; when the documentation writer renders Markdown, it reads `knowledge.technologies` — there is no ambiguity about what data flows between stages. Named, typed contracts eliminate the gaps that hallucination fills.
 
-### 4. Documentation must be kept current
+### 4. Generators must not analyze the repository
+
+A generator's job is to **translate** structured knowledge into an output format. It must not walk the filesystem, parse `package.json`, or infer the technology stack on its own.
+
+If every generator performed its own analysis, outputs would disagree: the Markdown writer might detect React while a future Cursor rules generator might miss it. The PKM ensures every generator sees the same facts.
+
+Analysis belongs in pipeline stages (scanner, detectors, future AI). Translation belongs in generators (`src/docs/` today; more formats later).
+
+### 5. One repository scan per pipeline run
+
+The recursive scanner (step 3) produces a `RepositoryNode` tree that is stored in the PKM as `knowledge.repository.repositoryTree` and persisted to `repository-tree.json`. Analyzers — folder knowledge (step 9), module discovery (step 10), and future stages (dependency graphs, AI documentation) — must consume this tree from PKM instead of walking the filesystem again.
+
+Re-scanning independently would produce inconsistent results, waste I/O, and bypass the ignore rules that protect performance and quality. The PKM is the single source of truth for repository structure.
+
+### 6. Folder classification reduces hallucination
+
+Folder names alone are ambiguous. The folder classifier applies deterministic rules: `src` is `source`, `__tests__` is `test`, `dist` is `build-output`. Each `FolderKnowledge` entry includes the classification, evidence signals, and a one-sentence responsibility. Agents load this instead of inventing folder purposes from naming conventions.
+
+`folderContexts` lives in `knowledge.analysis.folderContexts` and is persisted to `analysis.json` and `folders.json`. Future `folder-structure.md` generation should render from this data — not re-derive structure from the tree.
+
+### 7. Module discovery gives agents an architectural map
+
+Folder knowledge answers "what is this directory?" Module knowledge answers "what are the meaningful units of this project?" Deterministic heuristics detect modules from common structural patterns — `apps/*`, `packages/*`, `src/features/*`, `src/knowledge`, and similar paths — without reading file contents or calling AI.
+
+Each `ModuleKnowledge` entry includes a module type (`application`, `library`, `feature`, `core`, …), a responsibility sentence, related folders, and confidence. Agents use module knowledge to choose an entry point before diving into folder-level detail.
+
+`modules` lives in `knowledge.analysis.modules` and is persisted to `analysis.json` and `modules.json`. Deterministic structural discovery runs on every pipeline run; AI architecture analysis and framework-specific analyzers (Angular, NestJS, Nx) can enrich the same PKM section later without replacing the baseline.
+
+### 8. Dependency graph helps agents understand impact
+
+Module knowledge tells agents *where* to start. The dependency graph tells agents *what depends on what*. The MVP analyzer detects `imports` edges between discovered modules by parsing relative TypeScript and JavaScript import statements — no AST, no OpenRouter, no full re-scan.
+
+Each edge includes evidence (`sourceFile`, `importPath`) and confidence (`high`, `medium`, `low`). Before changing `src/domain`, an agent can read the graph to see that `src/core`, `src/docs`, and `src/knowledge` import from it — reducing the risk of breaking downstream modules.
+
+`dependencyGraph` lives in `knowledge.analysis.dependencyGraph` and is persisted to `analysis.json` and `dependencies.json`. Regex-based parsing is intentionally lightweight and deterministic; it misses dynamic imports, path aliases, and non-JS/TS imports. Future AST-based analyzers can extend or replace `src/analyzers/import-parser.ts` while writing to the same PKM section.
+
+### 9. Documentation must be kept current
 
 Stale documentation is worse than no documentation. It misleads agents into making decisions based on outdated information. The tool supports incremental updates: step 10 of the pipeline (Save Incremental State) persists a snapshot of the current analysis so that future runs only regenerate sections that reflect actual changes.
 
-### 5. Safe ownership matters
+### 10. Safe ownership matters
 
 Generated files in `.ai-docs/` are owned by the tool, but user-created files must still be protected. Every tool-managed file starts with a marker comment:
 
@@ -59,17 +133,33 @@ The writer updates only files with that marker. If a file exists without the mar
 
 ---
 
-## How the domain model reduces hallucination
+## How structured knowledge reduces hallucination
 
-Without shared type contracts, agents implementing different pipeline stages would make independent assumptions:
-- The scanner might call a field `filePath`; the AI module might expect `path`.
-- The docs module might expect `modules` to be a list of strings; the analysis might return objects.
+Without a single knowledge model, agents implementing different pipeline stages would make independent assumptions:
+- The scanner might call a field `filePath`; a generator might expect `path`.
+- One generator might expect `modules` to be a list of strings; the analysis might return objects.
+- A Markdown writer and a future skills generator might detect different frameworks from the same repository.
 
 These mismatches are invisible until runtime, and they invite the agent to guess at the right structure.
 
-`src/domain/` removes guesswork by declaring every data structure before any implementation exists. When an agent is asked to implement the scanner, it reads `RepositoryNode` and `RepositoryInfo` and knows exactly what shape to produce. When an agent is asked to implement the AI integration, it reads `ProjectContext` and `AnalysisResult` and knows exactly what to consume and return.
+The **Project Knowledge Model** removes guesswork by declaring one structured object that every generator reads. Analysis stages populate sections of the PKM; generators consume them. Agents do not invent parallel data structures; they implement against the PKM contract.
 
-The domain layer is the single source of truth for the shape of data in this application. Agents do not invent data structures; they implement against contracts.
+`src/domain/` still defines the typed outputs of individual analysis stages. `src/knowledge/` defines how those outputs are assembled into the application contract.
+
+---
+
+## Repository scanning and ignore rules
+
+Step 3 (Scan Repository Structure) walks the target repository recursively and builds a `RepositoryNode` tree. The scanner:
+
+- Uses `RepositoryBoundary` so resolved paths never escape the project root.
+- Applies built-in ignore patterns, `.gitignore` rules, and always skips `.git` and `node_modules`.
+- Enforces depth and file-count limits to stay safe on large repositories.
+- Records file extensions and sizes without reading file contents.
+
+Ignore rules protect **performance** (skipping `node_modules`, `dist`, caches) and **quality** (excluding generated artifacts from the tree). Effective patterns are stored on `knowledge.repository.ignoredPaths`.
+
+The tree becomes part of the PKM at step 8 and is persisted at step 11. Load `repository-tree.json` or `project-knowledge.json` when you need structure — do not re-scan.
 
 ---
 
@@ -161,14 +251,14 @@ This means that fixing a typo in one file does not re-analyze the entire reposit
 
 ## How AI agents should use these types before adding features
 
-Before implementing any pipeline stage:
+Before implementing any pipeline stage or generator:
 
-1. Read `src/domain/README.md` to understand the full type landscape.
-2. Find the pipeline step you are implementing in `ANALYSIS_PIPELINE` (in `src/domain/pipeline.ts`). Read its `input` and `output` fields — these are your contract.
-3. Find the domain types your step produces and consumes. Read their interface definitions.
-4. Implement the stage in the correct module (`src/scanner/`, `src/detectors/`, `src/ai/`, or `src/docs/`) to accept the declared input type and return the declared output type.
-5. Wire the new handler into `src/core/pipeline-orchestrator.ts` — replace the placeholder call for that step.
-6. Do not modify domain types to fit your implementation. Adapt the implementation to fit the domain.
+1. Read `src/knowledge/README.md` to understand the PKM and the integration rule.
+2. Read `src/domain/README.md` to understand analysis-stage types.
+3. Find the pipeline step you are implementing in `ANALYSIS_PIPELINE` (in `src/domain/pipeline.ts`). Read its `input` and `output` fields — these are your contract.
+4. If you are building a **generator**, consume `ProjectKnowledge` — not `RepositoryInfo`, `TechnologyProfile`, or `DocumentationPlan` directly.
+5. If you are building an **analysis stage**, produce the declared output type; the knowledge builder will map it into the PKM.
+6. Wire the new handler into `src/core/pipeline-orchestrator.ts` — replace the placeholder call for that step.
 7. Do not add scanner, detection, AI, or docs logic to `src/cli.ts` or `src/core/index.ts`.
 
 This sequence prevents the most common agent failure: implementing something that works in isolation but doesn't connect cleanly to the rest of the pipeline.
@@ -191,7 +281,8 @@ Good context is:
 This repository follows the same principles it promotes.
 
 - `AGENTS.md` is the mandatory entry point for any agent working here.
-- `src/domain/` defines all data contracts before any implementation — the same principle the tool applies to target repositories.
+- `src/knowledge/` defines the Project Knowledge Model — the single source of truth for all generators.
+- `src/domain/` defines analysis-stage types and the declarative pipeline.
 - Each `src/` subfolder has a `README.md` that declares its responsibility and constraints.
 - `docs/` contains architecture and philosophy documentation that an agent can load before touching source code.
 - `README.md` tracks implementation status so agents know what is done and what is planned.

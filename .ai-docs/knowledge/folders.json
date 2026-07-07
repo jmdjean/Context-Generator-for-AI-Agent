@@ -1,0 +1,272 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "folders": [
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
+      "relativePath": "",
+      "name": "Context-Generator-for-AI-Agent",
+      "depth": 0,
+      "classification": "config",
+      "responsibility": "Project root containing top-level configuration, documentation, and source entry points.",
+      "importantFiles": [
+        "AGENTS.md",
+        "README.md",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "childFolders": [
+        "docs",
+        "src"
+      ],
+      "signals": [
+        "folder-name:root"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+      "relativePath": "docs",
+      "name": "docs",
+      "depth": 1,
+      "classification": "documentation",
+      "responsibility": "Contains human-readable project documentation.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:docs",
+        "name-match:documentation"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
+      "relativePath": "src",
+      "name": "src",
+      "depth": 1,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [
+        "ai",
+        "analyzers",
+        "config",
+        "core",
+        "detectors",
+        "docs",
+        "domain",
+        "knowledge",
+        "scanner",
+        "utils"
+      ],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+      "relativePath": "src/ai",
+      "name": "ai",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Integrates with AI providers for architecture analysis.",
+      "importantFiles": [
+        "src/ai/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:ai",
+        "doc-file:README.md",
+        "refined-from:unknown",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+      "relativePath": "src/analyzers",
+      "name": "analyzers",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Derives higher-level architectural knowledge from the PKM.",
+      "importantFiles": [
+        "src/analyzers/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:analyzers",
+        "test-file:dependency-graph-analyzer.test.ts",
+        "test-file:folder-analyzer.test.ts",
+        "test-file:folder-classifier.test.ts",
+        "test-file:import-parser.test.ts",
+        "test-file:module-analyzer.test.ts",
+        "test-file:module-classifier.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+      "relativePath": "src/config",
+      "name": "config",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Resolves runtime configuration from CLI flags and environment variables.",
+      "importantFiles": [
+        "src/config/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:config",
+        "refined-from:config",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+      "relativePath": "src/core",
+      "name": "core",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains pipeline orchestration and core application coordination logic.",
+      "importantFiles": [
+        "src/core/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:core",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+      "relativePath": "src/detectors",
+      "name": "detectors",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Detects technologies and tooling from repository metadata.",
+      "importantFiles": [
+        "src/detectors/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:detectors",
+        "test-file:package-manager-detector.test.ts",
+        "doc-file:README.md",
+        "test-file:repository-paths.test.ts",
+        "test-file:technology-detector.test.ts",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+      "relativePath": "src/docs",
+      "name": "docs",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Plans and writes documentation outputs derived from project knowledge.",
+      "importantFiles": [
+        "src/docs/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:docs",
+        "refined-from:documentation",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+      "relativePath": "src/domain",
+      "name": "domain",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Defines pure domain types and the declarative analysis pipeline.",
+      "importantFiles": [
+        "src/domain/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:domain",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+      "relativePath": "src/knowledge",
+      "name": "knowledge",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Represents and persists the Project Knowledge Model used as the source of truth.",
+      "importantFiles": [
+        "src/knowledge/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:knowledge",
+        "test-file:knowledge-paths.test.ts",
+        "test-file:knowledge-writer.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+      "relativePath": "src/scanner",
+      "name": "scanner",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Builds the repository tree used by analyzers.",
+      "importantFiles": [
+        "src/scanner/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:scanner",
+        "test-file:ignore-rules.test.ts",
+        "doc-file:README.md",
+        "test-file:repository-boundary.test.ts",
+        "test-file:repository-scanner.test.ts",
+        "test-file:scanner-options.test.ts",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+      "relativePath": "src/utils",
+      "name": "utils",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Provides shared utility functions with no domain knowledge.",
+      "importantFiles": [
+        "src/utils/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:utils",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

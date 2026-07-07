@@ -1,7 +1,11 @@
 import { RuntimeConfig } from '../config';
-import { TechnologyProfile } from '../domain';
-import { DocumentationPlan } from '../docs/documentation-plan';
-import { executePipeline } from './pipeline-orchestrator';
+import {
+  getDocsDir,
+  getDocumentationPlan,
+  getProjectRoot,
+  isAnalysisComplete,
+  ProjectKnowledge,
+} from '../knowledge';import { executePipeline } from './pipeline-orchestrator';
 
 export { executePipeline };
 export type {
@@ -10,55 +14,68 @@ export type {
   PipelineExecutionError,
 } from './pipeline-orchestrator';
 
-function printTechnologyProfile(profile: TechnologyProfile): void {
-  console.log('');
-  console.log('Technology profile:');
+function printProjectKnowledge(knowledge: ProjectKnowledge): void {
+  const { metadata, technologies } = knowledge;
+  const documentationPlan = getDocumentationPlan(knowledge);
 
-  const sections: [string, string[]][] = [
-    ['Languages', profile.languages],
-    ['Frameworks', profile.frameworks],
-    ['Package managers', profile.packageManagers],
-    ['Tooling', profile.tooling],
+  console.log('');
+  console.log('Project Knowledge Model:');
+  console.log(`Project: ${metadata.projectName}`);
+  console.log(`Schema: ${metadata.schemaVersion}`);
+  console.log(`Generated: ${metadata.generatedAt}`);
+  console.log(`Docs directory: ${getDocsDir(knowledge)}`);
+  console.log(`Root path: ${getProjectRoot(knowledge)}`);
+  const technologySections: [string, string[]][] = [
+    ['Languages', technologies.languages],
+    ['Frameworks', technologies.frameworks],
+    ['Package managers', technologies.packageManagers],
+    ['Tooling', technologies.tooling],
   ];
 
-  const nonEmpty = sections.filter(([, items]) => items.length > 0);
+  const nonEmptyTechnology = technologySections.filter(([, items]) => items.length > 0);
 
-  for (let i = 0; i < nonEmpty.length; i++) {
-    const [label, items] = nonEmpty[i];
-    console.log(`${label}:`);
-    for (const item of items) {
-      console.log(`- ${item}`);
-    }
-    if (i < nonEmpty.length - 1) {
-      console.log('');
+  if (nonEmptyTechnology.length > 0) {
+    console.log('');
+    console.log('Technologies:');
+    for (let i = 0; i < nonEmptyTechnology.length; i++) {
+      const [label, items] = nonEmptyTechnology[i];
+      console.log(`${label}:`);
+      for (const item of items) {
+        console.log(`- ${item}`);
+      }
+      if (i < nonEmptyTechnology.length - 1) {
+        console.log('');
+      }
     }
   }
-}
 
-function printDocumentationPlan(plan: DocumentationPlan): void {
+  const requiredDocuments = documentationPlan.documents.filter(
+    (document) => document.source === 'core' || document.source === 'agent',
+  );
+  const technologyDocuments = documentationPlan.documents.filter(
+    (document) => document.source === 'technology',
+  );
+
   console.log('');
   console.log('Documentation plan:');
-
-  const required = plan.documents.filter(
-    (d) => d.source === 'core' || d.source === 'agent',
-  );
-  const technology = plan.documents.filter((d) => d.source === 'technology');
-
-  if (required.length > 0) {
+  console.log(`Strategy: ${documentationPlan.strategy}`);
+  if (requiredDocuments.length > 0) {
+    console.log('');
     console.log('Required documents:');
-    for (const doc of required) {
-      console.log(`- ${doc.relativePath}`);
+    for (const document of requiredDocuments) {
+      console.log(`- ${document.relativePath}`);
     }
   }
 
-  if (technology.length > 0) {
+  if (technologyDocuments.length > 0) {
     console.log('');
     console.log('Technology documents:');
-    for (const doc of technology) {
-      console.log(`- ${doc.relativePath}`);
+    for (const document of technologyDocuments) {
+      console.log(`- ${document.relativePath}`);
     }
   }
-}
+
+  console.log(`Analysis: ${isAnalysisComplete(knowledge) ? 'complete' : knowledge.analysis.status}`);}
 
 export async function run(config: RuntimeConfig): Promise<void> {
   console.log(`Target project: ${config.targetProjectPath}`);
@@ -67,12 +84,8 @@ export async function run(config: RuntimeConfig): Promise<void> {
 
   const result = await executePipeline(config);
 
-  if (result.technologyProfile) {
-    printTechnologyProfile(result.technologyProfile);
-  }
-
-  if (result.documentationPlan) {
-    printDocumentationPlan(result.documentationPlan);
+  if (result.projectKnowledge) {
+    printProjectKnowledge(result.projectKnowledge);
   }
 
   console.log('');

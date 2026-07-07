@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "plan": {
+    "docsDir": ".ai-docs",
+    "documents": [
+      {
+        "title": "Project README",
+        "relativePath": "README.md",
+        "purpose": "High-level project overview for agents and humans entering the codebase",
+        "priority": "required",
+        "source": "core"
+      },
+      {
+        "title": "Architecture Overview",
+        "relativePath": "architecture.md",
+        "purpose": "System design, layer diagram, and key architectural decisions",
+        "priority": "required",
+        "source": "core"
+      },
+      {
+        "title": "Folder Structure",
+        "relativePath": "folder-structure.md",
+        "purpose": "Maps every folder to its single responsibility",
+        "priority": "required",
+        "source": "core"
+      },
+      {
+        "title": "Agent Navigation",
+        "relativePath": "agent-navigation.md",
+        "purpose": "Guides AI agents to the right files for any task type",
+        "priority": "required",
+        "source": "core"
+      },
+      {
+        "title": "Conventions",
+        "relativePath": "conventions.md",
+        "purpose": "Coding, naming, and structural conventions to follow",
+        "priority": "required",
+        "source": "core"
+      },
+      {
+        "title": "Dependency Map",
+        "relativePath": "dependency-map.md",
+        "purpose": "Key internal and external dependencies with rationale",
+        "priority": "required",
+        "source": "core"
+      },
+      {
+        "title": "Change Log",
+        "relativePath": "change-log.md",
+        "purpose": "Recent changes agents should be aware of",
+        "priority": "required",
+        "source": "core"
+      },
+      {
+        "title": "Agent Instructions",
+        "relativePath": "AGENTS.md",
+        "purpose": "Mandatory entry point for any AI agent working in this repository",
+        "priority": "required",
+        "source": "agent",
+        "dependsOn": [
+          "architecture.md",
+          "folder-structure.md"
+        ]
+      },
+      {
+        "title": "AI Context",
+        "relativePath": "ai-context.md",
+        "purpose": "Curated context snapshot optimized for AI agent consumption",
+        "priority": "required",
+        "source": "agent",
+        "dependsOn": [
+          "architecture.md",
+          "conventions.md"
+        ]
+      },
+      {
+        "title": "Implementation Guide",
+        "relativePath": "implementation-guide.md",
+        "purpose": "Step-by-step guidance for common implementation tasks",
+        "priority": "required",
+        "source": "agent",
+        "dependsOn": [
+          "architecture.md",
+          "folder-structure.md",
+          "conventions.md"
+        ]
+      },
+      {
+        "title": "Technology Overview",
+        "relativePath": "technology-overview.md",
+        "purpose": "Overview of the detected technology stack and its conventions",
+        "priority": "required",
+        "source": "technology",
+        "dependsOn": [
+          "architecture.md"
+        ]
+      }
+    ],
+    "generatedAt": "2026-07-07T00:08:53.444Z",
+    "strategy": "standard"
+  }
+}

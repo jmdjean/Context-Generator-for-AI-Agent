@@ -8,9 +8,31 @@ A local CLI tool that analyzes any software repository and generates high-qualit
 
 AI coding agents often fail not because they lack capability, but because they lack context. They read files blindly, guess at conventions, and hallucinate structure.
 
-**AI Project Docs** solves this by generating a `.ai-docs/` folder inside any target repository. That folder becomes the authoritative context layer for agents: it tells them where to start, what each module does, what the conventions are, and what has changed recently.
+**AI Project Docs** solves this by analyzing a repository, assembling a **Project Knowledge Model (PKM)**, and generating structured outputs — starting with a `.ai-docs/` folder inside the target repository. That folder becomes the authoritative context layer for agents: it tells them where to start, what each module does, what the conventions are, and what has changed recently.
 
-The goal is not to replace code comments or wikis. It is to create a structured, always-current documentation layer that agents can load *before* they touch any code.
+The goal is not to replace code comments or wikis. It is to create a structured, always-current knowledge layer that agents can load *before* they touch any code.
+
+---
+
+## Architecture
+
+The tool follows a compiler-like pipeline: analysis stages populate a single knowledge model; generators read from that model.
+
+```
+Repository
+    ↓
+Repository Loader + Scanner
+    ↓
+Technology Detection
+    ↓
+Project Knowledge Model (PKM)
+    ↓
+Generators (Markdown, Cursor rules, skills, agent packs…)
+    ↓
+Outputs (.ai-docs/knowledge/*.json, .ai-docs/*.md, future formats)
+```
+
+The PKM is persisted to `.ai-docs/knowledge/` as machine-readable JSON. Markdown files are one derived output format — not the source of truth.
 
 ---
 
@@ -100,10 +122,14 @@ Status: configuration resolved
 | Runtime configuration resolver | ✅ Done |
 | Target path validation | ✅ Done |
 | OpenRouter key resolution (flag + env) | ✅ Done |
-| Repository scanner | 🔜 Planned |
+| Repository scanner | ✅ Done |
+| Folder knowledge analyzer | ✅ Done |
+| Module discovery analyzer | ✅ Done |
+| Project Knowledge Model (PKM) | ✅ Done |
+| PKM persistence (`.ai-docs/knowledge/`) | ✅ Done |
 | OpenRouter integration | 🔜 Planned |
-| `.ai-docs/` generation | 🔜 Planned |
-| Incremental updates | 🔜 Planned |
+| `.ai-docs/` Markdown generation | ✅ Done |
+| Incremental diffing | 🔜 Planned |
 
 ---
 
@@ -126,8 +152,11 @@ src/
   cli.ts          — CLI entry point (argument parsing, delegates to core)
   core/           — Orchestration (runs the pipeline in order)
   config/         — Configuration resolver (flags, env vars, validation)
-  scanner/        — Repository analysis (planned)
-  docs/           — Documentation generation (planned)
+  scanner/        — Repository analysis
+  detectors/      — Technology detection
+  knowledge/      — Project Knowledge Model (PKM) — single source of truth
+  analyzers/      — Deterministic PKM enrichment (folder, module, dependency graph)
+  docs/           — Documentation planning and writing (generators)
   ai/             — OpenRouter integration (planned)
   utils/          — Shared utilities (filesystem helpers, etc.)
 docs/

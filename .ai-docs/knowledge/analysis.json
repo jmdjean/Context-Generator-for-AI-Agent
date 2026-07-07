@@ -1,0 +1,912 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "status": "partial",
+  "folderContexts": [
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
+      "relativePath": "",
+      "name": "Context-Generator-for-AI-Agent",
+      "depth": 0,
+      "classification": "config",
+      "responsibility": "Project root containing top-level configuration, documentation, and source entry points.",
+      "importantFiles": [
+        "AGENTS.md",
+        "README.md",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "childFolders": [
+        "docs",
+        "src"
+      ],
+      "signals": [
+        "folder-name:root"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+      "relativePath": "docs",
+      "name": "docs",
+      "depth": 1,
+      "classification": "documentation",
+      "responsibility": "Contains human-readable project documentation.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:docs",
+        "name-match:documentation"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
+      "relativePath": "src",
+      "name": "src",
+      "depth": 1,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [
+        "ai",
+        "analyzers",
+        "config",
+        "core",
+        "detectors",
+        "docs",
+        "domain",
+        "knowledge",
+        "scanner",
+        "utils"
+      ],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+      "relativePath": "src/ai",
+      "name": "ai",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Integrates with AI providers for architecture analysis.",
+      "importantFiles": [
+        "src/ai/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:ai",
+        "doc-file:README.md",
+        "refined-from:unknown",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+      "relativePath": "src/analyzers",
+      "name": "analyzers",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Derives higher-level architectural knowledge from the PKM.",
+      "importantFiles": [
+        "src/analyzers/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:analyzers",
+        "test-file:dependency-graph-analyzer.test.ts",
+        "test-file:folder-analyzer.test.ts",
+        "test-file:folder-classifier.test.ts",
+        "test-file:import-parser.test.ts",
+        "test-file:module-analyzer.test.ts",
+        "test-file:module-classifier.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+      "relativePath": "src/config",
+      "name": "config",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Resolves runtime configuration from CLI flags and environment variables.",
+      "importantFiles": [
+        "src/config/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:config",
+        "refined-from:config",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+      "relativePath": "src/core",
+      "name": "core",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains pipeline orchestration and core application coordination logic.",
+      "importantFiles": [
+        "src/core/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:core",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+      "relativePath": "src/detectors",
+      "name": "detectors",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Detects technologies and tooling from repository metadata.",
+      "importantFiles": [
+        "src/detectors/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:detectors",
+        "test-file:package-manager-detector.test.ts",
+        "doc-file:README.md",
+        "test-file:repository-paths.test.ts",
+        "test-file:technology-detector.test.ts",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+      "relativePath": "src/docs",
+      "name": "docs",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Plans and writes documentation outputs derived from project knowledge.",
+      "importantFiles": [
+        "src/docs/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:docs",
+        "refined-from:documentation",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+      "relativePath": "src/domain",
+      "name": "domain",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Defines pure domain types and the declarative analysis pipeline.",
+      "importantFiles": [
+        "src/domain/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:domain",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+      "relativePath": "src/knowledge",
+      "name": "knowledge",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Represents and persists the Project Knowledge Model used as the source of truth.",
+      "importantFiles": [
+        "src/knowledge/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:knowledge",
+        "test-file:knowledge-paths.test.ts",
+        "test-file:knowledge-writer.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+      "relativePath": "src/scanner",
+      "name": "scanner",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Builds the repository tree used by analyzers.",
+      "importantFiles": [
+        "src/scanner/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:scanner",
+        "test-file:ignore-rules.test.ts",
+        "doc-file:README.md",
+        "test-file:repository-boundary.test.ts",
+        "test-file:repository-scanner.test.ts",
+        "test-file:scanner-options.test.ts",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+      "relativePath": "src/utils",
+      "name": "utils",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Provides shared utility functions with no domain knowledge.",
+      "importantFiles": [
+        "src/utils/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:utils",
+        "doc-file:README.md",
+        "path-context:source-files",
+        "path-context:source-module"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "modules": [
+    {
+      "name": ".ai-docs",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\.ai-docs",
+      "relativePath": ".ai-docs",
+      "type": "documentation",
+      "responsibility": "Contains AI-readable project context generated by this tool.",
+      "importantFiles": [],
+      "relatedFolders": [],
+      "signals": [
+        "path:.ai-docs",
+        "module-type:documentation",
+        "module-key:.ai-docs",
+        "folder-name:.ai-docs",
+        "folder-classification:documentation",
+        "source:metadata.docsDir",
+        "related-folders:unverified"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "docs",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+      "relativePath": "docs",
+      "type": "documentation",
+      "responsibility": "Contains human-readable project documentation.",
+      "importantFiles": [],
+      "relatedFolders": [],
+      "signals": [
+        "path:docs",
+        "module-type:documentation",
+        "module-key:docs",
+        "folder-name:docs",
+        "folder-classification:documentation"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "ai",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+      "relativePath": "src/ai",
+      "type": "core",
+      "responsibility": "Integrates with AI providers for architecture analysis.",
+      "importantFiles": [
+        "src/ai/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/ai",
+        "module-type:core",
+        "module-key:src/ai",
+        "folder-name:ai",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "analyzers",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+      "relativePath": "src/analyzers",
+      "type": "core",
+      "responsibility": "Derives higher-level architectural knowledge from the PKM.",
+      "importantFiles": [
+        "src/analyzers/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/analyzers",
+        "module-type:core",
+        "module-key:src/analyzers",
+        "folder-name:analyzers",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "config",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+      "relativePath": "src/config",
+      "type": "configuration",
+      "responsibility": "Resolves runtime configuration from CLI flags and environment variables.",
+      "importantFiles": [
+        "src/config/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/config",
+        "module-type:configuration",
+        "module-key:src/config",
+        "folder-name:config",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "core",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+      "relativePath": "src/core",
+      "type": "core",
+      "responsibility": "Contains pipeline orchestration and core application coordination logic.",
+      "importantFiles": [
+        "src/core/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/core",
+        "module-type:core",
+        "module-key:src/core",
+        "folder-name:core",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "detectors",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+      "relativePath": "src/detectors",
+      "type": "core",
+      "responsibility": "Detects technologies and tooling from repository metadata.",
+      "importantFiles": [
+        "src/detectors/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/detectors",
+        "module-type:core",
+        "module-key:src/detectors",
+        "folder-name:detectors",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "docs",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+      "relativePath": "src/docs",
+      "type": "core",
+      "responsibility": "Plans and writes documentation outputs derived from project knowledge.",
+      "importantFiles": [
+        "src/docs/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/docs",
+        "module-type:core",
+        "module-key:src/docs",
+        "folder-name:docs",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "domain",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+      "relativePath": "src/domain",
+      "type": "core",
+      "responsibility": "Defines pure domain types and the declarative analysis pipeline.",
+      "importantFiles": [
+        "src/domain/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/domain",
+        "module-type:core",
+        "module-key:src/domain",
+        "folder-name:domain",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "knowledge",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+      "relativePath": "src/knowledge",
+      "type": "core",
+      "responsibility": "Represents and persists the Project Knowledge Model used as the source of truth.",
+      "importantFiles": [
+        "src/knowledge/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/knowledge",
+        "module-type:core",
+        "module-key:src/knowledge",
+        "folder-name:knowledge",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "scanner",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+      "relativePath": "src/scanner",
+      "type": "core",
+      "responsibility": "Builds the repository tree used by analyzers.",
+      "importantFiles": [
+        "src/scanner/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/scanner",
+        "module-type:core",
+        "module-key:src/scanner",
+        "folder-name:scanner",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "utils",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+      "relativePath": "src/utils",
+      "type": "tooling",
+      "responsibility": "Provides shared utility functions with no domain knowledge.",
+      "importantFiles": [
+        "src/utils/README.md"
+      ],
+      "relatedFolders": [],
+      "signals": [
+        "path:src-module:src/utils",
+        "module-type:tooling",
+        "module-key:src/utils",
+        "folder-name:utils",
+        "folder-classification:source"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dependencyGraph": {
+    "nodes": [
+      {
+        "id": "src/ai",
+        "name": "ai",
+        "type": "core",
+        "relativePath": "src/ai"
+      },
+      {
+        "id": "src/analyzers",
+        "name": "analyzers",
+        "type": "core",
+        "relativePath": "src/analyzers"
+      },
+      {
+        "id": "src/config",
+        "name": "config",
+        "type": "configuration",
+        "relativePath": "src/config"
+      },
+      {
+        "id": "src/core",
+        "name": "core",
+        "type": "core",
+        "relativePath": "src/core"
+      },
+      {
+        "id": "src/detectors",
+        "name": "detectors",
+        "type": "core",
+        "relativePath": "src/detectors"
+      },
+      {
+        "id": "src/docs",
+        "name": "docs",
+        "type": "core",
+        "relativePath": "src/docs"
+      },
+      {
+        "id": "src/domain",
+        "name": "domain",
+        "type": "core",
+        "relativePath": "src/domain"
+      },
+      {
+        "id": "src/knowledge",
+        "name": "knowledge",
+        "type": "core",
+        "relativePath": "src/knowledge"
+      },
+      {
+        "id": "src/scanner",
+        "name": "scanner",
+        "type": "core",
+        "relativePath": "src/scanner"
+      },
+      {
+        "id": "src/utils",
+        "name": "utils",
+        "type": "tooling",
+        "relativePath": "src/utils"
+      }
+    ],
+    "edges": [
+      {
+        "from": "src/analyzers",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/folder-analyzer.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/analyzers/import-parser.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/analyzers/module-analyzer.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/analyzers",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/folder-classifier.ts",
+            "importPath": "../knowledge/project-knowledge"
+          },
+          {
+            "sourceFile": "src/analyzers/folder-constants.ts",
+            "importPath": "../knowledge/project-knowledge"
+          },
+          {
+            "sourceFile": "src/analyzers/module-constants.ts",
+            "importPath": "../knowledge/project-knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/analyzers",
+        "to": "src/scanner",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/dependency-graph-analyzer.ts",
+            "importPath": "../scanner/repository-boundary"
+          },
+          {
+            "sourceFile": "src/analyzers/import-parser.ts",
+            "importPath": "../scanner/repository-boundary"
+          }
+        ]
+      },
+      {
+        "from": "src/analyzers",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/module-analyzer.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/config",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/config/index.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/analyzers",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../analyzers"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/config",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/index.ts",
+            "importPath": "../config"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../config"
+          },
+          {
+            "sourceFile": "src/core/pipeline-orchestrator.ts",
+            "importPath": "../config"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/detectors",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../detectors/technology-detector"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/docs",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../docs/documentation-planner"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../docs/documentation-writer"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/core/pipeline-orchestrator.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/scanner",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../scanner/repository-loader"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../scanner/repository-scanner"
+          }
+        ]
+      },
+      {
+        "from": "src/detectors",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/detectors/package-manager-detector.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/detectors/repository-paths.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/detectors/technology-detector.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/docs",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/docs/document-template.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/documentation-planner.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/docs/documentation-planner.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/documentation-writer.ts",
+            "importPath": "../domain/documentation-plan"
+          }
+        ]
+      },
+      {
+        "from": "src/docs",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/docs/document-template.ts",
+            "importPath": "../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/documentation-writer.ts",
+            "importPath": "../knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/docs",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/docs/documentation-writer.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/knowledge",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/knowledge/accessors.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/knowledge/knowledge-builder.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/knowledge/knowledge-builder.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/knowledge/knowledge-writer.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/knowledge/project-knowledge.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/knowledge/project-knowledge.ts",
+            "importPath": "../domain/documentation-plan"
+          }
+        ]
+      },
+      {
+        "from": "src/knowledge",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/knowledge/knowledge-paths.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/scanner",
+        "to": "src/config",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/scanner/repository-loader.ts",
+            "importPath": "../config"
+          }
+        ]
+      },
+      {
+        "from": "src/scanner",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/scanner/repository-loader.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/scanner/repository-scanner.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/scanner",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/scanner/repository-boundary.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      }
+    ],
+    "generatedAt": "2026-07-07T00:08:53.444Z"
+  }
+}

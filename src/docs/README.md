@@ -16,11 +16,20 @@ This module is split into two concerns that must stay separate:
 | `documentation-plan.ts` | Application-level types: `DocumentationPlan`, `PlannedDocument` |
 | `documentation-planner.ts` | `createDocumentationPlan()` — deterministic plan from config + metadata |
 | `document-template.ts` | `renderDeterministicDocument()` — deterministic Markdown template with the generated-file marker |
-| `documentation-writer.ts` | `writeDocumentation()` — writes planned docs, preserves unmarked files, reports written/skipped counts |
+| `documentation-writer.ts` | `writeDocumentation()` — writes planned docs from `ProjectKnowledge`, preserves unmarked files, reports written/skipped counts |
 
 ---
 
-## Why planning comes before generation
+## PKM integration
+
+The documentation writer is a **generator**. It consumes only `ProjectKnowledge` — no `RuntimeConfig`, `RepositoryInfo`, `TechnologyProfile`, or `DocumentationPlan`.
+
+- `writeDocumentation(knowledge)` resolves paths from `knowledge.repository.rootPath` and `knowledge.documentation.plan.docsDir`.
+- `renderDeterministicDocument(document, knowledge)` reads `knowledge.repository`, `knowledge.technologies`, and `knowledge.metadata`.
+
+When adding new rendering logic, read from the appropriate PKM section.
+
+---
 
 Documentation generation is expensive: it requires AI calls, rendering, file I/O, and validation. Before spending any of that, the pipeline decides **what** to generate.
 
@@ -147,7 +156,7 @@ Do not add framework-specific logic directly to `executePipeline`. The orchestra
 ## What belongs here
 
 - `DocumentationPlan` and `PlannedDocument` types.
-- `createDocumentationPlan()` — receives typed inputs, returns a plan deterministically.
+- `createDocumentationPlan(docsDir, technologyProfile)` — receives docs directory name and detected technologies, returns a plan deterministically.
 - Future: file writing, incremental update logic, Markdown rendering.
 - Deterministic Markdown rendering for planned documents.
 - Safe overwrite rules for generated files only.

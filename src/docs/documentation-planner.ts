@@ -1,6 +1,5 @@
-import { RuntimeConfig } from '../config';
-import { RepositoryInfo, TechnologyProfile } from '../domain';
-import { DocumentationPlan, PlannedDocument } from './documentation-plan';
+import { TechnologyProfile } from '../domain';
+import { DocumentationPlan, PlannedDocument } from '../domain/documentation-plan';
 
 const CORE_DOCUMENTS: ReadonlyArray<PlannedDocument> = [
   {
@@ -209,8 +208,7 @@ function buildStrategy(profile: TechnologyProfile): string {
 }
 
 export function createDocumentationPlan(
-  config: RuntimeConfig,
-  _repositoryInfo: RepositoryInfo,
+  docsDir: string,
   technologyProfile: TechnologyProfile,
 ): DocumentationPlan {
   const documents: PlannedDocument[] = [
@@ -220,7 +218,7 @@ export function createDocumentationPlan(
   ];
 
   return {
-    docsDir: config.docsDir,
+    docsDir,
     documents,
     generatedAt: new Date().toISOString(),
     strategy: buildStrategy(technologyProfile),

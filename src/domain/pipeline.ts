@@ -44,7 +44,7 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
   {
     name: 'Build Repository Model',
     description:
-      'Assemble all gathered data into a unified ProjectContext. This is the single input passed to all downstream stages.',
+      'Assemble repository tree and profile data into a ProjectContext for AI analysis. Generators consume ProjectKnowledge instead; this step remains for the future AI stage.',
     input: 'RepositoryInfo, RepositoryNode (tree), TechnologyProfile',
     output: 'ProjectContext',
     status: 'pending',
@@ -52,8 +52,8 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
   {
     name: 'Analyze Architecture',
     description:
-      'Use the AI provider to identify modules, architectural patterns, coding conventions, risks, and actionable recommendations from the repository model.',
-    input: 'ProjectContext',
+      'Use the AI provider to identify modules, architectural patterns, coding conventions, risks, and actionable recommendations. Future: enrich ProjectKnowledge.analysis.',
+    input: 'ProjectKnowledge',
     output: 'AnalysisResult',
     status: 'pending',
   },
@@ -66,10 +66,42 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
+    name: 'Build Project Knowledge',
+    description:
+      'Assemble all gathered data into the Project Knowledge Model (PKM). This is the single source of truth consumed by all downstream generators.',
+    input: 'RepositoryInfo, TechnologyProfile, DocumentationPlan',
+    output: 'ProjectKnowledge',
+    status: 'pending',
+  },
+  {
+    name: 'Analyze Folder Knowledge',
+    description:
+      'Walk the repository tree from PKM and produce deterministic folder-level knowledge: classification, responsibilities, important files, and child folders. Enriches ProjectKnowledge.analysis.folderContexts.',
+    input: 'ProjectKnowledge',
+    output: 'FolderKnowledge[]',
+    status: 'pending',
+  },
+  {
+    name: 'Analyze Modules',
+    description:
+      'Detect meaningful project modules from the repository tree and folder knowledge using deterministic structural heuristics. Enriches ProjectKnowledge.analysis.modules.',
+    input: 'ProjectKnowledge',
+    output: 'ModuleKnowledge[]',
+    status: 'pending',
+  },
+  {
+    name: 'Analyze Dependency Graph',
+    description:
+      'Detect import relationships between discovered modules using lightweight file import parsing. Enriches ProjectKnowledge.analysis.dependencyGraph.',
+    input: 'ProjectKnowledge',
+    output: 'DependencyGraphKnowledge',
+    status: 'pending',
+  },
+  {
     name: 'Write Documentation',
     description:
       'Render deterministic Markdown for each planned document and write it into the .ai-docs/ folder inside the target repository. Only overwrite tool-managed files marked as safe to update.',
-    input: 'DocumentationPlan, RepositoryInfo, TechnologyProfile, RuntimeConfig.docsDir',
+    input: 'ProjectKnowledge',
     output: '.ai-docs/ directory contents',
     status: 'pending',
   },
@@ -82,11 +114,11 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
-    name: 'Save Incremental State',
+    name: 'Persist Project Knowledge',
     description:
-      'Persist a snapshot of the current analysis so that future runs can skip unchanged sections and only regenerate what has actually changed in the repository.',
-    input: 'ProjectContext, DocumentationPlan',
-    output: 'Incremental state file (.ai-docs/.state.json)',
+      'Write the Project Knowledge Model to disk as machine-readable JSON. Produces a full snapshot and split section files under .ai-docs/knowledge/.',
+    input: 'ProjectKnowledge',
+    output: '.ai-docs/knowledge/*.json',
     status: 'pending',
   },
 ];

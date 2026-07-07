@@ -38,6 +38,7 @@ This is also what makes the types useful to AI agents: an agent implementing the
 | `technology.ts` | `TechnologyConfidence`, `TechnologyProfile` |
 | `analysis.ts` | `AnalysisResult` |
 | `documentation.ts` | `DocumentSection`, `DocumentModel` |
+| `documentation-plan.ts` | `PlannedDocument`, `DocumentationPlan` — documentation manifest types |
 | `agent.ts` | `AgentInstruction` |
 | `pipeline.ts` | `PipelineStepStatus`, `AnalysisPipelineStep`, `ANALYSIS_PIPELINE` constant |
 | `context.ts` | `ProjectContext` — the top-level aggregate |

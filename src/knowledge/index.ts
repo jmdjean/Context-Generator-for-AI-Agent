@@ -1,0 +1,56 @@
+export {
+  GENERATOR_VERSION,
+  PROJECT_KNOWLEDGE_SCHEMA_VERSION,
+} from './constants';
+export {
+  type AnalysisKnowledge,
+  type AnalysisKnowledgeStatus,
+  type DocumentationKnowledge,
+  type FolderClassification,
+  type FolderKnowledge,
+  type FolderKnowledgeConfidence,
+  type ModuleKnowledge,
+  type ModuleKnowledgeConfidence,
+  type ModuleType,
+  type DependencyGraphKnowledge,
+  type DependencyNode,
+  type DependencyEdge,
+  type DependencyEdgeType,
+  type DependencyEdgeConfidence,
+  type DependencyEdgeEvidence,
+  type KnowledgeMetadata,
+  type ProjectKnowledge,
+  type RepositoryKnowledge,
+  type TechnologyKnowledge,
+} from './project-knowledge';
+export {
+  getDocsDir,
+  getDocsRootPath,
+  getDocumentationPlan,
+  getProjectRoot,
+  hasPartialAnalysis,
+  isAnalysisComplete,
+} from './accessors';
+export {
+  formatKnowledgeRelativeFilePath,
+  getKnowledgeDirectoryRelativePath,
+  KNOWLEDGE_DIRECTORY_NAME,
+  KNOWLEDGE_FILE_NAMES,
+  listKnowledgeRelativeFilePaths,
+  listPersistedKnowledgeRelativeFilePaths,
+  resolveKnowledgeDirectory,
+  resolveKnowledgeFilePath,
+  type KnowledgeFileName,
+} from './knowledge-paths';
+export {
+  persistProjectKnowledge,
+  type KnowledgePersistenceResult,
+} from './knowledge-writer';
+export {
+  buildProjectKnowledge,
+  createPendingAnalysisKnowledge,
+  mapDocumentationKnowledge,
+  mapRepositoryKnowledge,
+  mapTechnologyKnowledge,
+  type KnowledgeBuilderInput,
+} from './knowledge-builder';

@@ -84,8 +84,9 @@ When implementing a real handler for a step, replace the call inside the loop wi
 1. Locate the relevant step index in `ANALYSIS_PIPELINE` (by name).
 2. Import the implementing function from the appropriate module.
 3. Inside `executePipeline`, replace `runPlaceholderStep(domainStep)` for that step with a call to the real handler, passing the required inputs.
-4. Update this README to reflect the new handler.
-5. Update `docs/architecture.md`.
+4. Register the handler in `pipeline-handlers.ts` under `STEP_HANDLERS`.
+5. Update this README to reflect the new handler.
+6. Update `docs/architecture.md`.
 
 ---
 
@@ -113,28 +114,24 @@ When implementing a real handler for a step, replace the call inside the loop wi
 executePipeline(config)
   ├─ Resolve Configuration        → (done in config layer before run() is called)
   ├─ Load Repository Metadata     → scanner/repository-loader → RepositoryInfo        ✅
-  ├─ Scan Repository Structure    → placeholder ✓
+  ├─ Scan Repository Structure    → scanner/repository-scanner → RepositoryNode tree  ✅
   ├─ Detect Technologies          → detectors/technology-detector → TechnologyProfile  ✅
   ├─ Build Repository Model       → placeholder ✓
   ├─ Analyze Architecture         → placeholder ✓
   ├─ Generate Documentation Plan  → docs/documentation-planner → DocumentationPlan     ✅
+  ├─ Build Project Knowledge      → knowledge/knowledge-builder → ProjectKnowledge     ✅
+  ├─ Analyze Folder Knowledge     → analyzers/folder-analyzer → FolderKnowledge[]      ✅
+  ├─ Analyze Modules              → analyzers/module-analyzer → ModuleKnowledge[]     ✅
   ├─ Write Documentation          → docs/documentation-writer → DocumentationWriteResult ✅
   ├─ Validate Documentation       → placeholder ✓
-  └─ Save Incremental State       → placeholder ✓
+  └─ Persist Project Knowledge    → knowledge/knowledge-writer → .ai-docs/knowledge/  ✅
 ```
 
-## Planned pipeline (real handlers)
+## Planned pipeline (remaining handlers)
 
 ```
 executePipeline(config)
-  ├─ Resolve Configuration        → (done in config layer before run() is called)
-  ├─ Load Repository Metadata     → scanner.loadMetadata(config)                       ✅
-  ├─ Scan Repository Structure    → scanner.scanTree(repositoryInfo)
-  ├─ Detect Technologies          → detectors.detectTechnologies(repositoryInfo)        ✅
   ├─ Build Repository Model       → assembleContext(repositoryInfo, tree, profile)
-  ├─ Analyze Architecture         → ai.analyze(projectContext)
-  ├─ Generate Documentation Plan  → docs.createDocumentationPlan(...)                  ✅
-  ├─ Write Documentation          → docs.writeDocumentation(config, repositoryInfo, technologyProfile, documentationPlan)
+  ├─ Analyze Architecture         → ai.analyze(projectContext) + future analyzers
   ├─ Validate Documentation       → docs.validate(documentModels)
-  └─ Save Incremental State       → docs.saveState(projectContext, documentModels)
 ```

@@ -1,0 +1,415 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "dependencyGraph": {
+    "nodes": [
+      {
+        "id": "src/ai",
+        "name": "ai",
+        "type": "core",
+        "relativePath": "src/ai"
+      },
+      {
+        "id": "src/analyzers",
+        "name": "analyzers",
+        "type": "core",
+        "relativePath": "src/analyzers"
+      },
+      {
+        "id": "src/config",
+        "name": "config",
+        "type": "configuration",
+        "relativePath": "src/config"
+      },
+      {
+        "id": "src/core",
+        "name": "core",
+        "type": "core",
+        "relativePath": "src/core"
+      },
+      {
+        "id": "src/detectors",
+        "name": "detectors",
+        "type": "core",
+        "relativePath": "src/detectors"
+      },
+      {
+        "id": "src/docs",
+        "name": "docs",
+        "type": "core",
+        "relativePath": "src/docs"
+      },
+      {
+        "id": "src/domain",
+        "name": "domain",
+        "type": "core",
+        "relativePath": "src/domain"
+      },
+      {
+        "id": "src/knowledge",
+        "name": "knowledge",
+        "type": "core",
+        "relativePath": "src/knowledge"
+      },
+      {
+        "id": "src/scanner",
+        "name": "scanner",
+        "type": "core",
+        "relativePath": "src/scanner"
+      },
+      {
+        "id": "src/utils",
+        "name": "utils",
+        "type": "tooling",
+        "relativePath": "src/utils"
+      }
+    ],
+    "edges": [
+      {
+        "from": "src/analyzers",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/folder-analyzer.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/analyzers/import-parser.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/analyzers/module-analyzer.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/analyzers",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/folder-classifier.ts",
+            "importPath": "../knowledge/project-knowledge"
+          },
+          {
+            "sourceFile": "src/analyzers/folder-constants.ts",
+            "importPath": "../knowledge/project-knowledge"
+          },
+          {
+            "sourceFile": "src/analyzers/module-constants.ts",
+            "importPath": "../knowledge/project-knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/analyzers",
+        "to": "src/scanner",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/dependency-graph-analyzer.ts",
+            "importPath": "../scanner/repository-boundary"
+          },
+          {
+            "sourceFile": "src/analyzers/import-parser.ts",
+            "importPath": "../scanner/repository-boundary"
+          }
+        ]
+      },
+      {
+        "from": "src/analyzers",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/analyzers/module-analyzer.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/config",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/config/index.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/analyzers",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../analyzers"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/config",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/index.ts",
+            "importPath": "../config"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../config"
+          },
+          {
+            "sourceFile": "src/core/pipeline-orchestrator.ts",
+            "importPath": "../config"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/detectors",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../detectors/technology-detector"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/docs",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../docs/documentation-planner"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../docs/documentation-writer"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/core/pipeline-orchestrator.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/scanner",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../scanner/repository-loader"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../scanner/repository-scanner"
+          }
+        ]
+      },
+      {
+        "from": "src/detectors",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/detectors/package-manager-detector.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/detectors/repository-paths.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/detectors/technology-detector.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/docs",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/docs/document-template.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/documentation-planner.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/docs/documentation-planner.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/documentation-writer.ts",
+            "importPath": "../domain/documentation-plan"
+          }
+        ]
+      },
+      {
+        "from": "src/docs",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/docs/document-template.ts",
+            "importPath": "../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/documentation-writer.ts",
+            "importPath": "../knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/docs",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/docs/documentation-writer.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/knowledge",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/knowledge/accessors.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/knowledge/knowledge-builder.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/knowledge/knowledge-builder.ts",
+            "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/knowledge/knowledge-writer.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/knowledge/project-knowledge.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/knowledge/project-knowledge.ts",
+            "importPath": "../domain/documentation-plan"
+          }
+        ]
+      },
+      {
+        "from": "src/knowledge",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/knowledge/knowledge-paths.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/scanner",
+        "to": "src/config",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/scanner/repository-loader.ts",
+            "importPath": "../config"
+          }
+        ]
+      },
+      {
+        "from": "src/scanner",
+        "to": "src/domain",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/scanner/repository-loader.ts",
+            "importPath": "../domain"
+          },
+          {
+            "sourceFile": "src/scanner/repository-scanner.ts",
+            "importPath": "../domain"
+          }
+        ]
+      },
+      {
+        "from": "src/scanner",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/scanner/repository-boundary.ts",
+            "importPath": "../utils/fs"
+          }
+        ]
+      }
+    ],
+    "generatedAt": "2026-07-07T00:08:53.444Z"
+  }
+}

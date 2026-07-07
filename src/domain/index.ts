@@ -2,6 +2,12 @@ export type { RepositoryNodeType, RepositoryNode, RepositoryInfo } from './repos
 export type { TechnologyConfidence, TechnologyProfile } from './technology';
 export type { AnalysisResult } from './analysis';
 export type { DocumentSection, DocumentModel } from './documentation';
+export type {
+  DocumentPriority,
+  DocumentSource,
+  DocumentationPlan,
+  PlannedDocument,
+} from './documentation-plan';
 export type { AgentInstruction } from './agent';
 export type {
   PipelineStepStatus,

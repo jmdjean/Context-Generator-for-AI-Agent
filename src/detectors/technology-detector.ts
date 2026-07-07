@@ -2,6 +2,12 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { RepositoryInfo, TechnologyProfile, TechnologyConfidence } from '../domain';
 import { detectPackageManager } from './package-manager-detector';
+import {
+  findRepositoryPath,
+  getSearchableRepositoryPaths,
+  hasRepositoryPath,
+  resolveRepositoryFilePath,
+} from './repository-paths';
 
 interface PackageJson {
   dependencies?: Record<string, string>;
@@ -29,13 +35,20 @@ const TOOLING_DEPS: ReadonlyArray<[string, string]> = [
   ['prettier', 'Prettier'],
 ];
 
-function hasFile(detectedFiles: string[], name: string): boolean {
-  return detectedFiles.includes(name);
+function hasConfigFile(searchablePaths: string[], fileName: string): boolean {
+  const usesTopLevelOnly =
+    searchablePaths.length > 0 && searchablePaths.every((entry) => !entry.includes('/'));
+
+  if (usesTopLevelOnly) {
+    return searchablePaths.includes(fileName);
+  }
+
+  return hasRepositoryPath(searchablePaths, fileName);
 }
 
-function readPackageJson(rootPath: string): PackageJson | null {
+function readPackageJson(packageJsonPath: string): PackageJson | null {
   try {
-    const raw = fs.readFileSync(path.join(rootPath, 'package.json'), 'utf-8');
+    const raw = fs.readFileSync(packageJsonPath, 'utf-8');
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null) {
       return null;
@@ -44,6 +57,17 @@ function readPackageJson(rootPath: string): PackageJson | null {
   } catch {
     return null;
   }
+}
+
+function resolvePackageJsonPath(repositoryInfo: RepositoryInfo, searchablePaths: string[]): string | null {
+  const packageJsonRelativePath = findRepositoryPath(searchablePaths, 'package.json');
+
+  if (packageJsonRelativePath === undefined) {
+    const fallbackPath = path.join(repositoryInfo.rootPath, 'package.json');
+    return fs.existsSync(fallbackPath) ? fallbackPath : null;
+  }
+
+  return resolveRepositoryFilePath(repositoryInfo.rootPath, packageJsonRelativePath);
 }
 
 function matchDeps(
@@ -56,16 +80,17 @@ function matchDeps(
 }
 
 export function detectTechnologies(repositoryInfo: RepositoryInfo): TechnologyProfile {
-  const { detectedFiles, rootPath } = repositoryInfo;
+  const searchablePaths = getSearchableRepositoryPaths(repositoryInfo);
 
   const languages: string[] = [];
   const tooling: string[] = [];
   const frameworks: string[] = [];
 
-  const hasTypeScript = hasFile(detectedFiles, 'tsconfig.json');
-  const hasPackageJson = hasFile(detectedFiles, 'package.json');
+  const hasTypeScript = hasConfigFile(searchablePaths, 'tsconfig.json');
+  const hasPackageJson = hasConfigFile(searchablePaths, 'package.json');
   const hasDocker =
-    hasFile(detectedFiles, 'Dockerfile') || hasFile(detectedFiles, 'docker-compose.yml');
+    hasConfigFile(searchablePaths, 'Dockerfile') ||
+    hasConfigFile(searchablePaths, 'docker-compose.yml');
 
   if (hasTypeScript) {
     languages.push('TypeScript');
@@ -80,7 +105,9 @@ export function detectTechnologies(repositoryInfo: RepositoryInfo): TechnologyPr
   }
 
   if (hasPackageJson) {
-    const pkg = readPackageJson(rootPath);
+    const packageJsonPath = resolvePackageJsonPath(repositoryInfo, searchablePaths);
+    const pkg = packageJsonPath !== null ? readPackageJson(packageJsonPath) : null;
+
     if (pkg) {
       const allDeps: Record<string, string> = {
         ...(pkg.dependencies ?? {}),

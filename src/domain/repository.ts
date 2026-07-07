@@ -8,6 +8,7 @@ export interface RepositoryNode {
   children?: RepositoryNode[];
   extension?: string;
   sizeBytes?: number;
+  truncated?: boolean;
 }
 
 export interface RepositoryInfo {
@@ -16,4 +17,5 @@ export interface RepositoryInfo {
   packageManager?: string;
   detectedFiles: string[];
   ignoredPaths: string[];
+  repositoryTree?: RepositoryNode;
 }
