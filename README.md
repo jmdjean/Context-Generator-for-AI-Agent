@@ -32,7 +32,7 @@ Generators (Markdown, Cursor rules, skills, agent packs…)
 Outputs (.ai-docs/knowledge/*.json, .ai-docs/*.md, future formats)
 ```
 
-The PKM is persisted to `.ai-docs/knowledge/` as machine-readable JSON. Markdown files are one derived output format — not the source of truth.
+The PKM is persisted to `.ai-docs/knowledge/` as machine-readable JSON. Markdown files are one derived output format — not the source of truth. Each key Markdown document (`architecture.md`, `folder-structure.md`, `dependency-map.md`, `conventions.md`, `agent-navigation.md`, `ai-context.md`, `implementation-guide.md`) is produced by a small deterministic renderer in `src/docs/markdown-renderers/` that only presents PKM data — Markdown generation never analyzes the repository itself.
 
 ---
 
@@ -132,6 +132,7 @@ Status: configuration resolved
 | PKM persistence (`.ai-docs/knowledge/`) | ✅ Done |
 | OpenRouter integration | 🔜 Planned |
 | `.ai-docs/` Markdown generation | ✅ Done |
+| PKM-powered Markdown renderers | ✅ Done |
 | Incremental diffing | 🔜 Planned |
 
 ---
@@ -159,7 +160,7 @@ src/
   detectors/      — Technology detection
   knowledge/      — Project Knowledge Model (PKM) — single source of truth
   analyzers/      — Deterministic PKM enrichment (folder, module, dependency graph, conventions, navigation map)
-  docs/           — Documentation planning and writing (generators)
+  docs/           — Documentation planning, PKM-powered Markdown renderers, and writing (generators)
   ai/             — OpenRouter integration (planned)
   utils/          — Shared utilities (filesystem helpers, etc.)
 docs/

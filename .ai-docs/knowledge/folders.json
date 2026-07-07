@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:04:17.429Z",
+  "generatedAt": "2026-07-07T12:19:08.450Z",
   "folders": [
     {
       "path": "/home/user/Context-Generator-for-AI-Agent",
@@ -181,13 +181,30 @@
       "importantFiles": [
         "src/docs/README.md"
       ],
-      "childFolders": [],
+      "childFolders": [
+        "markdown-renderers"
+      ],
       "signals": [
         "folder-name:docs",
         "refined-from:documentation",
         "path-context:source-module"
       ],
       "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers",
+      "relativePath": "src/docs/markdown-renderers",
+      "name": "markdown-renderers",
+      "depth": 3,
+      "classification": "source",
+      "responsibility": "Contains markdown-renderers application source code.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:markdown-renderers",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
     },
     {
       "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",

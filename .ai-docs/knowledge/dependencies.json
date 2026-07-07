@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:04:17.429Z",
+  "generatedAt": "2026-07-07T12:19:08.450Z",
   "dependencyGraph": {
     "nodes": [
       {
@@ -306,6 +306,42 @@
           {
             "sourceFile": "src/docs/documentation-writer.ts",
             "importPath": "../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/agent-navigation-renderer.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/ai-context-renderer.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/architecture-renderer.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/conventions-renderer.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/dependency-map-renderer.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/folder-structure-renderer.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/implementation-guide-renderer.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/index.ts",
+            "importPath": "../../domain/documentation-plan"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/render-helpers.ts",
+            "importPath": "../../domain/documentation-plan"
           }
         ]
       },
@@ -322,6 +358,38 @@
           {
             "sourceFile": "src/docs/documentation-writer.ts",
             "importPath": "../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/agent-navigation-renderer.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/ai-context-renderer.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/conventions-renderer.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/dependency-map-renderer.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/folder-structure-renderer.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/implementation-guide-renderer.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/index.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/render-helpers.ts",
+            "importPath": "../../knowledge"
           }
         ]
       },
@@ -422,6 +490,6 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-07T12:04:17.429Z"
+    "generatedAt": "2026-07-07T12:19:08.450Z"
   }
 }

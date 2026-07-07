@@ -2,41 +2,77 @@
 
 # Folder Structure
 
-## Purpose
-
 Maps every folder to its single responsibility
 
-## Project
-
-- Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:04:17.429Z
+- Project: Context-Generator-for-AI-Agent
+- Generated: 2026-07-07T12:19:08.450Z
 - PKM schema: 1.0.0
 - Analysis status: partial
-- Status: initial deterministic documentation
-- Source: core
-- Priority: required
 
-This file is intentionally deterministic. It captures currently known repository metadata and planning context only. Deeper AI-assisted analysis will enrich this document in future pipeline steps.
+## Folder contexts
 
-## How AI agents should use this document
+The folder analyzer documented 14 folder(s). Each entry below carries a deterministic classification and an inferred responsibility.
 
-- Start here when your task matches this document's purpose.
-- No explicit document dependencies are declared for this file yet.
-- Treat this file as a safe baseline, not as a complete architecture analysis.
-- Cross-check implementation details in source files when the task depends on code-level behavior.
+### Source folders
 
-## Current known context
+- `src` — Contains the main source code of the project. (confidence: high)
+  - Child folders: `ai`, `analyzers`, `config`, `core`, `detectors`, `docs`, `domain`, `knowledge`, `scanner`, `utils`
+- `src/ai` — Integrates with AI providers for architecture analysis. (confidence: high)
+  - Important files: `src/ai/README.md`
+- `src/analyzers` — Derives higher-level architectural knowledge from the PKM. (confidence: high)
+  - Important files: `src/analyzers/README.md`
+- `src/config` — Resolves runtime configuration from CLI flags and environment variables. (confidence: high)
+  - Important files: `src/config/README.md`
+- `src/core` — Contains pipeline orchestration and core application coordination logic. (confidence: high)
+  - Important files: `src/core/README.md`
+- `src/detectors` — Detects technologies and tooling from repository metadata. (confidence: high)
+  - Important files: `src/detectors/README.md`
+- `src/docs` — Plans and writes documentation outputs derived from project knowledge. (confidence: high)
+  - Important files: `src/docs/README.md`
+  - Child folders: `markdown-renderers`
+- `src/docs/markdown-renderers` — Contains markdown-renderers application source code. (confidence: medium)
+- `src/domain` — Defines pure domain types and the declarative analysis pipeline. (confidence: high)
+  - Important files: `src/domain/README.md`
+- `src/knowledge` — Represents and persists the Project Knowledge Model used as the source of truth. (confidence: high)
+  - Important files: `src/knowledge/README.md`
+- `src/scanner` — Builds the repository tree used by analyzers. (confidence: high)
+  - Important files: `src/scanner/README.md`
+- `src/utils` — Provides shared utility functions with no domain knowledge. (confidence: high)
+  - Important files: `src/utils/README.md`
 
-- Project root: `/home/user/Context-Generator-for-AI-Agent`
-- Detected top-level files: 12
-- Languages: TypeScript
-- Frameworks: None detected yet
-- Package managers: npm
-- Tooling: TypeScript
-- Detection confidence: high
+### Config folders
 
-## Next documentation improvements
+- `.` — Project root containing top-level configuration, documentation, and source entry points. (confidence: high)
+  - Important files: `AGENTS.md`, `README.md`, `package.json`, `tsconfig.json`
+  - Child folders: `docs`, `src`
 
-- Add deeper repository structure analysis once the repository tree scanner is implemented.
-- Add architecture findings after the AI analysis stage is introduced.
-- Expand file-specific guidance with richer project context while preserving safe incremental updates.
+### Documentation folders
+
+- `docs` — Contains human-readable project documentation. (confidence: high)
+
+## Documentable vs ignored folders
+
+Not every folder is documented. The analyzer skips folders that carry no architectural meaning for agents:
+
+- Dependency caches (`node_modules`) and version control internals (`.git`).
+- Build outputs (`dist`, `build`, `coverage`) — generated artifacts, never edited directly.
+- The generated knowledge directory inside the docs folder.
+
+Ignore patterns applied during the repository scan:
+
+- `dist`
+- `build`
+- `out`
+- `coverage`
+- `.next`
+- `.nuxt`
+- `.output`
+- `.cache`
+- `.turbo`
+- `.vercel`
+- `*.log`
+- `*.tsbuildinfo`
+- `/dist`
+- `/node_modules`
+- `npm-debug.log*`
+- …and 9 more

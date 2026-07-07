@@ -9,14 +9,14 @@ High-level project overview for agents and humans entering the codebase
 ## Project
 
 - Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:04:17.429Z
+- Generated: 2026-07-07T12:19:08.450Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 - Status: initial deterministic documentation
 - Source: core
 - Priority: required
 
-This file is intentionally deterministic. It captures currently known repository metadata and planning context only. Deeper AI-assisted analysis will enrich this document in future pipeline steps.
+This document uses the generic deterministic template. Key documents (architecture, folder structure, dependency map, conventions, agent navigation, AI context, implementation guide) have dedicated PKM-powered renderers; this one does not yet, so it captures known repository metadata and planning context only.
 
 ## How AI agents should use this document
 
@@ -34,6 +34,9 @@ This file is intentionally deterministic. It captures currently known repository
 - Package managers: npm
 - Tooling: TypeScript
 - Detection confidence: high
+- Analyzed folders: 14
+- Discovered modules: 12
+- Detected conventions: 30
 
 ## Next documentation improvements
 

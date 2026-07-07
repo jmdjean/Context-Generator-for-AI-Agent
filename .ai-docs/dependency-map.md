@@ -2,41 +2,104 @@
 
 # Dependency Map
 
-## Purpose
-
 Key internal and external dependencies with rationale
 
-## Project
-
-- Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:04:17.429Z
+- Project: Context-Generator-for-AI-Agent
+- Generated: 2026-07-07T12:19:08.450Z
 - PKM schema: 1.0.0
 - Analysis status: partial
-- Status: initial deterministic documentation
-- Source: core
-- Priority: required
 
-This file is intentionally deterministic. It captures currently known repository metadata and planning context only. Deeper AI-assisted analysis will enrich this document in future pipeline steps.
+## Nodes
 
-## How AI agents should use this document
+| Module | Type | Path |
+|---|---|---|
+| ai | core | `src/ai` |
+| analyzers | core | `src/analyzers` |
+| config | configuration | `src/config` |
+| core | core | `src/core` |
+| detectors | core | `src/detectors` |
+| docs | core | `src/docs` |
+| domain | core | `src/domain` |
+| knowledge | core | `src/knowledge` |
+| scanner | core | `src/scanner` |
+| utils | tooling | `src/utils` |
 
-- Start here when your task matches this document's purpose.
-- No explicit document dependencies are declared for this file yet.
-- Treat this file as a safe baseline, not as a complete architecture analysis.
-- Cross-check implementation details in source files when the task depends on code-level behavior.
+## Edges
 
-## Current known context
+Each edge lists the imports that prove the relationship:
 
-- Project root: `/home/user/Context-Generator-for-AI-Agent`
-- Detected top-level files: 12
-- Languages: TypeScript
-- Frameworks: None detected yet
-- Package managers: npm
-- Tooling: TypeScript
-- Detection confidence: high
+- `src/analyzers` → `src/domain` (imports, confidence: high)
+  - `src/analyzers/convention-analyzer.ts` imports `../domain`
+  - `src/analyzers/folder-analyzer.ts` imports `../domain`
+  - `src/analyzers/import-parser.ts` imports `../domain`
+  - …and 1 more import(s)
+- `src/analyzers` → `src/knowledge` (imports, confidence: high)
+  - `src/analyzers/convention-analyzer.ts` imports `../knowledge/project-knowledge`
+  - `src/analyzers/folder-classifier.ts` imports `../knowledge/project-knowledge`
+  - `src/analyzers/folder-constants.ts` imports `../knowledge/project-knowledge`
+  - …and 1 more import(s)
+- `src/analyzers` → `src/scanner` (imports, confidence: high)
+  - `src/analyzers/convention-analyzer.ts` imports `../scanner/repository-boundary`
+  - `src/analyzers/dependency-graph-analyzer.ts` imports `../scanner/repository-boundary`
+  - `src/analyzers/import-parser.ts` imports `../scanner/repository-boundary`
+- `src/analyzers` → `src/utils` (imports, confidence: high)
+  - `src/analyzers/module-analyzer.ts` imports `../utils/fs`
+- `src/config` → `src/utils` (imports, confidence: high)
+  - `src/config/index.ts` imports `../utils/fs`
+- `src/core` → `src/analyzers` (imports, confidence: high)
+  - `src/core/pipeline-handlers.ts` imports `../analyzers`
+- `src/core` → `src/config` (imports, confidence: high)
+  - `src/core/index.ts` imports `../config`
+  - `src/core/pipeline-handlers.ts` imports `../config`
+  - `src/core/pipeline-orchestrator.ts` imports `../config`
+- `src/core` → `src/detectors` (imports, confidence: high)
+  - `src/core/pipeline-handlers.ts` imports `../detectors/technology-detector`
+- `src/core` → `src/docs` (imports, confidence: high)
+  - `src/core/pipeline-handlers.ts` imports `../docs/documentation-planner`
+  - `src/core/pipeline-handlers.ts` imports `../docs/documentation-writer`
+- `src/core` → `src/domain` (imports, confidence: high)
+  - `src/core/pipeline-handlers.ts` imports `../domain`
+  - `src/core/pipeline-handlers.ts` imports `../domain/documentation-plan`
+  - `src/core/pipeline-orchestrator.ts` imports `../domain`
+- `src/core` → `src/knowledge` (imports, confidence: high)
+  - `src/core/pipeline-handlers.ts` imports `../knowledge`
+- `src/core` → `src/scanner` (imports, confidence: high)
+  - `src/core/pipeline-handlers.ts` imports `../scanner/repository-loader`
+  - `src/core/pipeline-handlers.ts` imports `../scanner/repository-scanner`
+- `src/detectors` → `src/domain` (imports, confidence: high)
+  - `src/detectors/package-manager-detector.ts` imports `../domain`
+  - `src/detectors/repository-paths.ts` imports `../domain`
+  - `src/detectors/technology-detector.ts` imports `../domain`
+- `src/docs` → `src/domain` (imports, confidence: high)
+  - `src/docs/document-template.ts` imports `../domain/documentation-plan`
+  - `src/docs/documentation-planner.ts` imports `../domain`
+  - `src/docs/documentation-planner.ts` imports `../domain/documentation-plan`
+  - …and 10 more import(s)
+- `src/docs` → `src/knowledge` (imports, confidence: high)
+  - `src/docs/document-template.ts` imports `../knowledge`
+  - `src/docs/documentation-writer.ts` imports `../knowledge`
+  - `src/docs/markdown-renderers/agent-navigation-renderer.ts` imports `../../knowledge`
+  - …and 7 more import(s)
+- `src/docs` → `src/utils` (imports, confidence: high)
+  - `src/docs/documentation-writer.ts` imports `../utils/fs`
+- `src/knowledge` → `src/domain` (imports, confidence: high)
+  - `src/knowledge/accessors.ts` imports `../domain/documentation-plan`
+  - `src/knowledge/knowledge-builder.ts` imports `../domain`
+  - `src/knowledge/knowledge-builder.ts` imports `../domain/documentation-plan`
+  - …and 3 more import(s)
+- `src/knowledge` → `src/utils` (imports, confidence: high)
+  - `src/knowledge/knowledge-paths.ts` imports `../utils/fs`
+- `src/scanner` → `src/config` (imports, confidence: high)
+  - `src/scanner/repository-loader.ts` imports `../config`
+- `src/scanner` → `src/domain` (imports, confidence: high)
+  - `src/scanner/repository-loader.ts` imports `../domain`
+  - `src/scanner/repository-scanner.ts` imports `../domain`
+- `src/scanner` → `src/utils` (imports, confidence: high)
+  - `src/scanner/repository-boundary.ts` imports `../utils/fs`
 
-## Next documentation improvements
+## Limitations
 
-- Add deeper repository structure analysis once the repository tree scanner is implemented.
-- Add architecture findings after the AI analysis stage is introduced.
-- Expand file-specific guidance with richer project context while preserving safe incremental updates.
+> **Warning:** this graph is deterministic and intentionally lightweight. It is built from
+> regex-based parsing of relative `import`/`require` statements between discovered modules.
+> It does not detect dynamic imports, path aliases (`@/…`), template-literal specifiers, or
+> non-JS/TS dependencies. Treat missing edges as "not detected", not "does not exist".

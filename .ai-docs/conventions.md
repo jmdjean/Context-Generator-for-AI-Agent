@@ -2,41 +2,298 @@
 
 # Conventions
 
-## Purpose
-
 Coding, naming, and structural conventions to follow
 
-## Project
-
-- Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:04:17.429Z
+- Project: Context-Generator-for-AI-Agent
+- Generated: 2026-07-07T12:19:08.450Z
 - PKM schema: 1.0.0
 - Analysis status: partial
-- Status: initial deterministic documentation
-- Source: core
-- Priority: required
 
-This file is intentionally deterministic. It captures currently known repository metadata and planning context only. Deeper AI-assisted analysis will enrich this document in future pipeline steps.
+The convention analyzer detected 30 convention(s). Treat high-confidence entries as hard constraints and low-confidence entries as hints. Every convention can be verified from its evidence.
 
-## How AI agents should use this document
+## Architecture
 
-- Start here when your task matches this document's purpose.
-- No explicit document dependencies are declared for this file yet.
-- Treat this file as a safe baseline, not as a complete architecture analysis.
-- Cross-check implementation details in source files when the task depends on code-level behavior.
+### src/analyzers consume the PKM
 
-## Current known context
+Analyzers enrich the PKM deterministically without re-scanning the repository.
 
-- Project root: `/home/user/Context-Generator-for-AI-Agent`
-- Detected top-level files: 12
-- Languages: TypeScript
-- Frameworks: None detected yet
-- Package managers: npm
-- Tooling: TypeScript
-- Detection confidence: high
+- Category: architecture
+- Confidence: high
+- Evidence:
+  - module — `src/analyzers`: Module classified as core: Derives higher-level architectural knowledge from the PKM.
 
-## Next documentation improvements
+### src/core orchestrates the pipeline
 
-- Add deeper repository structure analysis once the repository tree scanner is implemented.
-- Add architecture findings after the AI analysis stage is introduced.
-- Expand file-specific guidance with richer project context while preserving safe incremental updates.
+The core module drives pipeline execution and coordinates every stage.
+
+- Category: architecture
+- Confidence: high
+- Evidence:
+  - module — `src/core`: Module classified as core: Contains pipeline orchestration and core application coordination logic.
+
+### src/detectors feed upstream knowledge
+
+Detectors identify the technology stack that informs downstream analysis.
+
+- Category: architecture
+- Confidence: high
+- Evidence:
+  - module — `src/detectors`: Module classified as core: Detects technologies and tooling from repository metadata.
+
+### src/docs writes derived output
+
+The docs module plans and renders documentation generated from the PKM.
+
+- Category: architecture
+- Confidence: high
+- Evidence:
+  - module — `src/docs`: Module classified as core: Plans and writes documentation outputs derived from project knowledge.
+
+### src/domain remains pure
+
+The domain module contains only types and declarative data — no runtime behavior.
+
+- Category: architecture
+- Confidence: high
+- Evidence:
+  - module — `src/domain`: Module classified as core: Defines pure domain types and the declarative analysis pipeline.
+
+### src/knowledge owns the PKM
+
+The knowledge module defines, assembles, and persists the Project Knowledge Model.
+
+- Category: architecture
+- Confidence: high
+- Evidence:
+  - module — `src/knowledge`: Module classified as core: Represents and persists the Project Knowledge Model used as the source of truth.
+
+### src/scanner feeds upstream knowledge
+
+The scanner reads the repository from disk and supplies the structural baseline.
+
+- Category: architecture
+- Confidence: high
+- Evidence:
+  - module — `src/scanner`: Module classified as core: Builds the repository tree used by analyzers.
+
+## Repository structure
+
+### Deterministic analyzers under src/analyzers
+
+Deterministic PKM enrichment analyzers live under src/analyzers.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src/analyzers`: Repository tree contains src/analyzers/
+
+### Documentation generation under src/docs
+
+Documentation planning and writing live under src/docs.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src/docs`: Repository tree contains src/docs/
+
+### Domain types under src/domain
+
+Pure domain types and the declarative pipeline live under src/domain.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src/domain`: Repository tree contains src/domain/
+
+### Pipeline orchestration under src/core
+
+Pipeline orchestration and step handlers live under src/core.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src/core`: Repository tree contains src/core/
+
+### PKM under src/knowledge
+
+The Project Knowledge Model types, builder, and persistence live under src/knowledge.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src/knowledge`: Repository tree contains src/knowledge/
+
+### Repository scanning under src/scanner
+
+Repository loading and scanning live under src/scanner.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src/scanner`: Repository tree contains src/scanner/
+
+### Source code under src/
+
+Application source code lives under the src/ directory.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src`: Repository tree contains src/
+
+### Technology detection under src/detectors
+
+Technology detection lives under src/detectors.
+
+- Category: repository-structure
+- Confidence: high
+- Evidence:
+  - folder — `src/detectors`: Repository tree contains src/detectors/
+
+## Language
+
+### TypeScript project
+
+The project is written in TypeScript with a root tsconfig.json.
+
+- Category: language
+- Confidence: high
+- Evidence:
+  - file — `tsconfig.json`: Repository contains a root tsconfig.json
+  - technology — `technologies.languages`: Technology detection identified TypeScript
+
+### TypeScript strict mode
+
+The TypeScript compiler runs with strict mode enabled; all code must satisfy strict checks.
+
+- Category: language
+- Confidence: high
+- Evidence:
+  - config — `tsconfig.json`: compilerOptions.strict is enabled
+
+## Testing
+
+### Co-located test files
+
+Tests are co-located with source files using *.test.* and *.spec.* naming.
+
+- Category: testing
+- Confidence: high
+- Evidence:
+  - file — `src/analyzers/convention-analyzer.test.ts`: Matches the co-located test file pattern (*.test.* / *.spec.*)
+  - file — `src/analyzers/convention-classifier.test.ts`: Matches the co-located test file pattern (*.test.* / *.spec.*)
+  - file — `src/analyzers/dependency-graph-analyzer.test.ts`: Matches the co-located test file pattern (*.test.* / *.spec.*)
+
+### Package test script
+
+Tests run through the package manager test script.
+
+- Category: testing
+- Confidence: medium
+- Evidence:
+  - config — `package.json`: Defines a "test" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js
+
+## Package management
+
+### Dependencies managed with npm
+
+Dependencies are installed and scripts are run with npm.
+
+- Category: package-management
+- Confidence: high
+- Evidence:
+  - technology — `technologies.packageManagers`: Technology detection identified npm
+
+## Documentation
+
+### Agent instructions file
+
+AGENTS.md provides mandatory entry-point context for AI coding agents.
+
+- Category: documentation
+- Confidence: high
+- Evidence:
+  - file — `AGENTS.md`: Repository contains a root AGENTS.md
+
+### Generated context folder present
+
+The repository contains the .ai-docs/ generated context folder.
+
+- Category: documentation
+- Confidence: high
+- Evidence:
+  - folder — `.ai-docs`: Top-level entry .ai-docs detected in repository metadata
+
+### Human documentation folder
+
+Project-level documentation for humans and agents lives under docs/.
+
+- Category: documentation
+- Confidence: high
+- Evidence:
+  - folder — `docs`: Repository tree contains a docs/ folder
+
+### Knowledge folder expected
+
+Machine-readable project knowledge lives under .ai-docs/knowledge/.
+
+- Category: documentation
+- Confidence: medium
+- Evidence:
+  - knowledge — `.ai-docs/knowledge`: PKM persistence writes knowledge JSON into .ai-docs/knowledge/
+
+### Knowledge JSON expected
+
+The full PKM snapshot is persisted as .ai-docs/knowledge/project-knowledge.json.
+
+- Category: documentation
+- Confidence: medium
+- Evidence:
+  - knowledge — `.ai-docs/knowledge/project-knowledge.json`: The Persist Project Knowledge step writes this file on every run
+
+### Root README
+
+The repository documents itself with a root README.md.
+
+- Category: documentation
+- Confidence: high
+- Evidence:
+  - file — `README.md`: Repository contains a root README.md
+
+## Generated context
+
+### Generated docs live in the configured docs directory
+
+All generated documentation is written under .ai-docs/ inside the target repository.
+
+- Category: generated-context
+- Confidence: high
+- Evidence:
+  - knowledge — `documentation.plan.docsDir`: Documentation plan targets .ai-docs
+
+### Machine-readable knowledge lives under the knowledge directory
+
+Machine-readable knowledge JSON files are persisted under .ai-docs/knowledge/.
+
+- Category: generated-context
+- Confidence: high
+- Evidence:
+  - knowledge — `.ai-docs/knowledge`: PKM persistence writes the full snapshot and split section files here
+
+### Markdown docs are derived output
+
+Markdown files in the docs directory are rendered from the PKM — they are not the source of truth.
+
+- Category: generated-context
+- Confidence: high
+- Evidence:
+  - knowledge — `documentation.plan`: The documentation writer renders Markdown from ProjectKnowledge
+
+### PKM JSON is the canonical machine-readable state
+
+project-knowledge.json and its split section files under .ai-docs/knowledge/ are the canonical persisted project state.
+
+- Category: generated-context
+- Confidence: high
+- Evidence:
+  - knowledge — `.ai-docs/knowledge/project-knowledge.json`: The knowledge writer persists the full PKM snapshot on every run

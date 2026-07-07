@@ -165,19 +165,21 @@ Contains:
 
 ### `src/docs/`
 
-Documentation planning and (planned) writing. Decides which files to generate and eventually writes them into the target repository's `.ai-docs/` folder.
+Documentation planning, PKM-powered Markdown rendering, and writing. Decides which files to generate, renders their content from `ProjectKnowledge`, and writes them into the target repository's `.ai-docs/` folder.
 
 Contains:
 - `documentation-plan.ts` — application-level types: `DocumentationPlan`, `PlannedDocument`, `DocumentPriority`, `DocumentSource`.
 - `documentation-planner.ts` — `createDocumentationPlan(docsDir, technologyProfile)` returns a deterministic `DocumentationPlan` based on the detected technology stack.
-- `document-template.ts` — deterministic Markdown renderer for a `PlannedDocument` plus known project metadata.
-- `documentation-writer.ts` — `writeDocumentation(knowledge)` writes planned docs from `ProjectKnowledge` into the target project's docs directory.
+- `document-template.ts` — generic fallback Markdown template for documents without a dedicated renderer.
+- `markdown-renderers/` — one small deterministic renderer per key document (`architecture.md`, `folder-structure.md`, `dependency-map.md`, `conventions.md`, `agent-navigation.md`, `ai-context.md`, `implementation-guide.md`) plus the dispatch registry (`index.ts`) and shared helpers (`render-helpers.ts`).
+- `documentation-writer.ts` — `writeDocumentation(knowledge)` writes planned docs from `ProjectKnowledge` into the target project's docs directory, reporting PKM-powered vs generic counts.
+- `markdown-renderers.test.ts` — renderer dispatch and content tests.
 
-The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). The writer currently renders deterministic placeholder content only and uses a generated-file marker to distinguish tool-managed files from user-managed files.
+The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). Renderers are **presentation-only**: they translate PKM data into Markdown and never analyze the repository. The generated-file marker distinguishes tool-managed files from user-managed files.
 
-**When to modify:** When new document types are added, new framework document sets are supported, or the writing/rendering logic is implemented.
+**When to modify:** When new document types are added, new framework document sets are supported, or a document gets its own PKM-powered renderer.
 
-**Status:** Planning implemented (step 7). Deterministic Markdown writing implemented (step 9). PKM JSON persistence is in `src/knowledge/` (step 11), not here.
+**Status:** Planning implemented (step 7). PKM-powered Markdown rendering and writing implemented (step 14). PKM JSON persistence is in `src/knowledge/` (step 16), not here.
 
 ---
 
