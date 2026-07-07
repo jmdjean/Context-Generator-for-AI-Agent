@@ -2,41 +2,133 @@
 
 # Agent Navigation
 
-## Purpose
-
 Guides AI agents to the right files for any task type
 
-## Project
-
-- Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:04:17.429Z
+- Project: Context-Generator-for-AI-Agent
+- Generated: 2026-07-07T12:19:08.450Z
 - PKM schema: 1.0.0
 - Analysis status: partial
-- Status: initial deterministic documentation
-- Source: core
-- Priority: required
 
-This file is intentionally deterministic. It captures currently known repository metadata and planning context only. Deeper AI-assisted analysis will enrich this document in future pipeline steps.
+Find the task type that matches your current task, then load only the knowledge and documents it recommends. Related modules and folders are resolved against actual PKM data — empty lists mean nothing matched, not that the map is broken.
 
-## How AI agents should use this document
+## Architecture change
 
-- Start here when your task matches this document's purpose.
-- No explicit document dependencies are declared for this file yet.
-- Treat this file as a safe baseline, not as a complete architecture analysis.
-- Cross-check implementation details in source files when the task depends on code-level behavior.
+Changing module boundaries, pipeline structure, or how stages and generators interact.
 
-## Current known context
+- Recommended PKM knowledge: `modules`, `folderContexts`, `dependencyGraph`, `conventions`
+- Recommended documents: `architecture.md`, `folder-structure.md`, `dependency-map.md`, `conventions.md`, `ai-context.md`
+- Related modules: `src/analyzers`, `src/core`, `src/docs`, `src/domain`, `src/knowledge`
+- Related folders: `src/analyzers`, `src/core`, `src/docs`, `src/domain`, `src/knowledge`
+- Confidence: high
 
-- Project root: `/home/user/Context-Generator-for-AI-Agent`
-- Detected top-level files: 12
-- Languages: TypeScript
-- Frameworks: None detected yet
-- Package managers: npm
-- Tooling: TypeScript
-- Detection confidence: high
+Warnings:
 
-## Next documentation improvements
+- Review dependency graph before changing module boundaries.
+- Preserve domain purity.
+- Keep generators consuming PKM instead of scanning directly.
 
-- Add deeper repository structure analysis once the repository tree scanner is implemented.
-- Add architecture findings after the AI analysis stage is introduced.
-- Expand file-specific guidance with richer project context while preserving safe incremental updates.
+## New feature
+
+Adding new behavior: a pipeline step, analyzer, generator, detector, or CLI capability.
+
+- Recommended PKM knowledge: `modules`, `folderContexts`, `conventions`, `dependencyGraph`, `navigationMap`
+- Recommended documents: `architecture.md`, `folder-structure.md`, `implementation-guide.md`, `conventions.md`, `agent-navigation.md`
+- Related modules: `src/analyzers`, `src/core`, `src/docs`, `src/domain`, `src/knowledge`
+- Related folders: `src`
+- Confidence: high
+
+Warnings:
+
+- Add new behavior through the correct module boundary.
+- Update PKM-related docs if architecture changes.
+- Do not bypass the pipeline orchestration layer.
+
+## Bug fix
+
+Correcting incorrect behavior in existing code without changing architecture or contracts.
+
+- Recommended PKM knowledge: `modules`, `dependencyGraph`, `conventions`
+- Recommended documents: `implementation-guide.md`, `dependency-map.md`, `conventions.md`
+- Related modules: `src/ai`, `src/analyzers`, `src/core`, `src/detectors`, `src/docs`, `src/domain`, `src/knowledge`, `src/scanner`
+- Related folders: None resolved
+- Confidence: high
+
+Warnings:
+
+- Fix the root cause instead of patching generated output.
+- Avoid changing unrelated modules.
+
+## Test change
+
+Adding, updating, or reorganizing tests for existing or new behavior.
+
+- Recommended PKM knowledge: `conventions`, `modules`, `folderContexts`
+- Recommended documents: `conventions.md`, `implementation-guide.md`
+- Related modules: None resolved
+- Related folders: None resolved
+- Confidence: high
+
+Warnings:
+
+- Preserve existing testing conventions.
+- Do not weaken assertions or remove tests.
+
+## Documentation change
+
+Updating Markdown documentation, READMEs, or the generated context layer.
+
+- Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`
+- Recommended documents: `README.md`, `agent-navigation.md`, `ai-context.md`, `conventions.md`
+- Related modules: `.ai-docs`, `docs`, `src/docs`, `src/knowledge`
+- Related folders: `docs`
+- Confidence: high
+
+Warnings:
+
+- Markdown should reflect PKM.
+- Do not manually edit generated files unless intentionally supported.
+
+## Config change
+
+Changing runtime configuration, compiler options, or tooling configuration files.
+
+- Recommended PKM knowledge: `technologies`, `conventions`, `modules`
+- Recommended documents: `architecture.md`, `conventions.md`, `implementation-guide.md`
+- Related modules: `src/config`, `src/detectors`, `src/utils`
+- Related folders: None resolved
+- Confidence: high
+
+Warnings:
+
+- Check package manager and TypeScript strict mode conventions.
+- Avoid introducing conflicting tooling.
+
+## Dependency change
+
+Adding, removing, or upgrading package dependencies.
+
+- Recommended PKM knowledge: `technologies`, `dependencyGraph`, `conventions`
+- Recommended documents: `dependency-map.md`, `conventions.md`, `implementation-guide.md`
+- Related modules: `src/detectors`
+- Related folders: None resolved
+- Confidence: high
+
+Warnings:
+
+- Check impacted modules before changing dependencies.
+- Keep dependency changes minimal.
+
+## Ai agent integration
+
+Building or adjusting agent-facing outputs: agent docs, exporters, rules, or skills.
+
+- Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`, `modules`
+- Recommended documents: `AGENTS.md`, `ai-context.md`, `agent-navigation.md`, `implementation-guide.md`
+- Related modules: `.ai-docs`, `docs`, `src/analyzers`, `src/docs`, `src/knowledge`
+- Related folders: `docs`
+- Confidence: high
+
+Warnings:
+
+- Agent-specific outputs must be derived from PKM.
+- Do not duplicate repository analysis inside exporters.

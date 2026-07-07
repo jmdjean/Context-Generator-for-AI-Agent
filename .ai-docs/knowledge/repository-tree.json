@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:04:17.429Z",
+  "generatedAt": "2026-07-07T12:19:08.450Z",
   "tree": {
     "name": "Context-Generator-for-AI-Agent",
     "path": "/home/user/Context-Generator-for-AI-Agent",
@@ -13,7 +13,7 @@
         "relativePath": "AGENTS.md",
         "type": "file",
         "extension": "md",
-        "sizeBytes": 13050
+        "sizeBytes": 13850
       },
       {
         "name": "docs",
@@ -27,7 +27,7 @@
             "relativePath": "docs/architecture.md",
             "type": "file",
             "extension": "md",
-            "sizeBytes": 30790
+            "sizeBytes": 32694
           },
           {
             "name": "context-engineering.md",
@@ -35,7 +35,7 @@
             "relativePath": "docs/context-engineering.md",
             "type": "file",
             "extension": "md",
-            "sizeBytes": 24267
+            "sizeBytes": 25131
           },
           {
             "name": "folder-structure.md",
@@ -43,7 +43,7 @@
             "relativePath": "docs/folder-structure.md",
             "type": "file",
             "extension": "md",
-            "sizeBytes": 11947
+            "sizeBytes": 12471
           }
         ]
       },
@@ -53,7 +53,7 @@
         "relativePath": "package.json",
         "type": "file",
         "extension": "json",
-        "sizeBytes": 772
+        "sizeBytes": 792
       },
       {
         "name": "README.md",
@@ -61,7 +61,7 @@
         "relativePath": "README.md",
         "type": "file",
         "extension": "md",
-        "sizeBytes": 5349
+        "sizeBytes": 5774
       },
       {
         "name": "src",
@@ -329,7 +329,7 @@
                 "relativePath": "src/core/pipeline-handlers.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 11194
+                "sizeBytes": 11331
               },
               {
                 "name": "pipeline-orchestrator.ts",
@@ -425,7 +425,7 @@
                 "relativePath": "src/docs/document-template.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 2797
+                "sizeBytes": 3143
               },
               {
                 "name": "documentation-plan.ts",
@@ -449,7 +449,95 @@
                 "relativePath": "src/docs/documentation-writer.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 2529
+                "sizeBytes": 3023
+              },
+              {
+                "name": "markdown-renderers",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers",
+                "relativePath": "src/docs/markdown-renderers",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "agent-navigation-renderer.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/agent-navigation-renderer.ts",
+                    "relativePath": "src/docs/markdown-renderers/agent-navigation-renderer.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 1955
+                  },
+                  {
+                    "name": "ai-context-renderer.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/ai-context-renderer.ts",
+                    "relativePath": "src/docs/markdown-renderers/ai-context-renderer.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 4674
+                  },
+                  {
+                    "name": "architecture-renderer.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/architecture-renderer.ts",
+                    "relativePath": "src/docs/markdown-renderers/architecture-renderer.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 6082
+                  },
+                  {
+                    "name": "conventions-renderer.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/conventions-renderer.ts",
+                    "relativePath": "src/docs/markdown-renderers/conventions-renderer.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 2294
+                  },
+                  {
+                    "name": "dependency-map-renderer.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/dependency-map-renderer.ts",
+                    "relativePath": "src/docs/markdown-renderers/dependency-map-renderer.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 2861
+                  },
+                  {
+                    "name": "folder-structure-renderer.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/folder-structure-renderer.ts",
+                    "relativePath": "src/docs/markdown-renderers/folder-structure-renderer.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 3566
+                  },
+                  {
+                    "name": "implementation-guide-renderer.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/implementation-guide-renderer.ts",
+                    "relativePath": "src/docs/markdown-renderers/implementation-guide-renderer.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 4406
+                  },
+                  {
+                    "name": "index.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/index.ts",
+                    "relativePath": "src/docs/markdown-renderers/index.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 1999
+                  },
+                  {
+                    "name": "render-helpers.ts",
+                    "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers/render-helpers.ts",
+                    "relativePath": "src/docs/markdown-renderers/render-helpers.ts",
+                    "type": "file",
+                    "extension": "ts",
+                    "sizeBytes": 1616
+                  }
+                ]
+              },
+              {
+                "name": "markdown-renderers.test.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers.test.ts",
+                "relativePath": "src/docs/markdown-renderers.test.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 8138
               },
               {
                 "name": "README.md",
@@ -457,7 +545,7 @@
                 "relativePath": "src/docs/README.md",
                 "type": "file",
                 "extension": "md",
-                "sizeBytes": 8640
+                "sizeBytes": 11986
               }
             ]
           },

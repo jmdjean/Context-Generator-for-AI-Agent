@@ -2,16 +2,23 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { getDocsDir, getDocumentationPlan, getProjectRoot, ProjectKnowledge } from '../knowledge';
 import { resolvePathWithinRoot } from '../utils/fs';
-import { GENERATED_FILE_MARKER, renderDeterministicDocument } from './document-template';
+import { GENERATED_FILE_MARKER } from './document-template';
+import { DocumentRendererKind, renderPlannedDocument } from './markdown-renderers';
 import { PlannedDocument } from '../domain/documentation-plan';
 
 export interface DocumentationWriteResult {
   writtenCount: number;
   skippedCount: number;
+  pkmPoweredCount: number;
+  genericCount: number;
   docsDirectoryPath: string;
   writtenPaths: string[];
   skippedPaths: string[];
 }
+
+type WriteOutcome =
+  | { outcome: 'written'; rendererKind: DocumentRendererKind }
+  | { outcome: 'skipped' };
 
 function hasGeneratedMarker(fileContent: string): boolean {
   return fileContent.startsWith(GENERATED_FILE_MARKER);
@@ -36,21 +43,21 @@ function writePlannedDocument(
   document: PlannedDocument,
   docsRootPath: string,
   knowledge: ProjectKnowledge,
-): 'written' | 'skipped' {
+): WriteOutcome {
   const outputPath = resolvePathWithinRoot(docsRootPath, document.relativePath);
   const existingContent = readFileIfPresent(outputPath);
 
   if (existingContent !== undefined && !hasGeneratedMarker(existingContent)) {
     console.warn(`Warning: skipped user-managed documentation at ${document.relativePath}`);
-    return 'skipped';
+    return { outcome: 'skipped' };
   }
 
   ensureDirectory(path.dirname(outputPath));
 
-  const markdown = renderDeterministicDocument(document, knowledge);
+  const rendered = renderPlannedDocument(document, knowledge);
 
-  fs.writeFileSync(outputPath, markdown, 'utf-8');
-  return 'written';
+  fs.writeFileSync(outputPath, rendered.markdown, 'utf-8');
+  return { outcome: 'written', rendererKind: rendered.rendererKind };
 }
 
 export function writeDocumentation(knowledge: ProjectKnowledge): DocumentationWriteResult {
@@ -61,12 +68,19 @@ export function writeDocumentation(knowledge: ProjectKnowledge): DocumentationWr
 
   const writtenPaths: string[] = [];
   const skippedPaths: string[] = [];
+  let pkmPoweredCount = 0;
+  let genericCount = 0;
 
   for (const document of documentationPlan.documents) {
-    const outcome = writePlannedDocument(document, docsRootPath, knowledge);
+    const result = writePlannedDocument(document, docsRootPath, knowledge);
 
-    if (outcome === 'written') {
+    if (result.outcome === 'written') {
       writtenPaths.push(document.relativePath);
+      if (result.rendererKind === 'pkm') {
+        pkmPoweredCount += 1;
+      } else {
+        genericCount += 1;
+      }
     } else {
       skippedPaths.push(document.relativePath);
     }
@@ -75,6 +89,8 @@ export function writeDocumentation(knowledge: ProjectKnowledge): DocumentationWr
   return {
     writtenCount: writtenPaths.length,
     skippedCount: skippedPaths.length,
+    pkmPoweredCount,
+    genericCount,
     docsDirectoryPath: getDocsDir(knowledge),
     writtenPaths,
     skippedPaths,

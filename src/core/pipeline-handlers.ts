@@ -271,6 +271,8 @@ export async function handleWriteDocumentation(
   console.log('Documentation writer:');
   console.log(`Written: ${writeResult.writtenCount}`);
   console.log(`Skipped: ${writeResult.skippedCount}`);
+  console.log(`PKM-powered documents: ${writeResult.pkmPoweredCount}`);
+  console.log(`Generic documents: ${writeResult.genericCount}`);
   console.log(`Docs directory: ${writeResult.docsDirectoryPath}`);
 
   return {

@@ -8,6 +8,7 @@ function formatList(items: string[]): string {
 }
 
 function buildKnownContextLines(knowledge: ProjectKnowledge): string[] {
+  const { analysis } = knowledge;
   return [
     `- Project root: \`${knowledge.repository.rootPath}\``,
     `- Detected top-level files: ${knowledge.repository.detectedFiles.length}`,
@@ -16,6 +17,9 @@ function buildKnownContextLines(knowledge: ProjectKnowledge): string[] {
     `- Package managers: ${formatList(knowledge.technologies.packageManagers)}`,
     `- Tooling: ${formatList(knowledge.technologies.tooling)}`,
     `- Detection confidence: ${knowledge.technologies.confidence}`,
+    `- Analyzed folders: ${analysis.folderContexts?.length ?? 0}`,
+    `- Discovered modules: ${analysis.modules?.length ?? 0}`,
+    `- Detected conventions: ${analysis.conventions?.length ?? 0}`,
   ];
 }
 
@@ -54,7 +58,7 @@ ${document.purpose}
 - Source: ${document.source}
 - Priority: ${document.priority}
 
-This file is intentionally deterministic. It captures currently known repository metadata and planning context only. Deeper AI-assisted analysis will enrich this document in future pipeline steps.
+This document uses the generic deterministic template. Key documents (architecture, folder structure, dependency map, conventions, agent navigation, AI context, implementation guide) have dedicated PKM-powered renderers; this one does not yet, so it captures known repository metadata and planning context only.
 
 ## How AI agents should use this document
 

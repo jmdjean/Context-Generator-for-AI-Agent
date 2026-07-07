@@ -54,16 +54,17 @@ Future generators and external tools should prefer loading persisted JSON over r
 
 ### Markdown context files
 
-It answers the questions an agent asks at the start of every task:
+Markdown is an **output derived from the PKM** — presentation, not analysis. Each key document is produced by a small deterministic renderer in `src/docs/markdown-renderers/` that reads one or more PKM sections. It answers the questions an agent asks at the start of every task:
 
-- **What is this project?** → `project-overview.md`
-- **Where do I start?** → `navigation-guide.md`
-- **What does each folder do?** → `folder-structure.md`
-- **What are the conventions?** → `conventions.md`
-- **What are the key dependencies?** → `dependency-map.md`
-- **What has changed recently?** → `recent-changes.md`
+- **What is this project's architecture?** → `architecture.md` (technologies, modules, dependency summary)
+- **Where do I start for my task?** → `agent-navigation.md` (per-task-type reading lists from the navigation map)
+- **What does each folder do?** → `folder-structure.md` (folder contexts, classifications, responsibilities)
+- **What are the conventions?** → `conventions.md` (structured conventions with confidence and evidence)
+- **What are the key dependencies?** → `dependency-map.md` (graph nodes, edges, import evidence)
+- **What should I load first?** → `ai-context.md` (PKM summary, key modules, key conventions, limitations)
+- **How do I change things safely?** → `implementation-guide.md`
 
-Each file is written so that an agent loading it gains enough context to make correct decisions without reading the source code first. In the current implementation, that starts with deterministic placeholders built from repository metadata and technology detection; richer AI analysis is layered in later.
+Each file is written so that an agent loading it gains enough context to make correct decisions without reading the source code first. Renderers never perform repository analysis of their own — the PKM remains the source of truth, and documents state honestly when a PKM section has not been populated yet. Documents without a dedicated renderer use a generic deterministic template until they get one; richer AI analysis is layered into the PKM later and flows through the same renderers.
 
 ---
 
@@ -101,7 +102,7 @@ Re-scanning independently would produce inconsistent results, waste I/O, and byp
 
 Folder names alone are ambiguous. The folder classifier applies deterministic rules: `src` is `source`, `__tests__` is `test`, `dist` is `build-output`. Each `FolderKnowledge` entry includes the classification, evidence signals, and a one-sentence responsibility. Agents load this instead of inventing folder purposes from naming conventions.
 
-`folderContexts` lives in `knowledge.analysis.folderContexts` and is persisted to `analysis.json` and `folders.json`. Future `folder-structure.md` generation should render from this data — not re-derive structure from the tree.
+`folderContexts` lives in `knowledge.analysis.folderContexts` and is persisted to `analysis.json` and `folders.json`. `folder-structure.md` renders from this data via `src/docs/markdown-renderers/folder-structure-renderer.ts` — it does not re-derive structure from the tree.
 
 ### 7. Module discovery gives agents an architectural map
 
@@ -131,7 +132,7 @@ The convention analyzer makes patterns explicit as `ConventionKnowledge` entries
 
 Detection is fully deterministic and runs **before** any AI analysis: the same repository always yields the same convention baseline, at zero token cost, with no model variance. The future AI stage adds interpretation on top of this baseline instead of inventing conventions from scratch — evidence-backed deterministic facts anchor the AI's output.
 
-`conventions` lives in `knowledge.analysis.conventions` and is persisted to `analysis.json` and `conventions.json`. Future Markdown generation (`conventions.md`) must render from this PKM section — grouping by category and surfacing evidence — not re-derive conventions from the repository.
+`conventions` lives in `knowledge.analysis.conventions` and is persisted to `analysis.json` and `conventions.json`. `conventions.md` renders from this PKM section via `src/docs/markdown-renderers/conventions-renderer.ts` — grouping by category and surfacing evidence — it does not re-derive conventions from the repository.
 
 ### 10. The navigation map tells agents what to read, per task
 

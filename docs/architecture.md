@@ -47,7 +47,7 @@ This separation means a new output format only needs a new generator. It does no
 │  src/analyzers/      PKM enrichment analyzers   │  ✅ folder, module, dependency, conventions
 │  src/knowledge/      Project Knowledge Model    │  ✅ done — PKM types + builder
 │  src/ai/             OpenRouter integration     │  planned
-│  src/docs/           Generators (Markdown…)     │  ✅ planning + deterministic writing
+│  src/docs/           Generators (Markdown…)     │  ✅ planning + PKM-powered rendering + writing
 ├─────────────────────────────────────────────────┤
 │  src/domain/         Pipeline + legacy types    │  ✅ done
 │  src/utils/          Pure shared helpers        │  ✅ done
@@ -159,9 +159,9 @@ The repository tree is scanned once (step 3) and stored in `knowledge.repository
 
 Results are stored in `knowledge.analysis.folderContexts` and persisted to `analysis.json` and `folders.json`.
 
-### Future Markdown from FolderKnowledge
+### Markdown from FolderKnowledge
 
-`folder-structure.md` today uses deterministic placeholders. Future versions should render from `knowledge.analysis.folderContexts` — grouping folders by classification, listing responsibilities, and linking child folders — without re-walking the tree.
+`folder-structure.md` is rendered from `knowledge.analysis.folderContexts` by `src/docs/markdown-renderers/folder-structure-renderer.ts` — grouping folders by classification, listing responsibilities and important files — without re-walking the tree.
 
 ---
 
@@ -219,7 +219,7 @@ Conventions answer the question agents most often get wrong: *what patterns does
 
 Each `ConventionKnowledge` entry carries a `category`, `name`, `description`, `evidence[]` (`type`, `source`, `detail`), and `confidence` (`high`/`medium`/`low`). Structured conventions — unlike a plain `string[]` — can be filtered by category, ranked by confidence, and audited from their evidence. Deterministic detection runs before any AI analysis so every pipeline run produces the same reproducible convention baseline; the future AI stage extends it rather than replacing it.
 
-Results are stored in `knowledge.analysis.conventions` and persisted to `analysis.json` and `conventions.json`. Future `conventions.md` generation must render from this PKM section.
+Results are stored in `knowledge.analysis.conventions` and persisted to `analysis.json` and `conventions.json`. `conventions.md` is rendered from this PKM section by `src/docs/markdown-renderers/conventions-renderer.ts`.
 
 ### AI Navigation Map
 
@@ -233,7 +233,7 @@ Confidence is verification-based: `high` only when every recommended knowledge s
 
 The MVP map is deterministic by design — no OpenRouter, no filesystem access. The same PKM always yields the same navigation map, giving agents a reproducible reading list on every run. A future AI stage can extend the map with project-specific task types without replacing the baseline.
 
-Results are stored in `knowledge.analysis.navigationMap` and persisted to `analysis.json` and `navigation-map.json`. Future agent-specific exporters (Cursor rules, skills, agent packs) and `agent-navigation.md` generation must consume this PKM section rather than hardcoding reading lists.
+Results are stored in `knowledge.analysis.navigationMap` and persisted to `analysis.json` and `navigation-map.json`. `agent-navigation.md` is rendered from this PKM section by `src/docs/markdown-renderers/agent-navigation-renderer.ts`; future agent-specific exporters (Cursor rules, skills, agent packs) must consume the same section rather than hardcoding reading lists.
 
 ---
 
@@ -286,19 +286,38 @@ Path resolution uses `resolvePathWithinRoot()` via `knowledge-paths.ts` — writ
 
 ## Documentation writing
 
-`src/docs/documentation-writer.ts` implements step 11 (Write Documentation). It receives `ProjectKnowledge` and writes Markdown files into `<repository.rootPath>/<documentation.plan.docsDir>/`.
+`src/docs/documentation-writer.ts` implements step 14 (Write Documentation). It receives `ProjectKnowledge` and writes Markdown files into `<repository.rootPath>/<documentation.plan.docsDir>/`.
 
 The writer is a **generator**: it reads only from the PKM. It does not receive `RuntimeConfig` and does not call the scanner or detectors directly.
+
+### PKM-powered Markdown renderers
+
+Rendering is split from writing. `src/docs/markdown-renderers/` contains one small deterministic renderer per key document, plus a dispatch registry:
+
+| Document | Renderer | PKM sections rendered |
+|---|---|---|
+| `architecture.md` | `architecture-renderer.ts` | technologies, modules, architectural conventions, dependency graph summary, architecture-change guidance |
+| `folder-structure.md` | `folder-structure-renderer.ts` | folder contexts grouped by classification, responsibilities, important files, ignored folders |
+| `dependency-map.md` | `dependency-map-renderer.ts` | graph nodes, edges, per-edge import evidence, lightweight-graph warning |
+| `conventions.md` | `conventions-renderer.ts` | conventions grouped by category with description, confidence, and evidence |
+| `agent-navigation.md` | `agent-navigation-renderer.ts` | per-task-type reading lists, related modules/folders, warnings |
+| `ai-context.md` | `ai-context-renderer.ts` | PKM summary, read-first list, key modules, key conventions, current limitations |
+| `implementation-guide.md` | `implementation-guide-renderer.ts` | safe-change steps seasoned with actual module and navigation data |
+
+Documents without a dedicated renderer (`README.md`, `change-log.md`, `AGENTS.md`, technology docs) fall back to the generic deterministic template in `document-template.ts`. The writer reports both counts (`PKM-powered documents` / `Generic documents`).
+
+**Renderer rules:** renderers are presentation-only. They must not analyze the repository, read the filesystem, or call AI — facts come exclusively from the PKM, which remains the source of truth. Markdown is a derived output. Renderers stay small and deterministic: the same PKM always yields the same Markdown, and missing PKM sections render as honest "not available yet" notes.
+
+### Write safety
 
 The writer is intentionally conservative:
 
 - It creates the docs directory if it does not exist.
-- It writes deterministic placeholder content from known metadata only.
 - It never deletes files.
 - It only overwrites files that start with the generated-file marker `<!-- Generated by AI Project Docs. Safe to update. -->`.
 - It skips unmarked files with a warning so user-created documentation is preserved.
 
-This gives the pipeline a safe first write path before the AI analysis and deeper repository-model stages exist. Future AI stages will enrich the contents of these same files rather than changing the ownership rule.
+Future AI stages will enrich PKM sections; the same renderers then surface the richer data without changing the ownership rule.
 
 ---
 
@@ -404,7 +423,7 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 
 **Plan before generate.** The documentation plan (step 7) commits to a deterministic file manifest before any content is generated or written. Future generation steps work against this manifest rather than deciding on-the-fly which files to create.
 
-**Deterministic write before AI enrichment.** Step 8 writes predictable placeholder Markdown from metadata already available in the pipeline. This validates ownership rules, path safety, and incremental file updates before introducing AI-generated architecture analysis.
+**Deterministic write before AI enrichment.** Step 14 writes predictable Markdown rendered from PKM data already available in the pipeline — deterministic renderers for key documents, a generic template for the rest. This validates ownership rules, path safety, and incremental file updates before introducing AI-generated architecture analysis.
 
 **Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`.
 
