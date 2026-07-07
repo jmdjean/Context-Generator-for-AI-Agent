@@ -1,25 +1,25 @@
 {
   "metadata": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-07-07T00:08:53.444Z",
+    "generatedAt": "2026-07-07T12:04:17.429Z",
     "generatorVersion": "0.1.0",
     "projectName": "Context-Generator-for-AI-Agent",
     "docsDir": ".ai-docs"
   },
   "repository": {
     "name": "Context-Generator-for-AI-Agent",
-    "rootPath": "C:\\projeto\\Context-Generator-for-AI-Agent",
+    "rootPath": "/home/user/Context-Generator-for-AI-Agent",
     "detectedFiles": [
       ".ai-docs",
       ".git",
       ".gitignore",
       "AGENTS.md",
+      "README.md",
       "dist",
       "docs",
       "node_modules",
       "package-lock.json",
       "package.json",
-      "README.md",
       "src",
       "tsconfig.json"
     ],
@@ -51,369 +51,425 @@
     ],
     "repositoryTree": {
       "name": "Context-Generator-for-AI-Agent",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
+      "path": "/home/user/Context-Generator-for-AI-Agent",
       "relativePath": "",
       "type": "directory",
       "children": [
         {
           "name": "AGENTS.md",
-          "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\AGENTS.md",
+          "path": "/home/user/Context-Generator-for-AI-Agent/AGENTS.md",
           "relativePath": "AGENTS.md",
           "type": "file",
           "extension": "md",
-          "sizeBytes": 12507
+          "sizeBytes": 13050
         },
         {
           "name": "docs",
-          "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+          "path": "/home/user/Context-Generator-for-AI-Agent/docs",
           "relativePath": "docs",
           "type": "directory",
           "children": [
             {
               "name": "architecture.md",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs\\architecture.md",
+              "path": "/home/user/Context-Generator-for-AI-Agent/docs/architecture.md",
               "relativePath": "docs/architecture.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 26724
+              "sizeBytes": 30790
             },
             {
               "name": "context-engineering.md",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs\\context-engineering.md",
+              "path": "/home/user/Context-Generator-for-AI-Agent/docs/context-engineering.md",
               "relativePath": "docs/context-engineering.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 20800
+              "sizeBytes": 24267
             },
             {
               "name": "folder-structure.md",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs\\folder-structure.md",
+              "path": "/home/user/Context-Generator-for-AI-Agent/docs/folder-structure.md",
               "relativePath": "docs/folder-structure.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 11509
+              "sizeBytes": 11947
             }
           ]
         },
         {
           "name": "package.json",
-          "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\package.json",
+          "path": "/home/user/Context-Generator-for-AI-Agent/package.json",
           "relativePath": "package.json",
           "type": "file",
           "extension": "json",
-          "sizeBytes": 803
+          "sizeBytes": 772
         },
         {
           "name": "README.md",
-          "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\README.md",
+          "path": "/home/user/Context-Generator-for-AI-Agent/README.md",
           "relativePath": "README.md",
           "type": "file",
           "extension": "md",
-          "sizeBytes": 5385
+          "sizeBytes": 5349
         },
         {
           "name": "src",
-          "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
+          "path": "/home/user/Context-Generator-for-AI-Agent/src",
           "relativePath": "src",
           "type": "directory",
           "children": [
             {
               "name": "ai",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
               "relativePath": "src/ai",
               "type": "directory",
               "children": [
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/ai/README.md",
                   "relativePath": "src/ai/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 1390
+                  "sizeBytes": 1349
                 }
               ]
             },
             {
               "name": "analyzers",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
               "relativePath": "src/analyzers",
               "type": "directory",
               "children": [
                 {
+                  "name": "convention-analyzer.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/convention-analyzer.test.ts",
+                  "relativePath": "src/analyzers/convention-analyzer.test.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 9896
+                },
+                {
+                  "name": "convention-analyzer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/convention-analyzer.ts",
+                  "relativePath": "src/analyzers/convention-analyzer.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 4535
+                },
+                {
+                  "name": "convention-classifier.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/convention-classifier.test.ts",
+                  "relativePath": "src/analyzers/convention-classifier.test.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 5737
+                },
+                {
+                  "name": "convention-classifier.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/convention-classifier.ts",
+                  "relativePath": "src/analyzers/convention-classifier.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 19675
+                },
+                {
                   "name": "dependency-graph-analyzer.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\dependency-graph-analyzer.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/dependency-graph-analyzer.test.ts",
                   "relativePath": "src/analyzers/dependency-graph-analyzer.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 14889
+                  "sizeBytes": 14446
                 },
                 {
                   "name": "dependency-graph-analyzer.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\dependency-graph-analyzer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/dependency-graph-analyzer.ts",
                   "relativePath": "src/analyzers/dependency-graph-analyzer.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 8354
+                  "sizeBytes": 8067
                 },
                 {
                   "name": "folder-analyzer.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\folder-analyzer.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/folder-analyzer.test.ts",
                   "relativePath": "src/analyzers/folder-analyzer.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 9088
+                  "sizeBytes": 8827
                 },
                 {
                   "name": "folder-analyzer.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\folder-analyzer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/folder-analyzer.ts",
                   "relativePath": "src/analyzers/folder-analyzer.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 8624
+                  "sizeBytes": 8341
                 },
                 {
                   "name": "folder-classifier.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\folder-classifier.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/folder-classifier.test.ts",
                   "relativePath": "src/analyzers/folder-classifier.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 3545
+                  "sizeBytes": 3439
                 },
                 {
                   "name": "folder-classifier.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\folder-classifier.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/folder-classifier.ts",
                   "relativePath": "src/analyzers/folder-classifier.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 5462
+                  "sizeBytes": 5275
                 },
                 {
                   "name": "folder-constants.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\folder-constants.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/folder-constants.ts",
                   "relativePath": "src/analyzers/folder-constants.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 4983
+                  "sizeBytes": 4828
                 },
                 {
                   "name": "import-parser.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\import-parser.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/import-parser.test.ts",
                   "relativePath": "src/analyzers/import-parser.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 5061
+                  "sizeBytes": 4901
                 },
                 {
                   "name": "import-parser.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\import-parser.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/import-parser.ts",
                   "relativePath": "src/analyzers/import-parser.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 6605
+                  "sizeBytes": 6374
                 },
                 {
                   "name": "index.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\index.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/index.ts",
                   "relativePath": "src/analyzers/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 1485
+                  "sizeBytes": 2537
                 },
                 {
                   "name": "module-analyzer.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\module-analyzer.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/module-analyzer.test.ts",
                   "relativePath": "src/analyzers/module-analyzer.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 8407
+                  "sizeBytes": 8188
                 },
                 {
                   "name": "module-analyzer.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\module-analyzer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/module-analyzer.ts",
                   "relativePath": "src/analyzers/module-analyzer.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 12879
+                  "sizeBytes": 12447
                 },
                 {
                   "name": "module-classifier.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\module-classifier.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/module-classifier.test.ts",
                   "relativePath": "src/analyzers/module-classifier.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 4571
+                  "sizeBytes": 4417
                 },
                 {
                   "name": "module-classifier.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\module-classifier.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/module-classifier.ts",
                   "relativePath": "src/analyzers/module-classifier.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 7183
+                  "sizeBytes": 6938
                 },
                 {
                   "name": "module-constants.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\module-constants.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/module-constants.ts",
                   "relativePath": "src/analyzers/module-constants.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 3534
+                  "sizeBytes": 3441
+                },
+                {
+                  "name": "navigation-map-analyzer.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-analyzer.test.ts",
+                  "relativePath": "src/analyzers/navigation-map-analyzer.test.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 8249
+                },
+                {
+                  "name": "navigation-map-analyzer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-analyzer.ts",
+                  "relativePath": "src/analyzers/navigation-map-analyzer.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 1794
+                },
+                {
+                  "name": "navigation-map-builder.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-builder.ts",
+                  "relativePath": "src/analyzers/navigation-map-builder.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 9879
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/README.md",
                   "relativePath": "src/analyzers/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 7181
+                  "sizeBytes": 14377
                 }
               ]
             },
             {
               "name": "cli.ts",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\cli.ts",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/cli.ts",
               "relativePath": "src/cli.ts",
               "type": "file",
               "extension": "ts",
-              "sizeBytes": 1048
+              "sizeBytes": 1007
             },
             {
               "name": "config",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
               "relativePath": "src/config",
               "type": "directory",
               "children": [
                 {
                   "name": "index.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config\\index.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/config/index.ts",
                   "relativePath": "src/config/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 3522
+                  "sizeBytes": 3412
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/config/README.md",
                   "relativePath": "src/config/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 2729
+                  "sizeBytes": 2654
                 }
               ]
             },
             {
               "name": "core",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
               "relativePath": "src/core",
               "type": "directory",
               "children": [
                 {
                   "name": "index.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core\\index.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/core/index.ts",
                   "relativePath": "src/core/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 3364
+                  "sizeBytes": 3263
                 },
                 {
                   "name": "pipeline-handlers.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core\\pipeline-handlers.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/core/pipeline-handlers.ts",
                   "relativePath": "src/core/pipeline-handlers.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 9601
+                  "sizeBytes": 11194
                 },
                 {
                   "name": "pipeline-orchestrator.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core\\pipeline-orchestrator.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/core/pipeline-orchestrator.ts",
                   "relativePath": "src/core/pipeline-orchestrator.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2742
+                  "sizeBytes": 2643
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/core/README.md",
                   "relativePath": "src/core/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 6178
+                  "sizeBytes": 6041
                 }
               ]
             },
             {
               "name": "detectors",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
               "relativePath": "src/detectors",
               "type": "directory",
               "children": [
                 {
                   "name": "package-manager-detector.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors\\package-manager-detector.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors/package-manager-detector.test.ts",
                   "relativePath": "src/detectors/package-manager-detector.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 1288
+                  "sizeBytes": 1254
                 },
                 {
                   "name": "package-manager-detector.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors\\package-manager-detector.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors/package-manager-detector.ts",
                   "relativePath": "src/detectors/package-manager-detector.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 788
+                  "sizeBytes": 761
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors/README.md",
                   "relativePath": "src/detectors/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 5413
+                  "sizeBytes": 5306
                 },
                 {
                   "name": "repository-paths.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors\\repository-paths.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors/repository-paths.test.ts",
                   "relativePath": "src/detectors/repository-paths.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2190
+                  "sizeBytes": 2118
                 },
                 {
                   "name": "repository-paths.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors\\repository-paths.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors/repository-paths.ts",
                   "relativePath": "src/detectors/repository-paths.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 1548
+                  "sizeBytes": 1497
                 },
                 {
                   "name": "technology-detector.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors\\technology-detector.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors/technology-detector.test.ts",
                   "relativePath": "src/detectors/technology-detector.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2625
+                  "sizeBytes": 2551
                 },
                 {
                   "name": "technology-detector.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors\\technology-detector.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors/technology-detector.ts",
                   "relativePath": "src/detectors/technology-detector.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 4096
+                  "sizeBytes": 3967
                 }
               ]
             },
             {
               "name": "docs",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
               "relativePath": "src/docs",
               "type": "directory",
               "children": [
                 {
                   "name": "document-template.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\document-template.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/document-template.ts",
                   "relativePath": "src/docs/document-template.ts",
                   "type": "file",
                   "extension": "ts",
@@ -421,23 +477,23 @@
                 },
                 {
                   "name": "documentation-plan.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\documentation-plan.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/documentation-plan.ts",
                   "relativePath": "src/docs/documentation-plan.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 137
+                  "sizeBytes": 131
                 },
                 {
                   "name": "documentation-planner.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\documentation-planner.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/documentation-planner.ts",
                   "relativePath": "src/docs/documentation-planner.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 6736
+                  "sizeBytes": 6510
                 },
                 {
                   "name": "documentation-writer.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\documentation-writer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/documentation-writer.ts",
                   "relativePath": "src/docs/documentation-writer.ts",
                   "type": "file",
                   "extension": "ts",
@@ -445,307 +501,307 @@
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/README.md",
                   "relativePath": "src/docs/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 8844
+                  "sizeBytes": 8640
                 }
               ]
             },
             {
               "name": "domain",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
               "relativePath": "src/domain",
               "type": "directory",
               "children": [
                 {
                   "name": "agent.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\agent.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/agent.ts",
                   "relativePath": "src/domain/agent.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 134
+                  "sizeBytes": 128
                 },
                 {
                   "name": "analysis.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\analysis.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/analysis.ts",
                   "relativePath": "src/domain/analysis.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 156
+                  "sizeBytes": 149
                 },
                 {
                   "name": "context.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\context.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/context.ts",
                   "relativePath": "src/domain/context.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 381
+                  "sizeBytes": 369
                 },
                 {
                   "name": "documentation-plan.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\documentation-plan.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/documentation-plan.ts",
                   "relativePath": "src/domain/documentation-plan.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 464
+                  "sizeBytes": 446
                 },
                 {
                   "name": "documentation.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\documentation.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/documentation.ts",
                   "relativePath": "src/domain/documentation.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 272
+                  "sizeBytes": 259
                 },
                 {
                   "name": "index.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\index.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/index.ts",
                   "relativePath": "src/domain/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 653
+                  "sizeBytes": 636
                 },
                 {
                   "name": "pipeline.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\pipeline.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/pipeline.ts",
                   "relativePath": "src/domain/pipeline.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 5002
+                  "sizeBytes": 5606
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/README.md",
                   "relativePath": "src/domain/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 5178
+                  "sizeBytes": 5079
                 },
                 {
                   "name": "repository.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\repository.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/repository.ts",
                   "relativePath": "src/domain/repository.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 483
+                  "sizeBytes": 462
                 },
                 {
                   "name": "technology.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain\\technology.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/domain/technology.ts",
                   "relativePath": "src/domain/technology.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 244
+                  "sizeBytes": 235
                 }
               ]
             },
             {
               "name": "knowledge",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
               "relativePath": "src/knowledge",
               "type": "directory",
               "children": [
                 {
                   "name": "accessors.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\accessors.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/accessors.ts",
                   "relativePath": "src/knowledge/accessors.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 977
+                  "sizeBytes": 950
                 },
                 {
                   "name": "constants.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\constants.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/constants.ts",
                   "relativePath": "src/knowledge/constants.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 103
+                  "sizeBytes": 100
                 },
                 {
                   "name": "index.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\index.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/index.ts",
                   "relativePath": "src/knowledge/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 1493
+                  "sizeBytes": 1730
                 },
                 {
                   "name": "knowledge-builder.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\knowledge-builder.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/knowledge-builder.ts",
                   "relativePath": "src/knowledge/knowledge-builder.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2927
+                  "sizeBytes": 2836
                 },
                 {
                   "name": "knowledge-paths.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\knowledge-paths.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/knowledge-paths.test.ts",
                   "relativePath": "src/knowledge/knowledge-paths.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2837
+                  "sizeBytes": 2782
                 },
                 {
                   "name": "knowledge-paths.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\knowledge-paths.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/knowledge-paths.ts",
                   "relativePath": "src/knowledge/knowledge-paths.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2587
+                  "sizeBytes": 2946
                 },
                 {
                   "name": "knowledge-writer.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\knowledge-writer.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/knowledge-writer.test.ts",
                   "relativePath": "src/knowledge/knowledge-writer.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 7374
+                  "sizeBytes": 11146
                 },
                 {
                   "name": "knowledge-writer.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\knowledge-writer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/knowledge-writer.ts",
                   "relativePath": "src/knowledge/knowledge-writer.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 6277
+                  "sizeBytes": 7671
                 },
                 {
                   "name": "project-knowledge.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\project-knowledge.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/project-knowledge.ts",
                   "relativePath": "src/knowledge/project-knowledge.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 3272
+                  "sizeBytes": 4694
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge/README.md",
                   "relativePath": "src/knowledge/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 8442
+                  "sizeBytes": 11514
                 }
               ]
             },
             {
               "name": "scanner",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
               "relativePath": "src/scanner",
               "type": "directory",
               "children": [
                 {
                   "name": "ignore-rules.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\ignore-rules.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/ignore-rules.test.ts",
                   "relativePath": "src/scanner/ignore-rules.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2408
+                  "sizeBytes": 2344
                 },
                 {
                   "name": "ignore-rules.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\ignore-rules.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/ignore-rules.ts",
                   "relativePath": "src/scanner/ignore-rules.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 6703
+                  "sizeBytes": 6454
                 },
                 {
                   "name": "index.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\index.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/index.ts",
                   "relativePath": "src/scanner/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 875
+                  "sizeBytes": 844
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/README.md",
                   "relativePath": "src/scanner/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 5508
+                  "sizeBytes": 5398
                 },
                 {
                   "name": "repository-boundary.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\repository-boundary.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/repository-boundary.test.ts",
                   "relativePath": "src/scanner/repository-boundary.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 824
+                  "sizeBytes": 804
                 },
                 {
                   "name": "repository-boundary.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\repository-boundary.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/repository-boundary.ts",
                   "relativePath": "src/scanner/repository-boundary.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 974
+                  "sizeBytes": 943
                 },
                 {
                   "name": "repository-loader.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\repository-loader.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/repository-loader.ts",
                   "relativePath": "src/scanner/repository-loader.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 610
+                  "sizeBytes": 588
                 },
                 {
                   "name": "repository-scanner.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\repository-scanner.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/repository-scanner.test.ts",
                   "relativePath": "src/scanner/repository-scanner.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 4066
+                  "sizeBytes": 3966
                 },
                 {
                   "name": "repository-scanner.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\repository-scanner.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/repository-scanner.ts",
                   "relativePath": "src/scanner/repository-scanner.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 5793
+                  "sizeBytes": 5562
                 },
                 {
                   "name": "scanner-options.test.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\scanner-options.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/scanner-options.test.ts",
                   "relativePath": "src/scanner/scanner-options.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 790
+                  "sizeBytes": 769
                 },
                 {
                   "name": "scanner-options.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner\\scanner-options.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner/scanner-options.ts",
                   "relativePath": "src/scanner/scanner-options.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 1447
+                  "sizeBytes": 1399
                 }
               ]
             },
             {
               "name": "utils",
-              "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
               "relativePath": "src/utils",
               "type": "directory",
               "children": [
                 {
                   "name": "fs.ts",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils\\fs.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/utils/fs.ts",
                   "relativePath": "src/utils/fs.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 1014
+                  "sizeBytes": 1000
                 },
                 {
                   "name": "README.md",
-                  "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils\\README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/utils/README.md",
                   "relativePath": "src/utils/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 1500
+                  "sizeBytes": 1460
                 }
               ]
             }
@@ -753,11 +809,11 @@
         },
         {
           "name": "tsconfig.json",
-          "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\tsconfig.json",
+          "path": "/home/user/Context-Generator-for-AI-Agent/tsconfig.json",
           "relativePath": "tsconfig.json",
           "type": "file",
           "extension": "json",
-          "sizeBytes": 464
+          "sizeBytes": 445
         }
       ]
     }
@@ -873,7 +929,7 @@
           ]
         }
       ],
-      "generatedAt": "2026-07-07T00:08:53.444Z",
+      "generatedAt": "2026-07-07T12:04:17.429Z",
       "strategy": "standard"
     }
   },
@@ -881,7 +937,7 @@
     "status": "partial",
     "folderContexts": [
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
+        "path": "/home/user/Context-Generator-for-AI-Agent",
         "relativePath": "",
         "name": "Context-Generator-for-AI-Agent",
         "depth": 0,
@@ -903,7 +959,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+        "path": "/home/user/Context-Generator-for-AI-Agent/docs",
         "relativePath": "docs",
         "name": "docs",
         "depth": 1,
@@ -918,7 +974,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src",
         "relativePath": "src",
         "name": "src",
         "depth": 1,
@@ -944,7 +1000,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
         "relativePath": "src/ai",
         "name": "ai",
         "depth": 2,
@@ -963,7 +1019,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
         "relativePath": "src/analyzers",
         "name": "analyzers",
         "depth": 2,
@@ -975,12 +1031,15 @@
         "childFolders": [],
         "signals": [
           "folder-name:analyzers",
+          "test-file:convention-analyzer.test.ts",
+          "test-file:convention-classifier.test.ts",
           "test-file:dependency-graph-analyzer.test.ts",
           "test-file:folder-analyzer.test.ts",
           "test-file:folder-classifier.test.ts",
           "test-file:import-parser.test.ts",
           "test-file:module-analyzer.test.ts",
           "test-file:module-classifier.test.ts",
+          "test-file:navigation-map-analyzer.test.ts",
           "doc-file:README.md",
           "path-context:source-files",
           "path-context:source-module"
@@ -988,7 +1047,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
         "relativePath": "src/config",
         "name": "config",
         "depth": 2,
@@ -1006,7 +1065,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
         "relativePath": "src/core",
         "name": "core",
         "depth": 2,
@@ -1025,7 +1084,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
         "relativePath": "src/detectors",
         "name": "detectors",
         "depth": 2,
@@ -1047,7 +1106,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
         "relativePath": "src/docs",
         "name": "docs",
         "depth": 2,
@@ -1065,7 +1124,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
         "relativePath": "src/domain",
         "name": "domain",
         "depth": 2,
@@ -1084,7 +1143,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
         "relativePath": "src/knowledge",
         "name": "knowledge",
         "depth": 2,
@@ -1105,7 +1164,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
         "relativePath": "src/scanner",
         "name": "scanner",
         "depth": 2,
@@ -1128,7 +1187,7 @@
         "confidence": "high"
       },
       {
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
         "relativePath": "src/utils",
         "name": "utils",
         "depth": 2,
@@ -1150,7 +1209,7 @@
     "modules": [
       {
         "name": ".ai-docs",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\.ai-docs",
+        "path": "/home/user/Context-Generator-for-AI-Agent/.ai-docs",
         "relativePath": ".ai-docs",
         "type": "documentation",
         "responsibility": "Contains AI-readable project context generated by this tool.",
@@ -1169,7 +1228,7 @@
       },
       {
         "name": "docs",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+        "path": "/home/user/Context-Generator-for-AI-Agent/docs",
         "relativePath": "docs",
         "type": "documentation",
         "responsibility": "Contains human-readable project documentation.",
@@ -1186,7 +1245,7 @@
       },
       {
         "name": "ai",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
         "relativePath": "src/ai",
         "type": "core",
         "responsibility": "Integrates with AI providers for architecture analysis.",
@@ -1205,7 +1264,7 @@
       },
       {
         "name": "analyzers",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
         "relativePath": "src/analyzers",
         "type": "core",
         "responsibility": "Derives higher-level architectural knowledge from the PKM.",
@@ -1224,7 +1283,7 @@
       },
       {
         "name": "config",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
         "relativePath": "src/config",
         "type": "configuration",
         "responsibility": "Resolves runtime configuration from CLI flags and environment variables.",
@@ -1243,7 +1302,7 @@
       },
       {
         "name": "core",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
         "relativePath": "src/core",
         "type": "core",
         "responsibility": "Contains pipeline orchestration and core application coordination logic.",
@@ -1262,7 +1321,7 @@
       },
       {
         "name": "detectors",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
         "relativePath": "src/detectors",
         "type": "core",
         "responsibility": "Detects technologies and tooling from repository metadata.",
@@ -1281,7 +1340,7 @@
       },
       {
         "name": "docs",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
         "relativePath": "src/docs",
         "type": "core",
         "responsibility": "Plans and writes documentation outputs derived from project knowledge.",
@@ -1300,7 +1359,7 @@
       },
       {
         "name": "domain",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
         "relativePath": "src/domain",
         "type": "core",
         "responsibility": "Defines pure domain types and the declarative analysis pipeline.",
@@ -1319,7 +1378,7 @@
       },
       {
         "name": "knowledge",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
         "relativePath": "src/knowledge",
         "type": "core",
         "responsibility": "Represents and persists the Project Knowledge Model used as the source of truth.",
@@ -1338,7 +1397,7 @@
       },
       {
         "name": "scanner",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
         "relativePath": "src/scanner",
         "type": "core",
         "responsibility": "Builds the repository tree used by analyzers.",
@@ -1357,7 +1416,7 @@
       },
       {
         "name": "utils",
-        "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
         "relativePath": "src/utils",
         "type": "tooling",
         "responsibility": "Provides shared utility functions with no domain knowledge.",
@@ -1446,6 +1505,10 @@
           "confidence": "high",
           "evidence": [
             {
+              "sourceFile": "src/analyzers/convention-analyzer.ts",
+              "importPath": "../domain"
+            },
+            {
               "sourceFile": "src/analyzers/folder-analyzer.ts",
               "importPath": "../domain"
             },
@@ -1466,6 +1529,10 @@
           "confidence": "high",
           "evidence": [
             {
+              "sourceFile": "src/analyzers/convention-analyzer.ts",
+              "importPath": "../knowledge/project-knowledge"
+            },
+            {
               "sourceFile": "src/analyzers/folder-classifier.ts",
               "importPath": "../knowledge/project-knowledge"
             },
@@ -1485,6 +1552,10 @@
           "type": "imports",
           "confidence": "high",
           "evidence": [
+            {
+              "sourceFile": "src/analyzers/convention-analyzer.ts",
+              "importPath": "../scanner/repository-boundary"
+            },
             {
               "sourceFile": "src/analyzers/dependency-graph-analyzer.ts",
               "importPath": "../scanner/repository-boundary"
@@ -1784,7 +1855,648 @@
           ]
         }
       ],
-      "generatedAt": "2026-07-07T00:08:53.444Z"
+      "generatedAt": "2026-07-07T12:04:17.429Z"
+    },
+    "conventions": [
+      {
+        "category": "language",
+        "name": "TypeScript project",
+        "description": "The project is written in TypeScript with a root tsconfig.json.",
+        "evidence": [
+          {
+            "type": "file",
+            "source": "tsconfig.json",
+            "detail": "Repository contains a root tsconfig.json"
+          },
+          {
+            "type": "technology",
+            "source": "technologies.languages",
+            "detail": "Technology detection identified TypeScript"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "language",
+        "name": "TypeScript strict mode",
+        "description": "The TypeScript compiler runs with strict mode enabled; all code must satisfy strict checks.",
+        "evidence": [
+          {
+            "type": "config",
+            "source": "tsconfig.json",
+            "detail": "compilerOptions.strict is enabled"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "package-management",
+        "name": "Dependencies managed with npm",
+        "description": "Dependencies are installed and scripts are run with npm.",
+        "evidence": [
+          {
+            "type": "technology",
+            "source": "technologies.packageManagers",
+            "detail": "Technology detection identified npm"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "Deterministic analyzers under src/analyzers",
+        "description": "Deterministic PKM enrichment analyzers live under src/analyzers.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src/analyzers",
+            "detail": "Repository tree contains src/analyzers/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "Documentation generation under src/docs",
+        "description": "Documentation planning and writing live under src/docs.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src/docs",
+            "detail": "Repository tree contains src/docs/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "Domain types under src/domain",
+        "description": "Pure domain types and the declarative pipeline live under src/domain.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src/domain",
+            "detail": "Repository tree contains src/domain/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "Pipeline orchestration under src/core",
+        "description": "Pipeline orchestration and step handlers live under src/core.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src/core",
+            "detail": "Repository tree contains src/core/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "PKM under src/knowledge",
+        "description": "The Project Knowledge Model types, builder, and persistence live under src/knowledge.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src/knowledge",
+            "detail": "Repository tree contains src/knowledge/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "Repository scanning under src/scanner",
+        "description": "Repository loading and scanning live under src/scanner.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src/scanner",
+            "detail": "Repository tree contains src/scanner/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "Source code under src/",
+        "description": "Application source code lives under the src/ directory.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src",
+            "detail": "Repository tree contains src/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "repository-structure",
+        "name": "Technology detection under src/detectors",
+        "description": "Technology detection lives under src/detectors.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "src/detectors",
+            "detail": "Repository tree contains src/detectors/"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "architecture",
+        "name": "src/analyzers consume the PKM",
+        "description": "Analyzers enrich the PKM deterministically without re-scanning the repository.",
+        "evidence": [
+          {
+            "type": "module",
+            "source": "src/analyzers",
+            "detail": "Module classified as core: Derives higher-level architectural knowledge from the PKM."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "architecture",
+        "name": "src/core orchestrates the pipeline",
+        "description": "The core module drives pipeline execution and coordinates every stage.",
+        "evidence": [
+          {
+            "type": "module",
+            "source": "src/core",
+            "detail": "Module classified as core: Contains pipeline orchestration and core application coordination logic."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "architecture",
+        "name": "src/detectors feed upstream knowledge",
+        "description": "Detectors identify the technology stack that informs downstream analysis.",
+        "evidence": [
+          {
+            "type": "module",
+            "source": "src/detectors",
+            "detail": "Module classified as core: Detects technologies and tooling from repository metadata."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "architecture",
+        "name": "src/docs writes derived output",
+        "description": "The docs module plans and renders documentation generated from the PKM.",
+        "evidence": [
+          {
+            "type": "module",
+            "source": "src/docs",
+            "detail": "Module classified as core: Plans and writes documentation outputs derived from project knowledge."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "architecture",
+        "name": "src/domain remains pure",
+        "description": "The domain module contains only types and declarative data — no runtime behavior.",
+        "evidence": [
+          {
+            "type": "module",
+            "source": "src/domain",
+            "detail": "Module classified as core: Defines pure domain types and the declarative analysis pipeline."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "architecture",
+        "name": "src/knowledge owns the PKM",
+        "description": "The knowledge module defines, assembles, and persists the Project Knowledge Model.",
+        "evidence": [
+          {
+            "type": "module",
+            "source": "src/knowledge",
+            "detail": "Module classified as core: Represents and persists the Project Knowledge Model used as the source of truth."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "architecture",
+        "name": "src/scanner feeds upstream knowledge",
+        "description": "The scanner reads the repository from disk and supplies the structural baseline.",
+        "evidence": [
+          {
+            "type": "module",
+            "source": "src/scanner",
+            "detail": "Module classified as core: Builds the repository tree used by analyzers."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "testing",
+        "name": "Co-located test files",
+        "description": "Tests are co-located with source files using *.test.* and *.spec.* naming.",
+        "evidence": [
+          {
+            "type": "file",
+            "source": "src/analyzers/convention-analyzer.test.ts",
+            "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+          },
+          {
+            "type": "file",
+            "source": "src/analyzers/convention-classifier.test.ts",
+            "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+          },
+          {
+            "type": "file",
+            "source": "src/analyzers/dependency-graph-analyzer.test.ts",
+            "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "testing",
+        "name": "Package test script",
+        "description": "Tests run through the package manager test script.",
+        "evidence": [
+          {
+            "type": "config",
+            "source": "package.json",
+            "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js"
+          }
+        ],
+        "confidence": "medium"
+      },
+      {
+        "category": "documentation",
+        "name": "Agent instructions file",
+        "description": "AGENTS.md provides mandatory entry-point context for AI coding agents.",
+        "evidence": [
+          {
+            "type": "file",
+            "source": "AGENTS.md",
+            "detail": "Repository contains a root AGENTS.md"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "documentation",
+        "name": "Generated context folder present",
+        "description": "The repository contains the .ai-docs/ generated context folder.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": ".ai-docs",
+            "detail": "Top-level entry .ai-docs detected in repository metadata"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "documentation",
+        "name": "Human documentation folder",
+        "description": "Project-level documentation for humans and agents lives under docs/.",
+        "evidence": [
+          {
+            "type": "folder",
+            "source": "docs",
+            "detail": "Repository tree contains a docs/ folder"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "documentation",
+        "name": "Knowledge folder expected",
+        "description": "Machine-readable project knowledge lives under .ai-docs/knowledge/.",
+        "evidence": [
+          {
+            "type": "knowledge",
+            "source": ".ai-docs/knowledge",
+            "detail": "PKM persistence writes knowledge JSON into .ai-docs/knowledge/"
+          }
+        ],
+        "confidence": "medium"
+      },
+      {
+        "category": "documentation",
+        "name": "Knowledge JSON expected",
+        "description": "The full PKM snapshot is persisted as .ai-docs/knowledge/project-knowledge.json.",
+        "evidence": [
+          {
+            "type": "knowledge",
+            "source": ".ai-docs/knowledge/project-knowledge.json",
+            "detail": "The Persist Project Knowledge step writes this file on every run"
+          }
+        ],
+        "confidence": "medium"
+      },
+      {
+        "category": "documentation",
+        "name": "Root README",
+        "description": "The repository documents itself with a root README.md.",
+        "evidence": [
+          {
+            "type": "file",
+            "source": "README.md",
+            "detail": "Repository contains a root README.md"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "generated-context",
+        "name": "Generated docs live in the configured docs directory",
+        "description": "All generated documentation is written under .ai-docs/ inside the target repository.",
+        "evidence": [
+          {
+            "type": "knowledge",
+            "source": "documentation.plan.docsDir",
+            "detail": "Documentation plan targets .ai-docs"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "generated-context",
+        "name": "Machine-readable knowledge lives under the knowledge directory",
+        "description": "Machine-readable knowledge JSON files are persisted under .ai-docs/knowledge/.",
+        "evidence": [
+          {
+            "type": "knowledge",
+            "source": ".ai-docs/knowledge",
+            "detail": "PKM persistence writes the full snapshot and split section files here"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "generated-context",
+        "name": "Markdown docs are derived output",
+        "description": "Markdown files in the docs directory are rendered from the PKM — they are not the source of truth.",
+        "evidence": [
+          {
+            "type": "knowledge",
+            "source": "documentation.plan",
+            "detail": "The documentation writer renders Markdown from ProjectKnowledge"
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "category": "generated-context",
+        "name": "PKM JSON is the canonical machine-readable state",
+        "description": "project-knowledge.json and its split section files under .ai-docs/knowledge/ are the canonical persisted project state.",
+        "evidence": [
+          {
+            "type": "knowledge",
+            "source": ".ai-docs/knowledge/project-knowledge.json",
+            "detail": "The knowledge writer persists the full PKM snapshot on every run"
+          }
+        ],
+        "confidence": "high"
+      }
+    ],
+    "navigationMap": {
+      "entries": [
+        {
+          "taskType": "architecture-change",
+          "description": "Changing module boundaries, pipeline structure, or how stages and generators interact.",
+          "recommendedKnowledge": [
+            "modules",
+            "folderContexts",
+            "dependencyGraph",
+            "conventions"
+          ],
+          "recommendedDocuments": [
+            "architecture.md",
+            "folder-structure.md",
+            "dependency-map.md",
+            "conventions.md",
+            "ai-context.md"
+          ],
+          "relatedModules": [
+            "src/analyzers",
+            "src/core",
+            "src/docs",
+            "src/domain",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "src/analyzers",
+            "src/core",
+            "src/docs",
+            "src/domain",
+            "src/knowledge"
+          ],
+          "warnings": [
+            "Review dependency graph before changing module boundaries.",
+            "Preserve domain purity.",
+            "Keep generators consuming PKM instead of scanning directly."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "new-feature",
+          "description": "Adding new behavior: a pipeline step, analyzer, generator, detector, or CLI capability.",
+          "recommendedKnowledge": [
+            "modules",
+            "folderContexts",
+            "conventions",
+            "dependencyGraph",
+            "navigationMap"
+          ],
+          "recommendedDocuments": [
+            "architecture.md",
+            "folder-structure.md",
+            "implementation-guide.md",
+            "conventions.md",
+            "agent-navigation.md"
+          ],
+          "relatedModules": [
+            "src/analyzers",
+            "src/core",
+            "src/docs",
+            "src/domain",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "src"
+          ],
+          "warnings": [
+            "Add new behavior through the correct module boundary.",
+            "Update PKM-related docs if architecture changes.",
+            "Do not bypass the pipeline orchestration layer."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "bug-fix",
+          "description": "Correcting incorrect behavior in existing code without changing architecture or contracts.",
+          "recommendedKnowledge": [
+            "modules",
+            "dependencyGraph",
+            "conventions"
+          ],
+          "recommendedDocuments": [
+            "implementation-guide.md",
+            "dependency-map.md",
+            "conventions.md"
+          ],
+          "relatedModules": [
+            "src/ai",
+            "src/analyzers",
+            "src/core",
+            "src/detectors",
+            "src/docs",
+            "src/domain",
+            "src/knowledge",
+            "src/scanner"
+          ],
+          "relatedFolders": [],
+          "warnings": [
+            "Fix the root cause instead of patching generated output.",
+            "Avoid changing unrelated modules."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "test-change",
+          "description": "Adding, updating, or reorganizing tests for existing or new behavior.",
+          "recommendedKnowledge": [
+            "conventions",
+            "modules",
+            "folderContexts"
+          ],
+          "recommendedDocuments": [
+            "conventions.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [],
+          "relatedFolders": [],
+          "warnings": [
+            "Preserve existing testing conventions.",
+            "Do not weaken assertions or remove tests."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "documentation-change",
+          "description": "Updating Markdown documentation, READMEs, or the generated context layer.",
+          "recommendedKnowledge": [
+            "documentation",
+            "conventions",
+            "navigationMap"
+          ],
+          "recommendedDocuments": [
+            "README.md",
+            "agent-navigation.md",
+            "ai-context.md",
+            "conventions.md"
+          ],
+          "relatedModules": [
+            ".ai-docs",
+            "docs",
+            "src/docs",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "docs"
+          ],
+          "warnings": [
+            "Markdown should reflect PKM.",
+            "Do not manually edit generated files unless intentionally supported."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "config-change",
+          "description": "Changing runtime configuration, compiler options, or tooling configuration files.",
+          "recommendedKnowledge": [
+            "technologies",
+            "conventions",
+            "modules"
+          ],
+          "recommendedDocuments": [
+            "architecture.md",
+            "conventions.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [
+            "src/config",
+            "src/detectors",
+            "src/utils"
+          ],
+          "relatedFolders": [],
+          "warnings": [
+            "Check package manager and TypeScript strict mode conventions.",
+            "Avoid introducing conflicting tooling."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "dependency-change",
+          "description": "Adding, removing, or upgrading package dependencies.",
+          "recommendedKnowledge": [
+            "technologies",
+            "dependencyGraph",
+            "conventions"
+          ],
+          "recommendedDocuments": [
+            "dependency-map.md",
+            "conventions.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [
+            "src/detectors"
+          ],
+          "relatedFolders": [],
+          "warnings": [
+            "Check impacted modules before changing dependencies.",
+            "Keep dependency changes minimal."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "ai-agent-integration",
+          "description": "Building or adjusting agent-facing outputs: agent docs, exporters, rules, or skills.",
+          "recommendedKnowledge": [
+            "documentation",
+            "conventions",
+            "navigationMap",
+            "modules"
+          ],
+          "recommendedDocuments": [
+            "AGENTS.md",
+            "ai-context.md",
+            "agent-navigation.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [
+            ".ai-docs",
+            "docs",
+            "src/analyzers",
+            "src/docs",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "docs"
+          ],
+          "warnings": [
+            "Agent-specific outputs must be derived from PKM.",
+            "Do not duplicate repository analysis inside exporters."
+          ],
+          "confidence": "high"
+        }
+      ],
+      "generatedAt": "2026-07-07T12:04:17.429Z"
     }
   }
 }

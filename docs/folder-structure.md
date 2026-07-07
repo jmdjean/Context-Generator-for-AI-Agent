@@ -64,7 +64,7 @@ Does not contain scanner logic, detection logic, AI calls, or file I/O. When fut
 
 **When to modify:** When the overall execution flow changes — a new pipeline stage is wired in, step ordering changes, or conditional logic is added.
 
-**Status:** ✅ Orchestration skeleton done. Steps 2, 3, 4, 7, 8, 9, 10, and 12 use real handlers. Steps 5, 6, and 11 run as placeholders.
+**Status:** ✅ Orchestration skeleton done. Steps 1–4, 7–14, and 16 use real handlers. Steps 5, 6, and 15 run as placeholders.
 
 ---
 
@@ -129,13 +129,17 @@ Contains:
 - `module-analyzer.ts` — discovers `ModuleKnowledge[]` from folder knowledge
 - `import-parser.ts` — lightweight regex-based TypeScript/JavaScript import extraction
 - `dependency-graph-analyzer.ts` — builds `DependencyGraphKnowledge` from module imports
+- `convention-classifier.ts` — pure deterministic convention detection rules per category
+- `convention-analyzer.ts` — builds `ConventionKnowledge[]` from the PKM plus safe reads of `tsconfig.json`/`package.json`
+- `navigation-map-builder.ts` — per-task-type navigation rules and related module/folder resolution
+- `navigation-map-analyzer.ts` — builds `NavigationMapKnowledge` from the PKM
 - `index.ts` — public exports
 
-**Integration rule:** Analyzers consume `ProjectKnowledge` and write results into PKM sections (e.g. `knowledge.analysis.folderContexts`, `knowledge.analysis.modules`, `knowledge.analysis.dependencyGraph`). They must not re-scan the repository, call OpenRouter, or write Markdown.
+**Integration rule:** Analyzers consume `ProjectKnowledge` and write results into PKM sections (e.g. `knowledge.analysis.folderContexts`, `knowledge.analysis.modules`, `knowledge.analysis.dependencyGraph`, `knowledge.analysis.conventions`, `knowledge.analysis.navigationMap`). They must not re-scan the repository, call OpenRouter, or write Markdown. Selective safe reads of well-known root config files through `RepositoryBoundary` are the only permitted file access.
 
-**When to modify:** When adding a new deterministic analyzer (framework-specific module detection, AST-based import parsing) or extending classification rules.
+**When to modify:** When adding a new deterministic analyzer (framework-specific module detection, AST-based import parsing) or extending classification/convention/navigation rules.
 
-**Status:** ✅ Folder knowledge analyzer (step 9), module discovery analyzer (step 10), and dependency graph analyzer (step 11) implemented.
+**Status:** ✅ Folder knowledge analyzer (step 9), module discovery analyzer (step 10), dependency graph analyzer (step 11), convention analyzer (step 12), and AI navigation map (step 13) implemented.
 
 ---
 

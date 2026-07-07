@@ -121,12 +121,85 @@ export interface DependencyGraphKnowledge {
   generatedAt: string;
 }
 
+export type ConventionCategory =
+  | 'language'
+  | 'tooling'
+  | 'documentation'
+  | 'architecture'
+  | 'testing'
+  | 'package-management'
+  | 'generated-context'
+  | 'repository-structure'
+  | 'unknown';
+
+export type ConventionConfidence = 'high' | 'medium' | 'low';
+
+export type ConventionEvidenceType =
+  | 'file'
+  | 'folder'
+  | 'config'
+  | 'module'
+  | 'technology'
+  | 'knowledge';
+
+export interface ConventionEvidence {
+  type: ConventionEvidenceType;
+  source: string;
+  detail: string;
+}
+
+export interface ConventionKnowledge {
+  category: ConventionCategory;
+  name: string;
+  description: string;
+  evidence: ConventionEvidence[];
+  confidence: ConventionConfidence;
+}
+
+export type NavigationTaskType =
+  | 'architecture-change'
+  | 'new-feature'
+  | 'bug-fix'
+  | 'test-change'
+  | 'documentation-change'
+  | 'config-change'
+  | 'dependency-change'
+  | 'ai-agent-integration';
+
+export type NavigationEntryConfidence = 'high' | 'medium' | 'low';
+
+export type NavigationKnowledgeSection =
+  | 'repository'
+  | 'technologies'
+  | 'documentation'
+  | 'folderContexts'
+  | 'modules'
+  | 'dependencyGraph'
+  | 'conventions'
+  | 'navigationMap';
+
+export interface NavigationEntry {
+  taskType: NavigationTaskType;
+  description: string;
+  recommendedKnowledge: NavigationKnowledgeSection[];
+  recommendedDocuments: string[];
+  relatedModules: string[];
+  relatedFolders: string[];
+  warnings: string[];
+  confidence: NavigationEntryConfidence;
+}
+
+export interface NavigationMapKnowledge {
+  entries: NavigationEntry[];
+  generatedAt: string;
+}
+
 export interface AnalysisKnowledge {
   status: AnalysisKnowledgeStatus;
   architecture?: string;
-  conventions?: string[];
+  conventions?: ConventionKnowledge[];
   dependencyGraph?: DependencyGraphKnowledge;
-  navigationGraph?: Record<string, unknown>;
+  navigationMap?: NavigationMapKnowledge;
   folderContexts?: FolderKnowledge[];
   modules?: ModuleKnowledge[];
   implementationRecommendations?: string[];

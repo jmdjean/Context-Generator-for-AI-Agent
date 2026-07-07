@@ -19,7 +19,7 @@ The PKM lives in `src/knowledge/` as `ProjectKnowledge`. It contains:
 - **Repository facts** — name, root path, detected config files, repository tree, ignore rules
 - **Technology signals** — languages, frameworks, tooling, confidence
 - **Documentation plan** — which context files will exist and why
-- **Analysis** — folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`); architecture and navigation graph (future)
+- **Analysis** — folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); architecture (future)
 
 Generators (the Markdown writer today; Cursor rules, skills, and agent packs later) read from the PKM. They do not scan the repository or re-detect technologies themselves.
 
@@ -43,10 +43,12 @@ The output of `ai-project-docs` is a `.ai-docs/` folder inside the target reposi
 | `repository-tree.json` | Repository tree only (when scan completed) |
 | `technologies.json` | Detected stack only |
 | `documentation.json` | Documentation plan only |
-| `analysis.json` | Analysis section including `folderContexts`, `modules`, and `dependencyGraph` |
+| `analysis.json` | Analysis section including `folderContexts`, `modules`, `dependencyGraph`, `conventions`, and `navigationMap` |
 | `folders.json` | Folder knowledge only (when analysis ran) |
 | `modules.json` | Module knowledge only (when module analysis ran) |
 | `dependencies.json` | Dependency graph only (when dependency graph analysis ran) |
+| `conventions.json` | Convention knowledge only (when convention analysis ran) |
+| `navigation-map.json` | AI navigation map only (when the navigation map was built) |
 
 Future generators and external tools should prefer loading persisted JSON over re-analyzing the repository. Incremental updates, diff-based refresh, and validation will compare these files across runs.
 
@@ -117,11 +119,39 @@ Each edge includes evidence (`sourceFile`, `importPath`) and confidence (`high`,
 
 `dependencyGraph` lives in `knowledge.analysis.dependencyGraph` and is persisted to `analysis.json` and `dependencies.json`. Regex-based parsing is intentionally lightweight and deterministic; it misses dynamic imports, path aliases, and non-JS/TS imports. Future AST-based analyzers can extend or replace `src/analyzers/import-parser.ts` while writing to the same PKM section.
 
-### 9. Documentation must be kept current
+### 9. Convention knowledge stops agents from breaking project patterns
+
+Every project has patterns an agent must not break: strict TypeScript, co-located `*.test.ts` files, a pure `src/domain`, npm as the package manager, generated docs under `.ai-docs/`. When these patterns are implicit, agents rediscover them per task — or miss them and produce code that compiles but violates the project's own rules.
+
+The convention analyzer makes patterns explicit as `ConventionKnowledge` entries. Each one is **structured** — `category`, `name`, `description`, `evidence`, `confidence` — rather than a plain string, so an agent can:
+
+- load only the categories relevant to its task (e.g. `testing` conventions before writing tests),
+- weigh `high`-confidence conventions as hard constraints and `low`-confidence ones as hints,
+- verify any convention from its evidence (`{ "type": "config", "source": "tsconfig.json", "detail": "compilerOptions.strict is enabled" }`) instead of trusting an unexplained assertion.
+
+Detection is fully deterministic and runs **before** any AI analysis: the same repository always yields the same convention baseline, at zero token cost, with no model variance. The future AI stage adds interpretation on top of this baseline instead of inventing conventions from scratch — evidence-backed deterministic facts anchor the AI's output.
+
+`conventions` lives in `knowledge.analysis.conventions` and is persisted to `analysis.json` and `conventions.json`. Future Markdown generation (`conventions.md`) must render from this PKM section — grouping by category and surfacing evidence — not re-derive conventions from the repository.
+
+### 10. The navigation map tells agents what to read, per task
+
+Folder knowledge, modules, the dependency graph, and conventions describe the project. The **AI Navigation Map** turns that description into action: for each common task type (`architecture-change`, `new-feature`, `bug-fix`, `test-change`, `documentation-change`, `config-change`, `dependency-change`, `ai-agent-integration`) it lists which PKM sections to load, which Markdown documents to read, which modules and folders are involved, and which guardrails to respect.
+
+This is the bridge between raw PKM data and practical agent usage. An agent about to fix a bug does not need the full documentation plan or every folder context — it needs `modules`, `dependencyGraph`, and `conventions`, plus the warning to fix root causes rather than patching generated output. The map encodes those decisions once, deterministically, instead of leaving each agent to guess.
+
+Three properties make the map trustworthy:
+
+- **It never invents paths.** `relatedModules` and `relatedFolders` are resolved against actual `analysis.modules` and `analysis.folderContexts` entries; when nothing matches they are empty arrays.
+- **Confidence is verification-based.** An entry is `high` confidence only when every recommended knowledge section is populated and every recommended document is in the documentation plan.
+- **It is deterministic in the MVP.** No AI, no filesystem access — the same PKM always produces the same map, at zero token cost.
+
+`navigationMap` lives in `knowledge.analysis.navigationMap` and is persisted to `analysis.json` and `navigation-map.json`. Future agent-specific exporters — Cursor rules, Claude skills, agent packs — must consume this PKM section rather than embedding their own reading lists, so that every output format gives agents the same navigation guidance.
+
+### 11. Documentation must be kept current
 
 Stale documentation is worse than no documentation. It misleads agents into making decisions based on outdated information. The tool supports incremental updates: step 10 of the pipeline (Save Incremental State) persists a snapshot of the current analysis so that future runs only regenerate sections that reflect actual changes.
 
-### 10. Safe ownership matters
+### 12. Safe ownership matters
 
 Generated files in `.ai-docs/` are owned by the tool, but user-created files must still be protected. Every tool-managed file starts with a marker comment:
 

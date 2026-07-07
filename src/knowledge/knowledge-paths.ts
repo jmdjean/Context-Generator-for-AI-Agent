@@ -13,6 +13,8 @@ export const KNOWLEDGE_FILE_NAMES = {
   folders: 'folders.json',
   modules: 'modules.json',
   dependencies: 'dependencies.json',
+  conventions: 'conventions.json',
+  navigationMap: 'navigation-map.json',
 } as const;
 
 export type KnowledgeFileName =
@@ -47,6 +49,8 @@ export function listKnowledgeRelativeFilePaths(
   includeFolders = false,
   includeModules = false,
   includeDependencies = false,
+  includeConventions = false,
+  includeNavigationMap = false,
 ): string[] {
   return listPersistedKnowledgeRelativeFilePaths(
     docsDir,
@@ -54,6 +58,8 @@ export function listKnowledgeRelativeFilePaths(
     includeFolders,
     includeModules,
     includeDependencies,
+    includeConventions,
+    includeNavigationMap,
   );
 }
 
@@ -63,6 +69,8 @@ export function listPersistedKnowledgeRelativeFilePaths(
   includeFolders = true,
   includeModules = true,
   includeDependencies = true,
+  includeConventions = true,
+  includeNavigationMap = true,
 ): string[] {
   const fileNames = Object.values(KNOWLEDGE_FILE_NAMES).filter((fileName) => {
     if (fileName === KNOWLEDGE_FILE_NAMES.repositoryTree) {
@@ -76,6 +84,12 @@ export function listPersistedKnowledgeRelativeFilePaths(
     }
     if (fileName === KNOWLEDGE_FILE_NAMES.dependencies) {
       return includeDependencies;
+    }
+    if (fileName === KNOWLEDGE_FILE_NAMES.conventions) {
+      return includeConventions;
+    }
+    if (fileName === KNOWLEDGE_FILE_NAMES.navigationMap) {
+      return includeNavigationMap;
     }
     return true;
   });

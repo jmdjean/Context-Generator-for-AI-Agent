@@ -98,6 +98,22 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
+    name: 'Analyze Conventions',
+    description:
+      'Detect project conventions deterministically from the PKM, repository tree, technologies, module knowledge, and safe config file reads (tsconfig.json, package.json). Enriches ProjectKnowledge.analysis.conventions.',
+    input: 'ProjectKnowledge',
+    output: 'ConventionKnowledge[]',
+    status: 'pending',
+  },
+  {
+    name: 'Build AI Navigation Map',
+    description:
+      'Build a deterministic navigation map that tells AI agents which knowledge sections and documentation files to read before common task types. Enriches ProjectKnowledge.analysis.navigationMap.',
+    input: 'ProjectKnowledge',
+    output: 'NavigationMapKnowledge',
+    status: 'pending',
+  },
+  {
     name: 'Write Documentation',
     description:
       'Render deterministic Markdown for each planned document and write it into the .ai-docs/ folder inside the target repository. Only overwrite tool-managed files marked as safe to update.',

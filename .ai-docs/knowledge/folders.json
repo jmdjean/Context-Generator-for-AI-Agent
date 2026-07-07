@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "generatedAt": "2026-07-07T12:04:17.429Z",
   "folders": [
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
+      "path": "/home/user/Context-Generator-for-AI-Agent",
       "relativePath": "",
       "name": "Context-Generator-for-AI-Agent",
       "depth": 0,
@@ -25,7 +25,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/docs",
       "relativePath": "docs",
       "name": "docs",
       "depth": 1,
@@ -40,7 +40,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src",
       "relativePath": "src",
       "name": "src",
       "depth": 1,
@@ -66,7 +66,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
       "relativePath": "src/ai",
       "name": "ai",
       "depth": 2,
@@ -85,7 +85,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
       "relativePath": "src/analyzers",
       "name": "analyzers",
       "depth": 2,
@@ -97,12 +97,15 @@
       "childFolders": [],
       "signals": [
         "folder-name:analyzers",
+        "test-file:convention-analyzer.test.ts",
+        "test-file:convention-classifier.test.ts",
         "test-file:dependency-graph-analyzer.test.ts",
         "test-file:folder-analyzer.test.ts",
         "test-file:folder-classifier.test.ts",
         "test-file:import-parser.test.ts",
         "test-file:module-analyzer.test.ts",
         "test-file:module-classifier.test.ts",
+        "test-file:navigation-map-analyzer.test.ts",
         "doc-file:README.md",
         "path-context:source-files",
         "path-context:source-module"
@@ -110,7 +113,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
       "relativePath": "src/config",
       "name": "config",
       "depth": 2,
@@ -128,7 +131,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
       "relativePath": "src/core",
       "name": "core",
       "depth": 2,
@@ -147,7 +150,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
       "relativePath": "src/detectors",
       "name": "detectors",
       "depth": 2,
@@ -169,7 +172,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
       "relativePath": "src/docs",
       "name": "docs",
       "depth": 2,
@@ -187,7 +190,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
       "relativePath": "src/domain",
       "name": "domain",
       "depth": 2,
@@ -206,7 +209,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
       "relativePath": "src/knowledge",
       "name": "knowledge",
       "depth": 2,
@@ -227,7 +230,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
       "relativePath": "src/scanner",
       "name": "scanner",
       "depth": 2,
@@ -250,7 +253,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
       "relativePath": "src/utils",
       "name": "utils",
       "depth": 2,
