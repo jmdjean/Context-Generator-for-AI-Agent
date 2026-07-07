@@ -36,6 +36,31 @@ export {
   type DependencyGraphAnalysisResult,
 } from './dependency-graph-analyzer';
 export {
+  ARCHITECTURE_CONVENTION_RULES,
+  CONVENTION_CATEGORY_ORDER,
+  KNOWN_PACKAGE_MANAGERS,
+  STRUCTURE_CONVENTION_RULES,
+  detectArchitectureConventions,
+  detectDocumentationConventions,
+  detectGeneratedContextConventions,
+  detectPackageManagerConventions,
+  detectRepositoryStructureConventions,
+  detectTestingConventions,
+  detectTypeScriptConventions,
+  parsePackageJsonTestScript,
+  parseTsconfigSignals,
+  sortConventions,
+  type ArchitectureConventionRule,
+  type ConventionDetectionInput,
+  type StructureConventionRule,
+  type TsconfigConventionSignals,
+} from './convention-classifier';
+export {
+  analyzeConventions,
+  enrichProjectKnowledgeWithConventions,
+  type ConventionAnalysisResult,
+} from './convention-analyzer';
+export {
   parseImportsFromFile,
   parseImportsFromRepository,
   parseImportsFromText,

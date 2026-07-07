@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { persistProjectKnowledge } from './knowledge-writer';
 import { KNOWLEDGE_FILE_NAMES, resolveKnowledgeFilePath } from './knowledge-paths';
-import { FolderKnowledge, ModuleKnowledge, ProjectKnowledge, DependencyGraphKnowledge } from './project-knowledge';
+import { ConventionKnowledge, FolderKnowledge, ModuleKnowledge, ProjectKnowledge, DependencyGraphKnowledge } from './project-knowledge';
 
 function createModuleContext(relativePath: string): ModuleKnowledge {
   return {
@@ -36,6 +36,18 @@ function createFolderContext(relativePath: string): FolderKnowledge {
   };
 }
 
+function createConvention(): ConventionKnowledge {
+  return {
+    category: 'documentation',
+    name: 'Root README',
+    description: 'The repository documents itself with a root README.md.',
+    evidence: [
+      { type: 'file', source: 'README.md', detail: 'Repository contains a root README.md' },
+    ],
+    confidence: 'high',
+  };
+}
+
 function createKnowledge(
   rootPath: string,
   options: {
@@ -43,12 +55,14 @@ function createKnowledge(
     includeFolderContexts?: boolean;
     includeModules?: boolean;
     includeDependencyGraph?: boolean;
+    includeConventions?: boolean;
   } = {},
 ): ProjectKnowledge {
   const includeTree = options.includeTree ?? true;
   const includeFolderContexts = options.includeFolderContexts ?? false;
   const includeModules = options.includeModules ?? false;
   const includeDependencyGraph = options.includeDependencyGraph ?? false;
+  const includeConventions = options.includeConventions ?? false;
 
   const repositoryTree = includeTree
     ? {
@@ -98,7 +112,10 @@ function createKnowledge(
       },
     },
     analysis: {
-      status: includeFolderContexts || includeModules || includeDependencyGraph ? 'partial' : 'pending',
+      status:
+        includeFolderContexts || includeModules || includeDependencyGraph || includeConventions
+          ? 'partial'
+          : 'pending',
       folderContexts: includeFolderContexts
         ? [createFolderContext('src')]
         : undefined,
@@ -110,6 +127,7 @@ function createKnowledge(
             generatedAt: '2026-01-01T00:00:00.000Z',
           } satisfies DependencyGraphKnowledge)
         : undefined,
+      conventions: includeConventions ? [createConvention()] : undefined,
     },
   };
 }
@@ -225,6 +243,44 @@ describe('knowledge-writer', () => {
       persistProjectKnowledge(withoutDependencies);
 
       assert.equal(fs.existsSync(dependenciesPath), false);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('writes conventions.json when conventions exist and removes stale file when cleared', () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-writer-conventions-'));
+
+    try {
+      const withConventions = createKnowledge(tempRoot, {
+        includeTree: true,
+        includeConventions: true,
+      });
+      const persistenceWithConventions = persistProjectKnowledge(withConventions);
+
+      const conventionsPath = resolveKnowledgeFilePath(
+        tempRoot,
+        '.ai-docs',
+        KNOWLEDGE_FILE_NAMES.conventions,
+      );
+
+      assert.equal(fs.existsSync(conventionsPath), true);
+      assert.ok(
+        persistenceWithConventions.persistedRelativePaths.includes(
+          '.ai-docs/knowledge/conventions.json',
+        ),
+      );
+
+      const persisted = JSON.parse(fs.readFileSync(conventionsPath, 'utf-8')) as {
+        conventions: ConventionKnowledge[];
+      };
+      assert.equal(persisted.conventions.length, 1);
+      assert.equal(persisted.conventions[0]?.name, 'Root README');
+
+      const withoutConventions = createKnowledge(tempRoot, { includeTree: true });
+      persistProjectKnowledge(withoutConventions);
+
+      assert.equal(fs.existsSync(conventionsPath), false);
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }

@@ -1,0 +1,411 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-07T11:55:11.284Z",
+  "conventions": [
+    {
+      "category": "language",
+      "name": "TypeScript project",
+      "description": "The project is written in TypeScript with a root tsconfig.json.",
+      "evidence": [
+        {
+          "type": "file",
+          "source": "tsconfig.json",
+          "detail": "Repository contains a root tsconfig.json"
+        },
+        {
+          "type": "technology",
+          "source": "technologies.languages",
+          "detail": "Technology detection identified TypeScript"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "language",
+      "name": "TypeScript strict mode",
+      "description": "The TypeScript compiler runs with strict mode enabled; all code must satisfy strict checks.",
+      "evidence": [
+        {
+          "type": "config",
+          "source": "tsconfig.json",
+          "detail": "compilerOptions.strict is enabled"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "package-management",
+      "name": "Dependencies managed with npm",
+      "description": "Dependencies are installed and scripts are run with npm.",
+      "evidence": [
+        {
+          "type": "technology",
+          "source": "technologies.packageManagers",
+          "detail": "Technology detection identified npm"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "Deterministic analyzers under src/analyzers",
+      "description": "Deterministic PKM enrichment analyzers live under src/analyzers.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src/analyzers",
+          "detail": "Repository tree contains src/analyzers/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "Documentation generation under src/docs",
+      "description": "Documentation planning and writing live under src/docs.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src/docs",
+          "detail": "Repository tree contains src/docs/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "Domain types under src/domain",
+      "description": "Pure domain types and the declarative pipeline live under src/domain.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src/domain",
+          "detail": "Repository tree contains src/domain/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "Pipeline orchestration under src/core",
+      "description": "Pipeline orchestration and step handlers live under src/core.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src/core",
+          "detail": "Repository tree contains src/core/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "PKM under src/knowledge",
+      "description": "The Project Knowledge Model types, builder, and persistence live under src/knowledge.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src/knowledge",
+          "detail": "Repository tree contains src/knowledge/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "Repository scanning under src/scanner",
+      "description": "Repository loading and scanning live under src/scanner.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src/scanner",
+          "detail": "Repository tree contains src/scanner/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "Source code under src/",
+      "description": "Application source code lives under the src/ directory.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src",
+          "detail": "Repository tree contains src/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "repository-structure",
+      "name": "Technology detection under src/detectors",
+      "description": "Technology detection lives under src/detectors.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "src/detectors",
+          "detail": "Repository tree contains src/detectors/"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "architecture",
+      "name": "src/analyzers consume the PKM",
+      "description": "Analyzers enrich the PKM deterministically without re-scanning the repository.",
+      "evidence": [
+        {
+          "type": "module",
+          "source": "src/analyzers",
+          "detail": "Module classified as core: Derives higher-level architectural knowledge from the PKM."
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "architecture",
+      "name": "src/core orchestrates the pipeline",
+      "description": "The core module drives pipeline execution and coordinates every stage.",
+      "evidence": [
+        {
+          "type": "module",
+          "source": "src/core",
+          "detail": "Module classified as core: Contains pipeline orchestration and core application coordination logic."
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "architecture",
+      "name": "src/detectors feed upstream knowledge",
+      "description": "Detectors identify the technology stack that informs downstream analysis.",
+      "evidence": [
+        {
+          "type": "module",
+          "source": "src/detectors",
+          "detail": "Module classified as core: Detects technologies and tooling from repository metadata."
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "architecture",
+      "name": "src/docs writes derived output",
+      "description": "The docs module plans and renders documentation generated from the PKM.",
+      "evidence": [
+        {
+          "type": "module",
+          "source": "src/docs",
+          "detail": "Module classified as core: Plans and writes documentation outputs derived from project knowledge."
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "architecture",
+      "name": "src/domain remains pure",
+      "description": "The domain module contains only types and declarative data — no runtime behavior.",
+      "evidence": [
+        {
+          "type": "module",
+          "source": "src/domain",
+          "detail": "Module classified as core: Defines pure domain types and the declarative analysis pipeline."
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "architecture",
+      "name": "src/knowledge owns the PKM",
+      "description": "The knowledge module defines, assembles, and persists the Project Knowledge Model.",
+      "evidence": [
+        {
+          "type": "module",
+          "source": "src/knowledge",
+          "detail": "Module classified as core: Represents and persists the Project Knowledge Model used as the source of truth."
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "architecture",
+      "name": "src/scanner feeds upstream knowledge",
+      "description": "The scanner reads the repository from disk and supplies the structural baseline.",
+      "evidence": [
+        {
+          "type": "module",
+          "source": "src/scanner",
+          "detail": "Module classified as core: Builds the repository tree used by analyzers."
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "testing",
+      "name": "Co-located test files",
+      "description": "Tests are co-located with source files using *.test.* and *.spec.* naming.",
+      "evidence": [
+        {
+          "type": "file",
+          "source": "src/analyzers/convention-analyzer.test.ts",
+          "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+        },
+        {
+          "type": "file",
+          "source": "src/analyzers/convention-classifier.test.ts",
+          "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+        },
+        {
+          "type": "file",
+          "source": "src/analyzers/dependency-graph-analyzer.test.ts",
+          "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "testing",
+      "name": "Package test script",
+      "description": "Tests run through the package manager test script.",
+      "evidence": [
+        {
+          "type": "config",
+          "source": "package.json",
+          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "category": "documentation",
+      "name": "Agent instructions file",
+      "description": "AGENTS.md provides mandatory entry-point context for AI coding agents.",
+      "evidence": [
+        {
+          "type": "file",
+          "source": "AGENTS.md",
+          "detail": "Repository contains a root AGENTS.md"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "documentation",
+      "name": "Generated context folder present",
+      "description": "The repository contains the .ai-docs/ generated context folder.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": ".ai-docs",
+          "detail": "Top-level entry .ai-docs detected in repository metadata"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "documentation",
+      "name": "Human documentation folder",
+      "description": "Project-level documentation for humans and agents lives under docs/.",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "docs",
+          "detail": "Repository tree contains a docs/ folder"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "documentation",
+      "name": "Knowledge folder expected",
+      "description": "Machine-readable project knowledge lives under .ai-docs/knowledge/.",
+      "evidence": [
+        {
+          "type": "knowledge",
+          "source": ".ai-docs/knowledge",
+          "detail": "PKM persistence writes knowledge JSON into .ai-docs/knowledge/"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "category": "documentation",
+      "name": "Knowledge JSON expected",
+      "description": "The full PKM snapshot is persisted as .ai-docs/knowledge/project-knowledge.json.",
+      "evidence": [
+        {
+          "type": "knowledge",
+          "source": ".ai-docs/knowledge/project-knowledge.json",
+          "detail": "The Persist Project Knowledge step writes this file on every run"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "category": "documentation",
+      "name": "Root README",
+      "description": "The repository documents itself with a root README.md.",
+      "evidence": [
+        {
+          "type": "file",
+          "source": "README.md",
+          "detail": "Repository contains a root README.md"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "generated-context",
+      "name": "Generated docs live in the configured docs directory",
+      "description": "All generated documentation is written under .ai-docs/ inside the target repository.",
+      "evidence": [
+        {
+          "type": "knowledge",
+          "source": "documentation.plan.docsDir",
+          "detail": "Documentation plan targets .ai-docs"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "generated-context",
+      "name": "Machine-readable knowledge lives under the knowledge directory",
+      "description": "Machine-readable knowledge JSON files are persisted under .ai-docs/knowledge/.",
+      "evidence": [
+        {
+          "type": "knowledge",
+          "source": ".ai-docs/knowledge",
+          "detail": "PKM persistence writes the full snapshot and split section files here"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "generated-context",
+      "name": "Markdown docs are derived output",
+      "description": "Markdown files in the docs directory are rendered from the PKM — they are not the source of truth.",
+      "evidence": [
+        {
+          "type": "knowledge",
+          "source": "documentation.plan",
+          "detail": "The documentation writer renders Markdown from ProjectKnowledge"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "generated-context",
+      "name": "PKM JSON is the canonical machine-readable state",
+      "description": "project-knowledge.json and its split section files under .ai-docs/knowledge/ are the canonical persisted project state.",
+      "evidence": [
+        {
+          "type": "knowledge",
+          "source": ".ai-docs/knowledge/project-knowledge.json",
+          "detail": "The knowledge writer persists the full PKM snapshot on every run"
+        }
+      ],
+      "confidence": "high"
+    }
+  ]
+}

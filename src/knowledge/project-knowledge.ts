@@ -121,10 +121,45 @@ export interface DependencyGraphKnowledge {
   generatedAt: string;
 }
 
+export type ConventionCategory =
+  | 'language'
+  | 'tooling'
+  | 'documentation'
+  | 'architecture'
+  | 'testing'
+  | 'package-management'
+  | 'generated-context'
+  | 'repository-structure'
+  | 'unknown';
+
+export type ConventionConfidence = 'high' | 'medium' | 'low';
+
+export type ConventionEvidenceType =
+  | 'file'
+  | 'folder'
+  | 'config'
+  | 'module'
+  | 'technology'
+  | 'knowledge';
+
+export interface ConventionEvidence {
+  type: ConventionEvidenceType;
+  source: string;
+  detail: string;
+}
+
+export interface ConventionKnowledge {
+  category: ConventionCategory;
+  name: string;
+  description: string;
+  evidence: ConventionEvidence[];
+  confidence: ConventionConfidence;
+}
+
 export interface AnalysisKnowledge {
   status: AnalysisKnowledgeStatus;
   architecture?: string;
-  conventions?: string[];
+  conventions?: ConventionKnowledge[];
   dependencyGraph?: DependencyGraphKnowledge;
   navigationGraph?: Record<string, unknown>;
   folderContexts?: FolderKnowledge[];

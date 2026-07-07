@@ -48,7 +48,7 @@ interface ProjectKnowledge {
 | `repository` | Mapped from `RepositoryInfo` (includes `repositoryTree`) | ✅ Done |
 | `technologies` | Mapped from `TechnologyProfile` | ✅ Done |
 | `documentation` | Contains `DocumentationPlan` | ✅ Done |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`); AI fields pending | Architecture, navigation graph |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`); AI fields pending | Architecture, navigation graph |
 
 ---
 
@@ -64,10 +64,11 @@ After pipeline step **Persist Project Knowledge**, the target repository contain
     ├── repository-tree.json     # repository tree only (when scan completed)
     ├── technologies.json        # technologies section + schemaVersion + generatedAt
     ├── documentation.json       # documentation section + schemaVersion + generatedAt
-    ├── analysis.json            # analysis section including folderContexts, modules, and dependencyGraph
+    ├── analysis.json            # analysis section including folderContexts, modules, dependencyGraph, and conventions
     ├── folders.json             # folder knowledge only (when analysis ran)
     ├── modules.json             # module knowledge only (when module analysis ran)
-    └── dependencies.json        # dependency graph only (when dependency graph analysis ran)
+    ├── dependencies.json        # dependency graph only (when dependency graph analysis ran)
+    └── conventions.json         # convention knowledge only (when convention analysis ran)
 ```
 
 ### `FolderKnowledge`
@@ -114,6 +115,24 @@ Import relationships between modules for AI agents live in `analysis.dependencyG
 Populated by `src/analyzers/dependency-graph-analyzer.ts` at pipeline step **Analyze Dependency Graph**. The MVP uses lightweight regex-based import parsing (`src/analyzers/import-parser.ts`) — no AST yet. Agents use the graph to understand impact before changes: if `src/core` imports `src/knowledge`, a PKM change may require orchestrator updates.
 
 Persisted to `analysis.json` and `dependencies.json`. Future AST-based analyzers can extend import detection without changing the PKM contract.
+
+### `ConventionKnowledge`
+
+Detected project conventions live in `analysis.conventions` as `ConventionKnowledge[]`:
+
+| Field | Purpose |
+|---|---|
+| `category` | Convention area (`language`, `testing`, `documentation`, `architecture`, `repository-structure`, `package-management`, `generated-context`, `tooling`, `unknown`) |
+| `name` | Short, stable convention name |
+| `description` | One-sentence statement of the pattern to follow |
+| `evidence` | `ConventionEvidence[]` — `type`, `source`, `detail` for every signal used |
+| `confidence` | `high`, `medium`, or `low` |
+
+Conventions are **structured, not plain strings**. A string like "uses TypeScript strict mode" cannot be filtered, weighed, or verified; a structured entry with category `language`, config evidence from `tsconfig.json`, and `high` confidence can. Agents load conventions before editing code so they extend existing patterns (test file naming, folder ownership, strict typing) instead of breaking them.
+
+Populated by `src/analyzers/convention-analyzer.ts` at pipeline step **Analyze Conventions** — deterministically, from the PKM, the repository tree, detected technologies, module knowledge, and safe reads of `tsconfig.json`/`package.json` only. No AI is involved; the future AI stage can add lower-confidence conventions on top of this baseline.
+
+Persisted to `analysis.json` and `conventions.json`. Future `conventions.md` generation must render from this PKM section — not re-derive conventions.
 
 ### Why PKM is persisted
 

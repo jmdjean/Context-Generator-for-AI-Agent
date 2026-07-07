@@ -9,6 +9,7 @@ import {
 } from './knowledge-paths';
 import {
   AnalysisKnowledge,
+  ConventionKnowledge,
   DependencyGraphKnowledge,
   DocumentationKnowledge,
   FolderKnowledge,
@@ -68,6 +69,10 @@ interface PersistedDependenciesKnowledge extends PersistedKnowledgeHeader {
   dependencyGraph: DependencyGraphKnowledge;
 }
 
+interface PersistedConventionsKnowledge extends PersistedKnowledgeHeader {
+  conventions: ConventionKnowledge[];
+}
+
 function buildKnowledgeFiles(
   knowledge: ProjectKnowledge,
 ): ReadonlyArray<[KnowledgeFileName, unknown]> {
@@ -111,6 +116,14 @@ function buildKnowledgeFiles(
       dependencyGraph: knowledge.analysis.dependencyGraph,
     };
     files.push([KNOWLEDGE_FILE_NAMES.dependencies, dependenciesPayload]);
+  }
+
+  if (knowledge.analysis.conventions !== undefined && knowledge.analysis.conventions.length > 0) {
+    const conventionsPayload: PersistedConventionsKnowledge = {
+      ...header,
+      conventions: knowledge.analysis.conventions,
+    };
+    files.push([KNOWLEDGE_FILE_NAMES.conventions, conventionsPayload]);
   }
 
   return files;
@@ -173,6 +186,18 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
     fs.unlinkSync(dependenciesPath);
   }
 
+  const conventionsPath = resolveKnowledgeFilePath(
+    rootPath,
+    docsDir,
+    KNOWLEDGE_FILE_NAMES.conventions,
+  );
+  const hasConventions =
+    knowledge.analysis.conventions !== undefined && knowledge.analysis.conventions.length > 0;
+
+  if (!hasConventions && fs.existsSync(conventionsPath)) {
+    fs.unlinkSync(conventionsPath);
+  }
+
   return {
     schemaVersion: knowledge.metadata.schemaVersion,
     schemaVersionLabel: formatSchemaVersionLabel(knowledge.metadata.schemaVersion),
@@ -183,6 +208,7 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
       hasFolderContexts,
       hasModules,
       hasDependencyGraph,
+      hasConventions,
     ),
   };
 }

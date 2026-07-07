@@ -26,7 +26,7 @@ This separation means a new output format only needs a new generator. It does no
 | `repository` | Mapped from `RepositoryInfo` | Tree (`repositoryTree`), ignore rules |
 | `technologies` | Mapped from `TechnologyProfile` | Deeper stack signals |
 | `documentation` | `DocumentationPlan` | Generated document contents |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`); AI fields pending | Architecture, navigation graph |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`); AI fields pending | Architecture, navigation graph |
 
 ### Integration rule
 
@@ -44,7 +44,7 @@ This separation means a new output format only needs a new generator. It does no
 ├─────────────────────────────────────────────────┤
 │  src/scanner/        File system reading        │  ✅ metadata + recursive tree scan
 │  src/detectors/      Technology detection       │  ✅ done — top-level detection
-│  src/analyzers/      PKM enrichment analyzers   │  ✅ folder + module analyzers
+│  src/analyzers/      PKM enrichment analyzers   │  ✅ folder, module, dependency, conventions
 │  src/knowledge/      Project Knowledge Model    │  ✅ done — PKM types + builder
 │  src/ai/             OpenRouter integration     │  planned
 │  src/docs/           Generators (Markdown…)     │  ✅ planning + deterministic writing
@@ -74,12 +74,13 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
  9. Analyze Folder Knowledge  ProjectKnowledge                → FolderKnowledge[]    ✅
 10. Analyze Modules           ProjectKnowledge                → ModuleKnowledge[]    ✅
 11. Analyze Dependency Graph  ProjectKnowledge                → DependencyGraphKnowledge ✅
-12. Write Documentation        ProjectKnowledge                → .ai-docs/*.md        ✅
-13. Validate Documentation     DocumentModel[], file paths     → validation report
-14. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
+12. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
+13. Write Documentation        ProjectKnowledge                → .ai-docs/*.md        ✅
+14. Validate Documentation     DocumentModel[], file paths     → validation report
+15. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
 ```
 
-Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, and 14 are implemented. Step 8 assembles the PKM in memory; step 9 enriches `knowledge.analysis.folderContexts`; step 10 enriches `knowledge.analysis.modules`; step 11 enriches `knowledge.analysis.dependencyGraph`; step 14 persists it as JSON; step 12 writes Markdown derived from the PKM. Steps 5, 6, and 13 still have placeholder handlers.
+Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, and 15 are implemented. Step 8 assembles the PKM in memory; step 9 enriches `knowledge.analysis.folderContexts`; step 10 enriches `knowledge.analysis.modules`; step 11 enriches `knowledge.analysis.dependencyGraph`; step 12 enriches `knowledge.analysis.conventions`; step 15 persists it as JSON; step 13 writes Markdown derived from the PKM. Steps 5, 6, and 14 still have placeholder handlers.
 
 ---
 
@@ -207,6 +208,18 @@ Results are stored in `knowledge.analysis.dependencyGraph` and persisted to `ana
 
 **Limitations of regex-based import parsing:** dynamic imports, path aliases (`@/…`), template literals, and non-JS/TS imports are not detected. Future AST-based analyzers can replace or augment `import-parser.ts` without changing the PKM contract.
 
+### Convention analyzer
+
+The fourth deterministic analyzer — **conventions** — runs at pipeline step 12 (Analyze Conventions), after the dependency graph is built.
+
+Conventions answer the question agents most often get wrong: *what patterns does this project already follow?* An agent that does not know a project uses TypeScript strict mode, co-located `*.test.ts` files, or a `src/domain`-stays-pure rule will silently break those patterns. Convention knowledge makes the patterns explicit, structured, and evidence-backed.
+
+`src/analyzers/convention-classifier.ts` contains the pure detection rules — one function per category (documentation, repository structure, TypeScript, package management, testing, generated context, architecture) plus tolerant parsing of tsconfig/package.json text. `src/analyzers/convention-analyzer.ts` builds the detection input from the PKM (repository tree index, detected technologies, module knowledge) and performs the only file access the analyzer is allowed: safe reads of `tsconfig.json` and `package.json` at the repository root, resolved through `RepositoryBoundary`. No recursive scanning, no arbitrary source reads, no AI calls.
+
+Each `ConventionKnowledge` entry carries a `category`, `name`, `description`, `evidence[]` (`type`, `source`, `detail`), and `confidence` (`high`/`medium`/`low`). Structured conventions — unlike a plain `string[]` — can be filtered by category, ranked by confidence, and audited from their evidence. Deterministic detection runs before any AI analysis so every pipeline run produces the same reproducible convention baseline; the future AI stage extends it rather than replacing it.
+
+Results are stored in `knowledge.analysis.conventions` and persisted to `analysis.json` and `conventions.json`. Future `conventions.md` generation must render from this PKM section.
+
 ---
 
 ## Documentation planning
@@ -236,7 +249,7 @@ The PKM is the application contract. Every generator downstream reads from `Proj
 
 ## Project Knowledge persistence
 
-`src/knowledge/knowledge-writer.ts` implements step 14 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
+`src/knowledge/knowledge-writer.ts` implements step 15 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
 
 | File | Contents |
 |---|---|
@@ -245,10 +258,11 @@ The PKM is the application contract. Every generator downstream reads from `Proj
 | `repository-tree.json` | Repository tree only (when scan completed) |
 | `technologies.json` | Technologies section + `schemaVersion` + `generatedAt` |
 | `documentation.json` | Documentation section + `schemaVersion` + `generatedAt` |
-| `analysis.json` | Analysis section including `folderContexts`, `modules`, and `dependencyGraph` |
+| `analysis.json` | Analysis section including `folderContexts`, `modules`, `dependencyGraph`, and `conventions` |
 | `folders.json` | Folder knowledge only (when analysis ran) |
 | `modules.json` | Module knowledge only (when module analysis ran) |
 | `dependencies.json` | Dependency graph only (when dependency graph analysis ran) |
+| `conventions.json` | Convention knowledge only (when convention analysis ran) |
 
 Path resolution uses `resolvePathWithinRoot()` via `knowledge-paths.ts` — writes never escape the target project root. JSON files are tool-managed machine state and are always overwritten on each persist run (no Markdown marker policy).
 

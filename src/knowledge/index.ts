@@ -5,6 +5,11 @@ export {
 export {
   type AnalysisKnowledge,
   type AnalysisKnowledgeStatus,
+  type ConventionCategory,
+  type ConventionConfidence,
+  type ConventionEvidence,
+  type ConventionEvidenceType,
+  type ConventionKnowledge,
   type DocumentationKnowledge,
   type FolderClassification,
   type FolderKnowledge,

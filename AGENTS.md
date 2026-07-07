@@ -22,7 +22,7 @@ The PKM (`ProjectKnowledge`) is assembled at pipeline step **Build Project Knowl
 |---|---|---|
 | Scanner / detector / planner | `src/domain/` types | Stage output types (mapped into PKM by knowledge builder) |
 | Knowledge enrichment | `src/knowledge/project-knowledge.ts` | Updated `ProjectKnowledge` sections |
-| Deterministic analyzer | `src/analyzers/` | Enrich `ProjectKnowledge` (e.g. `analysis.folderContexts`) |
+| Deterministic analyzer | `src/analyzers/` | Enrich `ProjectKnowledge` (e.g. `analysis.folderContexts`, `analysis.conventions`) |
 | Any generator (docs, rules, skills…) | `src/knowledge/` | Consume `ProjectKnowledge` |
 
 Upstream analysis stages may still emit their own types. The knowledge builder (`src/knowledge/knowledge-builder.ts`) maps them into the PKM. Do not bypass this step.
@@ -51,7 +51,7 @@ Analysis-stage types live in `src/domain/`. The application contract for generat
 - **Implementing the scanner?** Read `src/domain/repository.ts`. Your code must produce `RepositoryInfo` and `RepositoryNode`.
 - **Adding a new detector?** Read `src/domain/technology.ts`. Your code must contribute to `TechnologyProfile`.
 - **Adding a new document type or framework plan?** Read `src/docs/documentation-plan.ts` and `src/docs/documentation-planner.ts`. Add a new function returning `PlannedDocument[]` and call it from `buildTechnologyDocuments`.
-- **Implementing a deterministic analyzer?** Read `src/analyzers/README.md`. Consume `ProjectKnowledge`; enrich `analysis.folderContexts`, `analysis.modules`, `analysis.dependencyGraph`, or future analysis sections. Do not scan the filesystem or call OpenRouter.
+- **Implementing a deterministic analyzer?** Read `src/analyzers/README.md`. Consume `ProjectKnowledge`; enrich `analysis.folderContexts`, `analysis.modules`, `analysis.dependencyGraph`, `analysis.conventions`, or future analysis sections. Do not scan the filesystem or call OpenRouter. Selective safe reads of well-known config files (`tsconfig.json`, `package.json`) through `RepositoryBoundary` are the only permitted file access.
 - **Building or extending the PKM?** Read `src/knowledge/project-knowledge.ts` and `src/knowledge/knowledge-builder.ts`. Map new analysis outputs into `ProjectKnowledge` sections.
 - **Implementing the AI integration?** Read `src/domain/analysis.ts` and `src/domain/context.ts`. Future: enrich `knowledge.analysis` from `AnalysisResult`.
 - **Implementing PKM persistence?** Read `src/knowledge/knowledge-paths.ts` and `src/knowledge/knowledge-writer.ts`. Use `resolvePathWithinRoot()` — never write outside the target repo.
@@ -138,7 +138,7 @@ The project has:
 - A working CLI with full argument parsing and runtime configuration resolution.
 - A complete domain model (`src/domain/`) defining analysis-stage types and the declarative pipeline.
 - A Project Knowledge Model (`src/knowledge/`) with types and `buildProjectKnowledge()`.
-- A pipeline orchestrator (`src/core/`) that runs all 14 steps and returns `PipelineExecutionResult`.
+- A pipeline orchestrator (`src/core/`) that runs all 15 steps and returns `PipelineExecutionResult`.
 - Step 2 (Load Repository Metadata) implemented in `src/scanner/repository-loader.ts`.
 - Step 3 (Scan Repository Structure) implemented in `src/scanner/repository-scanner.ts` — produces `RepositoryNode` tree with ignore rules and safety limits.
 - Step 4 (Detect Technologies) implemented in `src/detectors/technology-detector.ts` and `src/detectors/package-manager-detector.ts`.
@@ -147,10 +147,11 @@ The project has:
 - Step 9 (Analyze Folder Knowledge) implemented in `src/analyzers/folder-analyzer.ts` — produces `FolderKnowledge[]` in `analysis.folderContexts`.
 - Step 10 (Analyze Modules) implemented in `src/analyzers/module-analyzer.ts` — produces `ModuleKnowledge[]` in `analysis.modules`.
 - Step 11 (Analyze Dependency Graph) implemented in `src/analyzers/dependency-graph-analyzer.ts` — produces `DependencyGraphKnowledge` in `analysis.dependencyGraph`.
-- Step 12 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — writes Markdown from `ProjectKnowledge`.
-- Step 14 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/`.
+- Step 12 (Analyze Conventions) implemented in `src/analyzers/convention-analyzer.ts` — produces `ConventionKnowledge[]` in `analysis.conventions` from the PKM, technologies, module knowledge, and safe reads of `tsconfig.json`/`package.json`.
+- Step 13 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — writes Markdown from `ProjectKnowledge`.
+- Step 15 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/`.
 
-The scanner full tree walk (step 3) is implemented. The AI integration (step 6) and validation (step 13) are not yet implemented.
+The scanner full tree walk (step 3) is implemented. The AI integration (step 6) and validation (step 14) are not yet implemented.
 
 ---
 

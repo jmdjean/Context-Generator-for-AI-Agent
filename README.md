@@ -125,6 +125,8 @@ Status: configuration resolved
 | Repository scanner | ✅ Done |
 | Folder knowledge analyzer | ✅ Done |
 | Module discovery analyzer | ✅ Done |
+| Dependency graph analyzer | ✅ Done |
+| Convention analyzer | ✅ Done |
 | Project Knowledge Model (PKM) | ✅ Done |
 | PKM persistence (`.ai-docs/knowledge/`) | ✅ Done |
 | OpenRouter integration | 🔜 Planned |
@@ -155,7 +157,7 @@ src/
   scanner/        — Repository analysis
   detectors/      — Technology detection
   knowledge/      — Project Knowledge Model (PKM) — single source of truth
-  analyzers/      — Deterministic PKM enrichment (folder, module, dependency graph)
+  analyzers/      — Deterministic PKM enrichment (folder, module, dependency graph, conventions)
   docs/           — Documentation planning and writing (generators)
   ai/             — OpenRouter integration (planned)
   utils/          — Shared utilities (filesystem helpers, etc.)

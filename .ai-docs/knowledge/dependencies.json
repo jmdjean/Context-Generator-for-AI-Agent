@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "generatedAt": "2026-07-07T11:55:11.284Z",
   "dependencyGraph": {
     "nodes": [
       {
@@ -72,6 +72,10 @@
         "confidence": "high",
         "evidence": [
           {
+            "sourceFile": "src/analyzers/convention-analyzer.ts",
+            "importPath": "../domain"
+          },
+          {
             "sourceFile": "src/analyzers/folder-analyzer.ts",
             "importPath": "../domain"
           },
@@ -92,6 +96,10 @@
         "confidence": "high",
         "evidence": [
           {
+            "sourceFile": "src/analyzers/convention-analyzer.ts",
+            "importPath": "../knowledge/project-knowledge"
+          },
+          {
             "sourceFile": "src/analyzers/folder-classifier.ts",
             "importPath": "../knowledge/project-knowledge"
           },
@@ -111,6 +119,10 @@
         "type": "imports",
         "confidence": "high",
         "evidence": [
+          {
+            "sourceFile": "src/analyzers/convention-analyzer.ts",
+            "importPath": "../scanner/repository-boundary"
+          },
           {
             "sourceFile": "src/analyzers/dependency-graph-analyzer.ts",
             "importPath": "../scanner/repository-boundary"
@@ -410,6 +422,6 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-07T00:08:53.444Z"
+    "generatedAt": "2026-07-07T11:55:11.284Z"
   }
 }

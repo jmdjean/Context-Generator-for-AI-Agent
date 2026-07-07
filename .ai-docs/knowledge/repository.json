@@ -1,19 +1,19 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T00:08:53.444Z",
+  "generatedAt": "2026-07-07T11:55:11.284Z",
   "name": "Context-Generator-for-AI-Agent",
-  "rootPath": "C:\\projeto\\Context-Generator-for-AI-Agent",
+  "rootPath": "/home/user/Context-Generator-for-AI-Agent",
   "detectedFiles": [
     ".ai-docs",
     ".git",
     ".gitignore",
     "AGENTS.md",
+    "README.md",
     "dist",
     "docs",
     "node_modules",
     "package-lock.json",
     "package.json",
-    "README.md",
     "src",
     "tsconfig.json"
   ],
