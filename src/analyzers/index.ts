@@ -61,6 +61,20 @@ export {
   type ConventionAnalysisResult,
 } from './convention-analyzer';
 export {
+  NAVIGATION_RULES,
+  buildNavigationEntry,
+  isKnowledgeSectionAvailable,
+  resolveEntryConfidence,
+  resolveRelatedFolders,
+  resolveRelatedModules,
+  type NavigationRule,
+} from './navigation-map-builder';
+export {
+  buildNavigationMap,
+  enrichProjectKnowledgeWithNavigationMap,
+  type NavigationMapAnalysisResult,
+} from './navigation-map-analyzer';
+export {
   parseImportsFromFile,
   parseImportsFromRepository,
   parseImportsFromText,

@@ -156,12 +156,50 @@ export interface ConventionKnowledge {
   confidence: ConventionConfidence;
 }
 
+export type NavigationTaskType =
+  | 'architecture-change'
+  | 'new-feature'
+  | 'bug-fix'
+  | 'test-change'
+  | 'documentation-change'
+  | 'config-change'
+  | 'dependency-change'
+  | 'ai-agent-integration';
+
+export type NavigationEntryConfidence = 'high' | 'medium' | 'low';
+
+export type NavigationKnowledgeSection =
+  | 'repository'
+  | 'technologies'
+  | 'documentation'
+  | 'folderContexts'
+  | 'modules'
+  | 'dependencyGraph'
+  | 'conventions'
+  | 'navigationMap';
+
+export interface NavigationEntry {
+  taskType: NavigationTaskType;
+  description: string;
+  recommendedKnowledge: NavigationKnowledgeSection[];
+  recommendedDocuments: string[];
+  relatedModules: string[];
+  relatedFolders: string[];
+  warnings: string[];
+  confidence: NavigationEntryConfidence;
+}
+
+export interface NavigationMapKnowledge {
+  entries: NavigationEntry[];
+  generatedAt: string;
+}
+
 export interface AnalysisKnowledge {
   status: AnalysisKnowledgeStatus;
   architecture?: string;
   conventions?: ConventionKnowledge[];
   dependencyGraph?: DependencyGraphKnowledge;
-  navigationGraph?: Record<string, unknown>;
+  navigationMap?: NavigationMapKnowledge;
   folderContexts?: FolderKnowledge[];
   modules?: ModuleKnowledge[];
   implementationRecommendations?: string[];

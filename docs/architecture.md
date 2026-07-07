@@ -26,7 +26,7 @@ This separation means a new output format only needs a new generator. It does no
 | `repository` | Mapped from `RepositoryInfo` | Tree (`repositoryTree`), ignore rules |
 | `technologies` | Mapped from `TechnologyProfile` | Deeper stack signals |
 | `documentation` | `DocumentationPlan` | Generated document contents |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`); AI fields pending | Architecture, navigation graph |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); AI fields pending | Architecture |
 
 ### Integration rule
 
@@ -75,12 +75,13 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 10. Analyze Modules           ProjectKnowledge                → ModuleKnowledge[]    ✅
 11. Analyze Dependency Graph  ProjectKnowledge                → DependencyGraphKnowledge ✅
 12. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
-13. Write Documentation        ProjectKnowledge                → .ai-docs/*.md        ✅
-14. Validate Documentation     DocumentModel[], file paths     → validation report
-15. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
+13. Build AI Navigation Map   ProjectKnowledge                → NavigationMapKnowledge ✅
+14. Write Documentation        ProjectKnowledge                → .ai-docs/*.md        ✅
+15. Validate Documentation     DocumentModel[], file paths     → validation report
+16. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
 ```
 
-Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, and 15 are implemented. Step 8 assembles the PKM in memory; step 9 enriches `knowledge.analysis.folderContexts`; step 10 enriches `knowledge.analysis.modules`; step 11 enriches `knowledge.analysis.dependencyGraph`; step 12 enriches `knowledge.analysis.conventions`; step 15 persists it as JSON; step 13 writes Markdown derived from the PKM. Steps 5, 6, and 14 still have placeholder handlers.
+Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, and 16 are implemented. Step 8 assembles the PKM in memory; step 9 enriches `knowledge.analysis.folderContexts`; step 10 enriches `knowledge.analysis.modules`; step 11 enriches `knowledge.analysis.dependencyGraph`; step 12 enriches `knowledge.analysis.conventions`; step 13 enriches `knowledge.analysis.navigationMap`; step 16 persists it as JSON; step 14 writes Markdown derived from the PKM. Steps 5, 6, and 15 still have placeholder handlers.
 
 ---
 
@@ -220,6 +221,20 @@ Each `ConventionKnowledge` entry carries a `category`, `name`, `description`, `e
 
 Results are stored in `knowledge.analysis.conventions` and persisted to `analysis.json` and `conventions.json`. Future `conventions.md` generation must render from this PKM section.
 
+### AI Navigation Map
+
+The fifth deterministic analyzer — the **AI Navigation Map** — runs at pipeline step 13 (Build AI Navigation Map), after all other deterministic analysis is complete. It is the bridge between raw PKM data and practical agent usage.
+
+The other analyzers answer *what is this project*: its folders, modules, dependencies, and conventions. The navigation map answers the question an agent asks first: *given the task I am about to do, what should I read?* Without it, agents either load everything (wasted tokens) or guess (broken conventions).
+
+`src/analyzers/navigation-map-builder.ts` defines one deterministic `NavigationRule` per task type — `architecture-change`, `new-feature`, `bug-fix`, `test-change`, `documentation-change`, `config-change`, `dependency-change`, `ai-agent-integration`. Each rule lists recommended PKM knowledge sections, recommended Markdown documents, task-specific warnings, and *candidate* module/folder matchers. `src/analyzers/navigation-map-analyzer.ts` resolves those candidates against actual PKM data: `relatedModules` and `relatedFolders` contain only paths that exist in `analysis.modules` and `analysis.folderContexts` — empty arrays when nothing matches, never invented paths.
+
+Confidence is verification-based: `high` only when every recommended knowledge section is populated in the PKM and every recommended document is in the documentation plan; entries degrade to `medium`/`low` as recommendations become unverifiable.
+
+The MVP map is deterministic by design — no OpenRouter, no filesystem access. The same PKM always yields the same navigation map, giving agents a reproducible reading list on every run. A future AI stage can extend the map with project-specific task types without replacing the baseline.
+
+Results are stored in `knowledge.analysis.navigationMap` and persisted to `analysis.json` and `navigation-map.json`. Future agent-specific exporters (Cursor rules, skills, agent packs) and `agent-navigation.md` generation must consume this PKM section rather than hardcoding reading lists.
+
 ---
 
 ## Documentation planning
@@ -249,7 +264,7 @@ The PKM is the application contract. Every generator downstream reads from `Proj
 
 ## Project Knowledge persistence
 
-`src/knowledge/knowledge-writer.ts` implements step 15 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
+`src/knowledge/knowledge-writer.ts` implements step 16 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
 
 | File | Contents |
 |---|---|
@@ -258,11 +273,12 @@ The PKM is the application contract. Every generator downstream reads from `Proj
 | `repository-tree.json` | Repository tree only (when scan completed) |
 | `technologies.json` | Technologies section + `schemaVersion` + `generatedAt` |
 | `documentation.json` | Documentation section + `schemaVersion` + `generatedAt` |
-| `analysis.json` | Analysis section including `folderContexts`, `modules`, `dependencyGraph`, and `conventions` |
+| `analysis.json` | Analysis section including `folderContexts`, `modules`, `dependencyGraph`, `conventions`, and `navigationMap` |
 | `folders.json` | Folder knowledge only (when analysis ran) |
 | `modules.json` | Module knowledge only (when module analysis ran) |
 | `dependencies.json` | Dependency graph only (when dependency graph analysis ran) |
 | `conventions.json` | Convention knowledge only (when convention analysis ran) |
+| `navigation-map.json` | AI navigation map only (when the navigation map was built) |
 
 Path resolution uses `resolvePathWithinRoot()` via `knowledge-paths.ts` — writes never escape the target project root. JSON files are tool-managed machine state and are always overwritten on each persist run (no Markdown marker policy).
 

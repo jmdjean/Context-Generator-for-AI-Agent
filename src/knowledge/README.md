@@ -48,7 +48,7 @@ interface ProjectKnowledge {
 | `repository` | Mapped from `RepositoryInfo` (includes `repositoryTree`) | ✅ Done |
 | `technologies` | Mapped from `TechnologyProfile` | ✅ Done |
 | `documentation` | Contains `DocumentationPlan` | ✅ Done |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`); AI fields pending | Architecture, navigation graph |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); AI fields pending | Architecture |
 
 ---
 
@@ -64,11 +64,12 @@ After pipeline step **Persist Project Knowledge**, the target repository contain
     ├── repository-tree.json     # repository tree only (when scan completed)
     ├── technologies.json        # technologies section + schemaVersion + generatedAt
     ├── documentation.json       # documentation section + schemaVersion + generatedAt
-    ├── analysis.json            # analysis section including folderContexts, modules, dependencyGraph, and conventions
+    ├── analysis.json            # analysis section including folderContexts, modules, dependencyGraph, conventions, and navigationMap
     ├── folders.json             # folder knowledge only (when analysis ran)
     ├── modules.json             # module knowledge only (when module analysis ran)
     ├── dependencies.json        # dependency graph only (when dependency graph analysis ran)
-    └── conventions.json         # convention knowledge only (when convention analysis ran)
+    ├── conventions.json         # convention knowledge only (when convention analysis ran)
+    └── navigation-map.json      # AI navigation map only (when the navigation map was built)
 ```
 
 ### `FolderKnowledge`
@@ -133,6 +134,21 @@ Conventions are **structured, not plain strings**. A string like "uses TypeScrip
 Populated by `src/analyzers/convention-analyzer.ts` at pipeline step **Analyze Conventions** — deterministically, from the PKM, the repository tree, detected technologies, module knowledge, and safe reads of `tsconfig.json`/`package.json` only. No AI is involved; the future AI stage can add lower-confidence conventions on top of this baseline.
 
 Persisted to `analysis.json` and `conventions.json`. Future `conventions.md` generation must render from this PKM section — not re-derive conventions.
+
+### `NavigationMapKnowledge`
+
+The AI Navigation Map lives in `analysis.navigationMap`. It is the bridge between raw PKM data and practical agent usage: for each common task type it tells an agent which knowledge sections and documentation files to read *before* touching code.
+
+| Field | Purpose |
+|---|---|
+| `entries` | One `NavigationEntry` per task type |
+| `generatedAt` | ISO timestamp when the map was built |
+
+Each `NavigationEntry` carries `taskType` (`architecture-change`, `new-feature`, `bug-fix`, `test-change`, `documentation-change`, `config-change`, `dependency-change`, `ai-agent-integration`), a `description`, `recommendedKnowledge` (PKM sections to load), `recommendedDocuments` (Markdown context files), `relatedModules` and `relatedFolders` (resolved from actual PKM data, never invented), `warnings` (task-specific guardrails), and `confidence`.
+
+Populated by `src/analyzers/navigation-map-analyzer.ts` at pipeline step **Build AI Navigation Map** — deterministically, from data already in the PKM, with no filesystem access and no AI. Confidence is `high` only when every recommended knowledge section is populated and every recommended document is in the documentation plan.
+
+Persisted to `analysis.json` and `navigation-map.json`. Future agent-specific exporters (Cursor rules, skills, agent packs) and `agent-navigation.md` generation must consume this section instead of hardcoding their own reading lists — one navigation contract, many output formats.
 
 ### Why PKM is persisted
 

@@ -1,0 +1,238 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-07T12:04:17.429Z",
+  "navigationMap": {
+    "entries": [
+      {
+        "taskType": "architecture-change",
+        "description": "Changing module boundaries, pipeline structure, or how stages and generators interact.",
+        "recommendedKnowledge": [
+          "modules",
+          "folderContexts",
+          "dependencyGraph",
+          "conventions"
+        ],
+        "recommendedDocuments": [
+          "architecture.md",
+          "folder-structure.md",
+          "dependency-map.md",
+          "conventions.md",
+          "ai-context.md"
+        ],
+        "relatedModules": [
+          "src/analyzers",
+          "src/core",
+          "src/docs",
+          "src/domain",
+          "src/knowledge"
+        ],
+        "relatedFolders": [
+          "src/analyzers",
+          "src/core",
+          "src/docs",
+          "src/domain",
+          "src/knowledge"
+        ],
+        "warnings": [
+          "Review dependency graph before changing module boundaries.",
+          "Preserve domain purity.",
+          "Keep generators consuming PKM instead of scanning directly."
+        ],
+        "confidence": "high"
+      },
+      {
+        "taskType": "new-feature",
+        "description": "Adding new behavior: a pipeline step, analyzer, generator, detector, or CLI capability.",
+        "recommendedKnowledge": [
+          "modules",
+          "folderContexts",
+          "conventions",
+          "dependencyGraph",
+          "navigationMap"
+        ],
+        "recommendedDocuments": [
+          "architecture.md",
+          "folder-structure.md",
+          "implementation-guide.md",
+          "conventions.md",
+          "agent-navigation.md"
+        ],
+        "relatedModules": [
+          "src/analyzers",
+          "src/core",
+          "src/docs",
+          "src/domain",
+          "src/knowledge"
+        ],
+        "relatedFolders": [
+          "src"
+        ],
+        "warnings": [
+          "Add new behavior through the correct module boundary.",
+          "Update PKM-related docs if architecture changes.",
+          "Do not bypass the pipeline orchestration layer."
+        ],
+        "confidence": "high"
+      },
+      {
+        "taskType": "bug-fix",
+        "description": "Correcting incorrect behavior in existing code without changing architecture or contracts.",
+        "recommendedKnowledge": [
+          "modules",
+          "dependencyGraph",
+          "conventions"
+        ],
+        "recommendedDocuments": [
+          "implementation-guide.md",
+          "dependency-map.md",
+          "conventions.md"
+        ],
+        "relatedModules": [
+          "src/ai",
+          "src/analyzers",
+          "src/core",
+          "src/detectors",
+          "src/docs",
+          "src/domain",
+          "src/knowledge",
+          "src/scanner"
+        ],
+        "relatedFolders": [],
+        "warnings": [
+          "Fix the root cause instead of patching generated output.",
+          "Avoid changing unrelated modules."
+        ],
+        "confidence": "high"
+      },
+      {
+        "taskType": "test-change",
+        "description": "Adding, updating, or reorganizing tests for existing or new behavior.",
+        "recommendedKnowledge": [
+          "conventions",
+          "modules",
+          "folderContexts"
+        ],
+        "recommendedDocuments": [
+          "conventions.md",
+          "implementation-guide.md"
+        ],
+        "relatedModules": [],
+        "relatedFolders": [],
+        "warnings": [
+          "Preserve existing testing conventions.",
+          "Do not weaken assertions or remove tests."
+        ],
+        "confidence": "high"
+      },
+      {
+        "taskType": "documentation-change",
+        "description": "Updating Markdown documentation, READMEs, or the generated context layer.",
+        "recommendedKnowledge": [
+          "documentation",
+          "conventions",
+          "navigationMap"
+        ],
+        "recommendedDocuments": [
+          "README.md",
+          "agent-navigation.md",
+          "ai-context.md",
+          "conventions.md"
+        ],
+        "relatedModules": [
+          ".ai-docs",
+          "docs",
+          "src/docs",
+          "src/knowledge"
+        ],
+        "relatedFolders": [
+          "docs"
+        ],
+        "warnings": [
+          "Markdown should reflect PKM.",
+          "Do not manually edit generated files unless intentionally supported."
+        ],
+        "confidence": "high"
+      },
+      {
+        "taskType": "config-change",
+        "description": "Changing runtime configuration, compiler options, or tooling configuration files.",
+        "recommendedKnowledge": [
+          "technologies",
+          "conventions",
+          "modules"
+        ],
+        "recommendedDocuments": [
+          "architecture.md",
+          "conventions.md",
+          "implementation-guide.md"
+        ],
+        "relatedModules": [
+          "src/config",
+          "src/detectors",
+          "src/utils"
+        ],
+        "relatedFolders": [],
+        "warnings": [
+          "Check package manager and TypeScript strict mode conventions.",
+          "Avoid introducing conflicting tooling."
+        ],
+        "confidence": "high"
+      },
+      {
+        "taskType": "dependency-change",
+        "description": "Adding, removing, or upgrading package dependencies.",
+        "recommendedKnowledge": [
+          "technologies",
+          "dependencyGraph",
+          "conventions"
+        ],
+        "recommendedDocuments": [
+          "dependency-map.md",
+          "conventions.md",
+          "implementation-guide.md"
+        ],
+        "relatedModules": [
+          "src/detectors"
+        ],
+        "relatedFolders": [],
+        "warnings": [
+          "Check impacted modules before changing dependencies.",
+          "Keep dependency changes minimal."
+        ],
+        "confidence": "high"
+      },
+      {
+        "taskType": "ai-agent-integration",
+        "description": "Building or adjusting agent-facing outputs: agent docs, exporters, rules, or skills.",
+        "recommendedKnowledge": [
+          "documentation",
+          "conventions",
+          "navigationMap",
+          "modules"
+        ],
+        "recommendedDocuments": [
+          "AGENTS.md",
+          "ai-context.md",
+          "agent-navigation.md",
+          "implementation-guide.md"
+        ],
+        "relatedModules": [
+          ".ai-docs",
+          "docs",
+          "src/analyzers",
+          "src/docs",
+          "src/knowledge"
+        ],
+        "relatedFolders": [
+          "docs"
+        ],
+        "warnings": [
+          "Agent-specific outputs must be derived from PKM.",
+          "Do not duplicate repository analysis inside exporters."
+        ],
+        "confidence": "high"
+      }
+    ],
+    "generatedAt": "2026-07-07T12:04:17.429Z"
+  }
+}

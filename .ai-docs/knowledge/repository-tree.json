@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T11:55:11.284Z",
+  "generatedAt": "2026-07-07T12:04:17.429Z",
   "tree": {
     "name": "Context-Generator-for-AI-Agent",
     "path": "/home/user/Context-Generator-for-AI-Agent",
@@ -13,7 +13,7 @@
         "relativePath": "AGENTS.md",
         "type": "file",
         "extension": "md",
-        "sizeBytes": 12760
+        "sizeBytes": 13050
       },
       {
         "name": "docs",
@@ -27,7 +27,7 @@
             "relativePath": "docs/architecture.md",
             "type": "file",
             "extension": "md",
-            "sizeBytes": 28444
+            "sizeBytes": 30790
           },
           {
             "name": "context-engineering.md",
@@ -35,7 +35,7 @@
             "relativePath": "docs/context-engineering.md",
             "type": "file",
             "extension": "md",
-            "sizeBytes": 22300
+            "sizeBytes": 24267
           },
           {
             "name": "folder-structure.md",
@@ -43,7 +43,7 @@
             "relativePath": "docs/folder-structure.md",
             "type": "file",
             "extension": "md",
-            "sizeBytes": 11689
+            "sizeBytes": 11947
           }
         ]
       },
@@ -61,7 +61,7 @@
         "relativePath": "README.md",
         "type": "file",
         "extension": "md",
-        "sizeBytes": 5300
+        "sizeBytes": 5349
       },
       {
         "name": "src",
@@ -201,7 +201,7 @@
                 "relativePath": "src/analyzers/index.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 2173
+                "sizeBytes": 2537
               },
               {
                 "name": "module-analyzer.test.ts",
@@ -244,12 +244,36 @@
                 "sizeBytes": 3441
               },
               {
+                "name": "navigation-map-analyzer.test.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-analyzer.test.ts",
+                "relativePath": "src/analyzers/navigation-map-analyzer.test.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 8249
+              },
+              {
+                "name": "navigation-map-analyzer.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-analyzer.ts",
+                "relativePath": "src/analyzers/navigation-map-analyzer.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 1794
+              },
+              {
+                "name": "navigation-map-builder.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-builder.ts",
+                "relativePath": "src/analyzers/navigation-map-builder.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 9879
+              },
+              {
                 "name": "README.md",
                 "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/README.md",
                 "relativePath": "src/analyzers/README.md",
                 "type": "file",
                 "extension": "md",
-                "sizeBytes": 10892
+                "sizeBytes": 14377
               }
             ]
           },
@@ -305,7 +329,7 @@
                 "relativePath": "src/core/pipeline-handlers.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 10266
+                "sizeBytes": 11194
               },
               {
                 "name": "pipeline-orchestrator.ts",
@@ -497,7 +521,7 @@
                 "relativePath": "src/domain/pipeline.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 5251
+                "sizeBytes": 5606
               },
               {
                 "name": "README.md",
@@ -553,7 +577,7 @@
                 "relativePath": "src/knowledge/index.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 1579
+                "sizeBytes": 1730
               },
               {
                 "name": "knowledge-builder.ts",
@@ -577,7 +601,7 @@
                 "relativePath": "src/knowledge/knowledge-paths.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 2717
+                "sizeBytes": 2946
               },
               {
                 "name": "knowledge-writer.test.ts",
@@ -585,7 +609,7 @@
                 "relativePath": "src/knowledge/knowledge-writer.test.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 9045
+                "sizeBytes": 11146
               },
               {
                 "name": "knowledge-writer.ts",
@@ -593,7 +617,7 @@
                 "relativePath": "src/knowledge/knowledge-writer.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 6908
+                "sizeBytes": 7671
               },
               {
                 "name": "project-knowledge.ts",
@@ -601,7 +625,7 @@
                 "relativePath": "src/knowledge/project-knowledge.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 3828
+                "sizeBytes": 4694
               },
               {
                 "name": "README.md",
@@ -609,7 +633,7 @@
                 "relativePath": "src/knowledge/README.md",
                 "type": "file",
                 "extension": "md",
-                "sizeBytes": 9896
+                "sizeBytes": 11514
               }
             ]
           },

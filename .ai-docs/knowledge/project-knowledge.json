@@ -1,7 +1,7 @@
 {
   "metadata": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-07-07T11:55:11.284Z",
+    "generatedAt": "2026-07-07T12:04:17.429Z",
     "generatorVersion": "0.1.0",
     "projectName": "Context-Generator-for-AI-Agent",
     "docsDir": ".ai-docs"
@@ -61,7 +61,7 @@
           "relativePath": "AGENTS.md",
           "type": "file",
           "extension": "md",
-          "sizeBytes": 12760
+          "sizeBytes": 13050
         },
         {
           "name": "docs",
@@ -75,7 +75,7 @@
               "relativePath": "docs/architecture.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 28444
+              "sizeBytes": 30790
             },
             {
               "name": "context-engineering.md",
@@ -83,7 +83,7 @@
               "relativePath": "docs/context-engineering.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 22300
+              "sizeBytes": 24267
             },
             {
               "name": "folder-structure.md",
@@ -91,7 +91,7 @@
               "relativePath": "docs/folder-structure.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 11689
+              "sizeBytes": 11947
             }
           ]
         },
@@ -109,7 +109,7 @@
           "relativePath": "README.md",
           "type": "file",
           "extension": "md",
-          "sizeBytes": 5300
+          "sizeBytes": 5349
         },
         {
           "name": "src",
@@ -249,7 +249,7 @@
                   "relativePath": "src/analyzers/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2173
+                  "sizeBytes": 2537
                 },
                 {
                   "name": "module-analyzer.test.ts",
@@ -292,12 +292,36 @@
                   "sizeBytes": 3441
                 },
                 {
+                  "name": "navigation-map-analyzer.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-analyzer.test.ts",
+                  "relativePath": "src/analyzers/navigation-map-analyzer.test.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 8249
+                },
+                {
+                  "name": "navigation-map-analyzer.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-analyzer.ts",
+                  "relativePath": "src/analyzers/navigation-map-analyzer.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 1794
+                },
+                {
+                  "name": "navigation-map-builder.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/navigation-map-builder.ts",
+                  "relativePath": "src/analyzers/navigation-map-builder.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 9879
+                },
+                {
                   "name": "README.md",
                   "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers/README.md",
                   "relativePath": "src/analyzers/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 10892
+                  "sizeBytes": 14377
                 }
               ]
             },
@@ -353,7 +377,7 @@
                   "relativePath": "src/core/pipeline-handlers.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 10266
+                  "sizeBytes": 11194
                 },
                 {
                   "name": "pipeline-orchestrator.ts",
@@ -545,7 +569,7 @@
                   "relativePath": "src/domain/pipeline.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 5251
+                  "sizeBytes": 5606
                 },
                 {
                   "name": "README.md",
@@ -601,7 +625,7 @@
                   "relativePath": "src/knowledge/index.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 1579
+                  "sizeBytes": 1730
                 },
                 {
                   "name": "knowledge-builder.ts",
@@ -625,7 +649,7 @@
                   "relativePath": "src/knowledge/knowledge-paths.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 2717
+                  "sizeBytes": 2946
                 },
                 {
                   "name": "knowledge-writer.test.ts",
@@ -633,7 +657,7 @@
                   "relativePath": "src/knowledge/knowledge-writer.test.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 9045
+                  "sizeBytes": 11146
                 },
                 {
                   "name": "knowledge-writer.ts",
@@ -641,7 +665,7 @@
                   "relativePath": "src/knowledge/knowledge-writer.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 6908
+                  "sizeBytes": 7671
                 },
                 {
                   "name": "project-knowledge.ts",
@@ -649,7 +673,7 @@
                   "relativePath": "src/knowledge/project-knowledge.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 3828
+                  "sizeBytes": 4694
                 },
                 {
                   "name": "README.md",
@@ -657,7 +681,7 @@
                   "relativePath": "src/knowledge/README.md",
                   "type": "file",
                   "extension": "md",
-                  "sizeBytes": 9896
+                  "sizeBytes": 11514
                 }
               ]
             },
@@ -905,7 +929,7 @@
           ]
         }
       ],
-      "generatedAt": "2026-07-07T11:55:11.284Z",
+      "generatedAt": "2026-07-07T12:04:17.429Z",
       "strategy": "standard"
     }
   },
@@ -1015,6 +1039,7 @@
           "test-file:import-parser.test.ts",
           "test-file:module-analyzer.test.ts",
           "test-file:module-classifier.test.ts",
+          "test-file:navigation-map-analyzer.test.ts",
           "doc-file:README.md",
           "path-context:source-files",
           "path-context:source-module"
@@ -1830,7 +1855,7 @@
           ]
         }
       ],
-      "generatedAt": "2026-07-07T11:55:11.284Z"
+      "generatedAt": "2026-07-07T12:04:17.429Z"
     },
     "conventions": [
       {
@@ -2238,6 +2263,240 @@
         ],
         "confidence": "high"
       }
-    ]
+    ],
+    "navigationMap": {
+      "entries": [
+        {
+          "taskType": "architecture-change",
+          "description": "Changing module boundaries, pipeline structure, or how stages and generators interact.",
+          "recommendedKnowledge": [
+            "modules",
+            "folderContexts",
+            "dependencyGraph",
+            "conventions"
+          ],
+          "recommendedDocuments": [
+            "architecture.md",
+            "folder-structure.md",
+            "dependency-map.md",
+            "conventions.md",
+            "ai-context.md"
+          ],
+          "relatedModules": [
+            "src/analyzers",
+            "src/core",
+            "src/docs",
+            "src/domain",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "src/analyzers",
+            "src/core",
+            "src/docs",
+            "src/domain",
+            "src/knowledge"
+          ],
+          "warnings": [
+            "Review dependency graph before changing module boundaries.",
+            "Preserve domain purity.",
+            "Keep generators consuming PKM instead of scanning directly."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "new-feature",
+          "description": "Adding new behavior: a pipeline step, analyzer, generator, detector, or CLI capability.",
+          "recommendedKnowledge": [
+            "modules",
+            "folderContexts",
+            "conventions",
+            "dependencyGraph",
+            "navigationMap"
+          ],
+          "recommendedDocuments": [
+            "architecture.md",
+            "folder-structure.md",
+            "implementation-guide.md",
+            "conventions.md",
+            "agent-navigation.md"
+          ],
+          "relatedModules": [
+            "src/analyzers",
+            "src/core",
+            "src/docs",
+            "src/domain",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "src"
+          ],
+          "warnings": [
+            "Add new behavior through the correct module boundary.",
+            "Update PKM-related docs if architecture changes.",
+            "Do not bypass the pipeline orchestration layer."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "bug-fix",
+          "description": "Correcting incorrect behavior in existing code without changing architecture or contracts.",
+          "recommendedKnowledge": [
+            "modules",
+            "dependencyGraph",
+            "conventions"
+          ],
+          "recommendedDocuments": [
+            "implementation-guide.md",
+            "dependency-map.md",
+            "conventions.md"
+          ],
+          "relatedModules": [
+            "src/ai",
+            "src/analyzers",
+            "src/core",
+            "src/detectors",
+            "src/docs",
+            "src/domain",
+            "src/knowledge",
+            "src/scanner"
+          ],
+          "relatedFolders": [],
+          "warnings": [
+            "Fix the root cause instead of patching generated output.",
+            "Avoid changing unrelated modules."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "test-change",
+          "description": "Adding, updating, or reorganizing tests for existing or new behavior.",
+          "recommendedKnowledge": [
+            "conventions",
+            "modules",
+            "folderContexts"
+          ],
+          "recommendedDocuments": [
+            "conventions.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [],
+          "relatedFolders": [],
+          "warnings": [
+            "Preserve existing testing conventions.",
+            "Do not weaken assertions or remove tests."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "documentation-change",
+          "description": "Updating Markdown documentation, READMEs, or the generated context layer.",
+          "recommendedKnowledge": [
+            "documentation",
+            "conventions",
+            "navigationMap"
+          ],
+          "recommendedDocuments": [
+            "README.md",
+            "agent-navigation.md",
+            "ai-context.md",
+            "conventions.md"
+          ],
+          "relatedModules": [
+            ".ai-docs",
+            "docs",
+            "src/docs",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "docs"
+          ],
+          "warnings": [
+            "Markdown should reflect PKM.",
+            "Do not manually edit generated files unless intentionally supported."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "config-change",
+          "description": "Changing runtime configuration, compiler options, or tooling configuration files.",
+          "recommendedKnowledge": [
+            "technologies",
+            "conventions",
+            "modules"
+          ],
+          "recommendedDocuments": [
+            "architecture.md",
+            "conventions.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [
+            "src/config",
+            "src/detectors",
+            "src/utils"
+          ],
+          "relatedFolders": [],
+          "warnings": [
+            "Check package manager and TypeScript strict mode conventions.",
+            "Avoid introducing conflicting tooling."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "dependency-change",
+          "description": "Adding, removing, or upgrading package dependencies.",
+          "recommendedKnowledge": [
+            "technologies",
+            "dependencyGraph",
+            "conventions"
+          ],
+          "recommendedDocuments": [
+            "dependency-map.md",
+            "conventions.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [
+            "src/detectors"
+          ],
+          "relatedFolders": [],
+          "warnings": [
+            "Check impacted modules before changing dependencies.",
+            "Keep dependency changes minimal."
+          ],
+          "confidence": "high"
+        },
+        {
+          "taskType": "ai-agent-integration",
+          "description": "Building or adjusting agent-facing outputs: agent docs, exporters, rules, or skills.",
+          "recommendedKnowledge": [
+            "documentation",
+            "conventions",
+            "navigationMap",
+            "modules"
+          ],
+          "recommendedDocuments": [
+            "AGENTS.md",
+            "ai-context.md",
+            "agent-navigation.md",
+            "implementation-guide.md"
+          ],
+          "relatedModules": [
+            ".ai-docs",
+            "docs",
+            "src/analyzers",
+            "src/docs",
+            "src/knowledge"
+          ],
+          "relatedFolders": [
+            "docs"
+          ],
+          "warnings": [
+            "Agent-specific outputs must be derived from PKM.",
+            "Do not duplicate repository analysis inside exporters."
+          ],
+          "confidence": "high"
+        }
+      ],
+      "generatedAt": "2026-07-07T12:04:17.429Z"
+    }
   }
 }

@@ -14,6 +14,7 @@ import {
   DocumentationKnowledge,
   FolderKnowledge,
   ModuleKnowledge,
+  NavigationMapKnowledge,
   ProjectKnowledge,
   RepositoryKnowledge,
   TechnologyKnowledge,
@@ -73,6 +74,10 @@ interface PersistedConventionsKnowledge extends PersistedKnowledgeHeader {
   conventions: ConventionKnowledge[];
 }
 
+interface PersistedNavigationMapKnowledge extends PersistedKnowledgeHeader {
+  navigationMap: NavigationMapKnowledge;
+}
+
 function buildKnowledgeFiles(
   knowledge: ProjectKnowledge,
 ): ReadonlyArray<[KnowledgeFileName, unknown]> {
@@ -124,6 +129,14 @@ function buildKnowledgeFiles(
       conventions: knowledge.analysis.conventions,
     };
     files.push([KNOWLEDGE_FILE_NAMES.conventions, conventionsPayload]);
+  }
+
+  if (knowledge.analysis.navigationMap !== undefined) {
+    const navigationMapPayload: PersistedNavigationMapKnowledge = {
+      ...header,
+      navigationMap: knowledge.analysis.navigationMap,
+    };
+    files.push([KNOWLEDGE_FILE_NAMES.navigationMap, navigationMapPayload]);
   }
 
   return files;
@@ -198,6 +211,17 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
     fs.unlinkSync(conventionsPath);
   }
 
+  const navigationMapPath = resolveKnowledgeFilePath(
+    rootPath,
+    docsDir,
+    KNOWLEDGE_FILE_NAMES.navigationMap,
+  );
+  const hasNavigationMap = knowledge.analysis.navigationMap !== undefined;
+
+  if (!hasNavigationMap && fs.existsSync(navigationMapPath)) {
+    fs.unlinkSync(navigationMapPath);
+  }
+
   return {
     schemaVersion: knowledge.metadata.schemaVersion,
     schemaVersionLabel: formatSchemaVersionLabel(knowledge.metadata.schemaVersion),
@@ -209,6 +233,7 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
       hasModules,
       hasDependencyGraph,
       hasConventions,
+      hasNavigationMap,
     ),
   };
 }

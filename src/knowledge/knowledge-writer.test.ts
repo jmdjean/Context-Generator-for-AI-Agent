@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { persistProjectKnowledge } from './knowledge-writer';
 import { KNOWLEDGE_FILE_NAMES, resolveKnowledgeFilePath } from './knowledge-paths';
-import { ConventionKnowledge, FolderKnowledge, ModuleKnowledge, ProjectKnowledge, DependencyGraphKnowledge } from './project-knowledge';
+import { ConventionKnowledge, FolderKnowledge, ModuleKnowledge, NavigationMapKnowledge, ProjectKnowledge, DependencyGraphKnowledge } from './project-knowledge';
 
 function createModuleContext(relativePath: string): ModuleKnowledge {
   return {
@@ -48,6 +48,24 @@ function createConvention(): ConventionKnowledge {
   };
 }
 
+function createNavigationMap(): NavigationMapKnowledge {
+  return {
+    entries: [
+      {
+        taskType: 'bug-fix',
+        description: 'test',
+        recommendedKnowledge: ['modules'],
+        recommendedDocuments: ['implementation-guide.md'],
+        relatedModules: [],
+        relatedFolders: [],
+        warnings: ['Avoid changing unrelated modules.'],
+        confidence: 'high',
+      },
+    ],
+    generatedAt: '2026-01-01T00:00:00.000Z',
+  };
+}
+
 function createKnowledge(
   rootPath: string,
   options: {
@@ -56,6 +74,7 @@ function createKnowledge(
     includeModules?: boolean;
     includeDependencyGraph?: boolean;
     includeConventions?: boolean;
+    includeNavigationMap?: boolean;
   } = {},
 ): ProjectKnowledge {
   const includeTree = options.includeTree ?? true;
@@ -63,6 +82,7 @@ function createKnowledge(
   const includeModules = options.includeModules ?? false;
   const includeDependencyGraph = options.includeDependencyGraph ?? false;
   const includeConventions = options.includeConventions ?? false;
+  const includeNavigationMap = options.includeNavigationMap ?? false;
 
   const repositoryTree = includeTree
     ? {
@@ -113,7 +133,11 @@ function createKnowledge(
     },
     analysis: {
       status:
-        includeFolderContexts || includeModules || includeDependencyGraph || includeConventions
+        includeFolderContexts ||
+        includeModules ||
+        includeDependencyGraph ||
+        includeConventions ||
+        includeNavigationMap
           ? 'partial'
           : 'pending',
       folderContexts: includeFolderContexts
@@ -128,6 +152,7 @@ function createKnowledge(
           } satisfies DependencyGraphKnowledge)
         : undefined,
       conventions: includeConventions ? [createConvention()] : undefined,
+      navigationMap: includeNavigationMap ? createNavigationMap() : undefined,
     },
   };
 }
@@ -281,6 +306,44 @@ describe('knowledge-writer', () => {
       persistProjectKnowledge(withoutConventions);
 
       assert.equal(fs.existsSync(conventionsPath), false);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('writes navigation-map.json when a navigation map exists and removes stale file when cleared', () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-writer-navigation-'));
+
+    try {
+      const withNavigationMap = createKnowledge(tempRoot, {
+        includeTree: true,
+        includeNavigationMap: true,
+      });
+      const persistenceWithNavigationMap = persistProjectKnowledge(withNavigationMap);
+
+      const navigationMapPath = resolveKnowledgeFilePath(
+        tempRoot,
+        '.ai-docs',
+        KNOWLEDGE_FILE_NAMES.navigationMap,
+      );
+
+      assert.equal(fs.existsSync(navigationMapPath), true);
+      assert.ok(
+        persistenceWithNavigationMap.persistedRelativePaths.includes(
+          '.ai-docs/knowledge/navigation-map.json',
+        ),
+      );
+
+      const persisted = JSON.parse(fs.readFileSync(navigationMapPath, 'utf-8')) as {
+        navigationMap: NavigationMapKnowledge;
+      };
+      assert.equal(persisted.navigationMap.entries.length, 1);
+      assert.equal(persisted.navigationMap.entries[0]?.taskType, 'bug-fix');
+
+      const withoutNavigationMap = createKnowledge(tempRoot, { includeTree: true });
+      persistProjectKnowledge(withoutNavigationMap);
+
+      assert.equal(fs.existsSync(navigationMapPath), false);
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }

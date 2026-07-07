@@ -6,7 +6,7 @@ import { scanRepository } from '../scanner/repository-scanner';
 import { detectTechnologies } from '../detectors/technology-detector';
 import { createDocumentationPlan } from '../docs/documentation-planner';
 import { writeDocumentation } from '../docs/documentation-writer';
-import { enrichProjectKnowledgeWithFolderAnalysis, enrichProjectKnowledgeWithModuleAnalysis, enrichProjectKnowledgeWithDependencyGraph, enrichProjectKnowledgeWithConventions } from '../analyzers';
+import { enrichProjectKnowledgeWithFolderAnalysis, enrichProjectKnowledgeWithModuleAnalysis, enrichProjectKnowledgeWithDependencyGraph, enrichProjectKnowledgeWithConventions, enrichProjectKnowledgeWithNavigationMap } from '../analyzers';
 import { buildProjectKnowledge, persistProjectKnowledge, ProjectKnowledge } from '../knowledge';
 
 export interface PipelineContext {
@@ -234,6 +234,30 @@ export async function handleAnalyzeConventions(
   };
 }
 
+export async function handleBuildNavigationMap(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  const { knowledge, result } = enrichProjectKnowledgeWithNavigationMap(context.projectKnowledge);
+  context.projectKnowledge = knowledge;
+
+  console.log('');
+  console.log('AI navigation map:');
+  console.log(`Entries: ${result.totalEntries}`);
+  console.log(`High confidence: ${result.highConfidenceEntries}`);
+  console.log(`Medium confidence: ${result.mediumConfidenceEntries}`);
+  console.log(`Low confidence: ${result.lowConfidenceEntries}`);
+
+  return {
+    status: 'completed',
+    message: `built navigation map with ${result.totalEntries} entr(ies), ${result.highConfidenceEntries} high confidence`,
+  };
+}
+
 export async function handleWriteDocumentation(
   context: PipelineContext,
   step: AnalysisPipelineStep,
@@ -289,6 +313,7 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Analyze Modules': handleAnalyzeModules,
   'Analyze Dependency Graph': handleAnalyzeDependencyGraph,
   'Analyze Conventions': handleAnalyzeConventions,
+  'Build AI Navigation Map': handleBuildNavigationMap,
   'Write Documentation': handleWriteDocumentation,
   'Persist Project Knowledge': handlePersistProjectKnowledge,
 };
