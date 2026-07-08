@@ -5,7 +5,7 @@
 Curated context snapshot optimized for AI agent consumption
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-08T23:17:35.065Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -14,9 +14,9 @@ Curated context snapshot optimized for AI agent consumption
 - Languages: TypeScript
 - Frameworks: None detected
 - Planned documents: 11
-- Folder contexts: 14
+- Folder contexts: 17
 - Modules: 12
-- Dependency graph: 10 node(s), 21 edge(s)
+- Dependency graph: 10 node(s), 27 edge(s)
 - Conventions: 30
 - Navigation entries: 8
 
@@ -56,7 +56,7 @@ Then use `agent-navigation.md` to pick the right documents for your specific tas
 
 ## Current limitations
 
-- Everything in this context layer comes from deterministic analysis. No AI-powered architecture analysis has run yet.
+- Everything in this context layer comes from deterministic analysis. Pass `--ai` with an OpenRouter API key for optional AI enrichment.
 - Dependency edges come from lightweight regex import parsing — dynamic imports and path aliases are not detected.
 - Folder responsibilities and module types are inferred from structural naming heuristics, not from reading file contents.
 - Cross-check code-level details in source files when a task depends on exact behavior.

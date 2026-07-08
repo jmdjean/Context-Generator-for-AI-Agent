@@ -15,6 +15,7 @@ import {
   renderDocumentHeader,
   tableCell,
 } from './render-helpers';
+import { renderAiInsightsSection } from './ai-insights-renderer';
 
 const ARCHITECTURE_CONVENTION_CATEGORIES: ReadonlyArray<string> = [
   'architecture',
@@ -170,6 +171,7 @@ export function renderArchitectureDocument(
     ...renderConventionsSection(knowledge.analysis.conventions),
     ...renderDependencySummarySection(knowledge.analysis.dependencyGraph),
     ...renderAgentGuidanceSection(architectureEntry),
+    ...renderAiInsightsSection(knowledge),
   ];
 
   return finishDocument(lines);

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "documentImpact": {
+    "impactedDocuments": [],
+    "unchangedDocuments": [
+      "AGENTS.md",
+      "README.md",
+      "agent-navigation.md",
+      "ai-context.md",
+      "architecture.md",
+      "change-log.md",
+      "conventions.md",
+      "dependency-map.md",
+      "folder-structure.md",
+      "implementation-guide.md",
+      "technology-overview.md"
+    ],
+    "generatedAt": "2026-07-08T23:18:43.675Z"
+  }
+}

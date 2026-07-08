@@ -6,6 +6,7 @@ import {
   inlineCode,
   renderDocumentHeader,
 } from './render-helpers';
+import { renderAiInsightsSection } from './ai-insights-renderer';
 
 function renderNewFeatureSection(knowledge: ProjectKnowledge, entry: NavigationEntry | undefined): string[] {
   const moduleNames = (knowledge.analysis.modules ?? []).map((module) => module.relativePath);
@@ -100,6 +101,7 @@ export function renderImplementationGuideDocument(
     ...renderNewGeneratorSection(),
     ...renderWhyPkmSection(knowledge),
     ...renderDoNotBypassSection(),
+    ...renderAiInsightsSection(knowledge),
   ];
 
   return finishDocument(lines);

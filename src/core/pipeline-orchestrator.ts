@@ -1,5 +1,7 @@
 import { RuntimeConfig } from '../config';
 import { ANALYSIS_PIPELINE, PipelineStepStatus } from '../domain';
+import { formatErrorMessage } from '../utils/error-format';
+import { createEmptyPipelineMetrics, PipelineRunMetrics } from './pipeline-metrics';
 import { PipelineContext, runStepHandler } from './pipeline-handlers';
 
 export interface ExecutedPipelineStep {
@@ -23,6 +25,7 @@ export interface PipelineExecutionResult {
   startedAt: string;
   finishedAt: string;
   errors: PipelineExecutionError[];
+  metrics: PipelineRunMetrics;
   projectKnowledge?: PipelineContext['projectKnowledge'];
 }
 
@@ -56,7 +59,10 @@ export async function executePipeline(
   const startedAt = new Date().toISOString();
   const errors: PipelineExecutionError[] = [];
   const steps = initializeSteps();
-  const context: PipelineContext = { config };
+  const context: PipelineContext = {
+    config,
+    metrics: createEmptyPipelineMetrics(),
+  };
 
   console.log('');
   console.log('Pipeline:');
@@ -71,13 +77,22 @@ export async function executePipeline(
     try {
       const result = await runStepHandler(context, domainStep);
 
-      step.status = result.status;
       step.finishedAt = new Date().toISOString();
       step.message = result.message;
+
+      if (result.status === 'failed') {
+        step.status = 'failed';
+        errors.push({ stepName: step.name, message: result.message });
+        printStep(step);
+        markRemainingStepsSkipped(steps, i + 1);
+        break;
+      }
+
+      step.status = result.status;
     } catch (err) {
       step.status = 'failed';
       step.finishedAt = new Date().toISOString();
-      const message = err instanceof Error ? err.message : String(err);
+      const message = formatErrorMessage(err);
       step.message = message;
       errors.push({ stepName: step.name, message, cause: err });
       printStep(step);
@@ -94,6 +109,7 @@ export async function executePipeline(
     startedAt,
     finishedAt: new Date().toISOString(),
     errors,
+    metrics: context.metrics,
     projectKnowledge: context.projectKnowledge,
   };
 }

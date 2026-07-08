@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:19:08.450Z",
+  "generatedAt": "2026-07-08T23:18:43.505Z",
   "conventions": [
     {
       "category": "language",
@@ -248,17 +248,17 @@
       "evidence": [
         {
           "type": "file",
+          "source": "src/ai/ai-analysis.test.ts",
+          "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+        },
+        {
+          "type": "file",
+          "source": "src/ai/openrouter-client.test.ts",
+          "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+        },
+        {
+          "type": "file",
           "source": "src/analyzers/convention-analyzer.test.ts",
-          "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
-        },
-        {
-          "type": "file",
-          "source": "src/analyzers/convention-classifier.test.ts",
-          "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
-        },
-        {
-          "type": "file",
-          "source": "src/analyzers/dependency-graph-analyzer.test.ts",
           "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
         }
       ],
@@ -272,7 +272,7 @@
         {
           "type": "config",
           "source": "package.json",
-          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js"
+          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/utils/*.test.js dist/cli.integration.test.js"
         }
       ],
       "confidence": "medium"

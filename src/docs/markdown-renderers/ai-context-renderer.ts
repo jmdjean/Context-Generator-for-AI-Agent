@@ -6,6 +6,7 @@ import {
   inlineCode,
   renderDocumentHeader,
 } from './render-helpers';
+import { hasRenderableAiInsights, renderAiInsightsSection } from './ai-insights-renderer';
 
 const KEY_ENTRY_LIMIT = 8;
 
@@ -94,16 +95,25 @@ function renderKeyConventionsSection(conventions: ConventionKnowledge[] | undefi
   return lines;
 }
 
-function renderLimitationsSection(): string[] {
-  return [
-    '',
-    '## Current limitations',
-    '',
-    '- Everything in this context layer comes from deterministic analysis. No AI-powered architecture analysis has run yet.',
+function renderLimitationsSection(knowledge: ProjectKnowledge): string[] {
+  const lines = ['', '## Current limitations', ''];
+
+  if (hasRenderableAiInsights(knowledge.analysis.aiInsights)) {
+    lines.push(
+      '- Deterministic analysis remains authoritative. The AI Insights section above is enrichment only — verify against code when behavior matters.',
+    );
+  } else {
+    lines.push(
+      '- Everything in this context layer comes from deterministic analysis. Pass `--ai` with an OpenRouter API key for optional AI enrichment.',
+    );
+  }
+
+  lines.push(
     '- Dependency edges come from lightweight regex import parsing — dynamic imports and path aliases are not detected.',
     '- Folder responsibilities and module types are inferred from structural naming heuristics, not from reading file contents.',
     '- Cross-check code-level details in source files when a task depends on exact behavior.',
-  ];
+  );
+  return lines;
 }
 
 export function renderAiContextDocument(
@@ -116,7 +126,8 @@ export function renderAiContextDocument(
     ...renderReadFirstSection(knowledge),
     ...renderKeyModulesSection(knowledge.analysis.modules),
     ...renderKeyConventionsSection(knowledge.analysis.conventions),
-    ...renderLimitationsSection(),
+    ...renderAiInsightsSection(knowledge),
+    ...renderLimitationsSection(knowledge),
   ];
 
   return finishDocument(lines);

@@ -5,7 +5,7 @@
 Key internal and external dependencies with rationale
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-08T23:14:08.206Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -28,6 +28,13 @@ Key internal and external dependencies with rationale
 
 Each edge lists the imports that prove the relationship:
 
+- `src/ai` → `src/config` (imports, confidence: high)
+  - `src/ai/index.ts` imports `../config/constants`
+- `src/ai` → `src/knowledge` (imports, confidence: high)
+  - `src/ai/ai-analysis-service.ts` imports `../knowledge`
+  - `src/ai/prompt-builder.ts` imports `../knowledge`
+- `src/ai` → `src/utils` (imports, confidence: high)
+  - `src/ai/ai-analysis-service.ts` imports `../utils/ai-text-sanitizer`
 - `src/analyzers` → `src/domain` (imports, confidence: high)
   - `src/analyzers/convention-analyzer.ts` imports `../domain`
   - `src/analyzers/folder-analyzer.ts` imports `../domain`
@@ -44,28 +51,39 @@ Each edge lists the imports that prove the relationship:
   - `src/analyzers/import-parser.ts` imports `../scanner/repository-boundary`
 - `src/analyzers` → `src/utils` (imports, confidence: high)
   - `src/analyzers/module-analyzer.ts` imports `../utils/fs`
+- `src/config` → `src/knowledge` (imports, confidence: high)
+  - `src/config/index.ts` imports `../knowledge`
 - `src/config` → `src/utils` (imports, confidence: high)
   - `src/config/index.ts` imports `../utils/fs`
+- `src/core` → `src/ai` (imports, confidence: high)
+  - `src/core/pipeline-handlers.ts` imports `../ai`
 - `src/core` → `src/analyzers` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../analyzers`
 - `src/core` → `src/config` (imports, confidence: high)
   - `src/core/index.ts` imports `../config`
   - `src/core/pipeline-handlers.ts` imports `../config`
   - `src/core/pipeline-orchestrator.ts` imports `../config`
+  - …and 1 more import(s)
 - `src/core` → `src/detectors` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../detectors/technology-detector`
 - `src/core` → `src/docs` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../docs/documentation-planner`
   - `src/core/pipeline-handlers.ts` imports `../docs/documentation-writer`
+  - `src/core/pipeline-handlers.ts` imports `../docs/documentation-validator`
+  - …and 2 more import(s)
 - `src/core` → `src/domain` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../domain`
   - `src/core/pipeline-handlers.ts` imports `../domain/documentation-plan`
   - `src/core/pipeline-orchestrator.ts` imports `../domain`
 - `src/core` → `src/knowledge` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../knowledge`
+  - `src/core/pipeline-metrics.ts` imports `../knowledge`
+  - `src/core/run-summary.ts` imports `../knowledge`
 - `src/core` → `src/scanner` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../scanner/repository-loader`
   - `src/core/pipeline-handlers.ts` imports `../scanner/repository-scanner`
+- `src/core` → `src/utils` (imports, confidence: high)
+  - `src/core/pipeline-orchestrator.ts` imports `../utils/error-format`
 - `src/detectors` → `src/domain` (imports, confidence: high)
   - `src/detectors/package-manager-detector.ts` imports `../domain`
   - `src/detectors/repository-paths.ts` imports `../domain`
@@ -77,11 +95,13 @@ Each edge lists the imports that prove the relationship:
   - …and 10 more import(s)
 - `src/docs` → `src/knowledge` (imports, confidence: high)
   - `src/docs/document-template.ts` imports `../knowledge`
-  - `src/docs/documentation-writer.ts` imports `../knowledge`
-  - `src/docs/markdown-renderers/agent-navigation-renderer.ts` imports `../../knowledge`
-  - …and 7 more import(s)
+  - `src/docs/documentation-validator.ts` imports `../knowledge`
+  - `src/docs/documentation-write-policy.ts` imports `../knowledge`
+  - …and 9 more import(s)
 - `src/docs` → `src/utils` (imports, confidence: high)
+  - `src/docs/documentation-validator.ts` imports `../utils/fs`
   - `src/docs/documentation-writer.ts` imports `../utils/fs`
+  - `src/docs/markdown-renderers/ai-insights-renderer.ts` imports `../../utils/ai-text-sanitizer`
 - `src/knowledge` → `src/domain` (imports, confidence: high)
   - `src/knowledge/accessors.ts` imports `../domain/documentation-plan`
   - `src/knowledge/knowledge-builder.ts` imports `../domain`

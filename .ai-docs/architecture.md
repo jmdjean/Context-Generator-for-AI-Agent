@@ -5,7 +5,7 @@
 System design, layer diagram, and key architectural decisions
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-08T23:17:35.065Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -66,21 +66,21 @@ The full evidence-backed convention list lives in `conventions.md`.
 ## Dependency graph summary
 
 - Nodes (modules): 10
-- Edges (detected relationships): 21
+- Edges (detected relationships): 27
 
 High-confidence relationships:
 
+- `src/ai` → `src/config` (imports)
+- `src/ai` → `src/knowledge` (imports)
+- `src/ai` → `src/utils` (imports)
 - `src/analyzers` → `src/domain` (imports)
 - `src/analyzers` → `src/knowledge` (imports)
 - `src/analyzers` → `src/scanner` (imports)
 - `src/analyzers` → `src/utils` (imports)
+- `src/config` → `src/knowledge` (imports)
 - `src/config` → `src/utils` (imports)
-- `src/core` → `src/analyzers` (imports)
-- `src/core` → `src/config` (imports)
-- `src/core` → `src/detectors` (imports)
-- `src/core` → `src/docs` (imports)
-- `src/core` → `src/domain` (imports)
-- …and 11 more
+- `src/core` → `src/ai` (imports)
+- …and 17 more
 
 See `dependency-map.md` for the full node and edge list with evidence.
 

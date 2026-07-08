@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ai-project-docs` is a CLI tool with a pipeline architecture. The user runs a single command; the tool reads a target repository, assembles a **Project Knowledge Model (PKM)**, and runs generators that produce structured outputs — starting with deterministic Markdown in `.ai-docs/`. AI-powered analysis is planned for a later stage.
+`ai-project-docs` is a CLI tool with a pipeline architecture. The user runs a single command; the tool reads a target repository, assembles a **Project Knowledge Model (PKM)**, and runs generators that produce structured outputs — starting with deterministic Markdown in `.ai-docs/`. **Optional** OpenRouter AI analysis can enrich the PKM when `--ai` is provided; deterministic analysis remains authoritative.
 
 Each stage of the pipeline is isolated in its own module. No module reaches into another module's internals. Analysis stages produce typed outputs that the knowledge builder maps into `ProjectKnowledge`. Generators consume only the PKM.
 
@@ -26,7 +26,7 @@ This separation means a new output format only needs a new generator. It does no
 | `repository` | Mapped from `RepositoryInfo` | Tree (`repositoryTree`), ignore rules |
 | `technologies` | Mapped from `TechnologyProfile` | Deeper stack signals |
 | `documentation` | `DocumentationPlan` | Generated document contents |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); AI fields pending | Architecture |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); optional `aiInsights` when `--ai` runs | Deeper AI stages |
 
 ### Integration rule
 
@@ -46,8 +46,9 @@ This separation means a new output format only needs a new generator. It does no
 │  src/detectors/      Technology detection       │  ✅ done — top-level detection
 │  src/analyzers/      PKM enrichment analyzers   │  ✅ folder, module, dependency, conventions
 │  src/knowledge/      Project Knowledge Model    │  ✅ done — PKM types + builder
-│  src/ai/             OpenRouter integration     │  planned
+│  src/ai/             OpenRouter integration     │  ✅ optional --ai enrichment
 │  src/docs/           Generators (Markdown…)     │  ✅ planning + PKM-powered rendering + writing
+│  src/exporters/      Agent context exporters    │  ✅ generic pack + Cursor rules (--export-agents)
 ├─────────────────────────────────────────────────┤
 │  src/domain/         Pipeline + legacy types    │  ✅ done
 │  src/utils/          Pure shared helpers        │  ✅ done
@@ -76,12 +77,15 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 11. Analyze Dependency Graph  ProjectKnowledge                → DependencyGraphKnowledge ✅
 12. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
 13. Build AI Navigation Map   ProjectKnowledge                → NavigationMapKnowledge ✅
-14. Write Documentation        ProjectKnowledge                → .ai-docs/*.md        ✅
-15. Validate Documentation     DocumentModel[], file paths     → validation report
-16. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
+14. Analyze AI Insights       ProjectKnowledge + RuntimeConfig → AiInsightsKnowledge  ✅ (optional)
+15. Detect Changes             ProjectKnowledge + previous PKM → ChangeSummary + DocumentImpact ✅
+16. Write Documentation        ProjectKnowledge + DocumentImpact → .ai-docs/*.md        ✅
+17. Validate Documentation     DocumentModel[], file paths     → validation report    ✅
+18. Export Agent Context       ProjectKnowledge + RuntimeConfig → agent export files  ✅ (optional)
+19. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
 ```
 
-Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, and 16 are implemented. Step 8 assembles the PKM in memory; step 9 enriches `knowledge.analysis.folderContexts`; step 10 enriches `knowledge.analysis.modules`; step 11 enriches `knowledge.analysis.dependencyGraph`; step 12 enriches `knowledge.analysis.conventions`; step 13 enriches `knowledge.analysis.navigationMap`; step 16 persists it as JSON; step 14 writes Markdown derived from the PKM. Steps 5, 6, and 15 still have placeholder handlers.
+Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14 (when `--ai` + API key), 15, 16, 17, 18 (when `--export-agents`), and 19 are implemented. Step 8 assembles the PKM in memory; steps 9–13 enrich deterministic `analysis.*` sections; step 14 optionally enriches `analysis.aiInsights` from a compact PKM summary (no source code); step 15 compares against the previous persisted PKM and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 optionally runs agent exporters and records `analysis.agentExports`; step 19 persists JSON. Steps 5 and 6 still have placeholder handlers.
 
 ---
 
@@ -262,9 +266,27 @@ The `strategy` field on `DocumentationPlan` encodes which technology-specific do
 
 The PKM is the application contract. Every generator downstream reads from `ProjectKnowledge` instead of the raw pipeline outputs.
 
+## Incremental change detection and selective regeneration
+
+`src/incremental/` implements step 15 (Detect Changes). Before Markdown is written, the module loads the previous snapshot from `.ai-docs/knowledge/project-knowledge.json` (if it exists) and compares it against the in-memory PKM built during this run.
+
+| Compared section | Detection approach |
+|---|---|
+| `detectedFiles` | Sorted file list equality |
+| `repositoryTree` | Sorted relative path set from tree shape |
+| `technologies` | Technology token diff + confidence |
+| `folderContexts` | Folder path diff + normalized content |
+| `modules` | Module path diff + normalized content |
+| `dependencyGraph` | Edge key diff (`from`, `to`, `type`) |
+| `conventions` | Normalized convention entries |
+| `navigationMap` | Normalized navigation entries |
+| `aiInsights` | Normalized insight content (ignores timestamps) |
+
+The result is stored in `analysis.changeSummary` and persisted to `change-summary.json`. `document-impact-analyzer.ts` then maps `changedSections` to impacted Markdown paths and stores `analysis.documentImpact` (persisted to `document-impact.json`). **Write Documentation** (step 16) regenerates only impacted tool-managed files on incremental runs; initial runs regenerate every planned document. User-managed files without the generated marker are always preserved. This is not file watching or background sync — it compares PKM snapshots from consecutive CLI runs only.
+
 ## Project Knowledge persistence
 
-`src/knowledge/knowledge-writer.ts` implements step 16 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
+`src/knowledge/knowledge-writer.ts` implements step 19 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
 
 | File | Contents |
 |---|---|
@@ -279,14 +301,38 @@ The PKM is the application contract. Every generator downstream reads from `Proj
 | `dependencies.json` | Dependency graph only (when dependency graph analysis ran) |
 | `conventions.json` | Convention knowledge only (when convention analysis ran) |
 | `navigation-map.json` | AI navigation map only (when the navigation map was built) |
+| `change-summary.json` | Change summary vs previous PKM (when Detect Changes ran) |
+| `document-impact.json` | Selective regeneration decisions (when Detect Changes ran) |
+| `agent-exports.json` | Agent export results (when `--export-agents` ran) |
 
 Path resolution uses `resolvePathWithinRoot()` via `knowledge-paths.ts` — writes never escape the target project root. JSON files are tool-managed machine state and are always overwritten on each persist run (no Markdown marker policy).
 
-**Why persist?** The PKM becomes a reusable artifact for debugging, external integrations, future incremental diffing, and agent-specific exporters. Markdown is a human/agent-readable *derivative*; JSON knowledge is the canonical persisted form.
+**Why persist?** The PKM becomes a reusable artifact for debugging, external integrations, incremental change detection, and agent-specific exporters. The on-disk snapshot is what step 15 compares against on the next run. Markdown and agent packs are human/agent-readable *derivatives*; JSON knowledge is the canonical persisted form.
+
+## Agent exporters
+
+`src/exporters/` implements step 18 (Export Agent Context). Exporters are generators: they consume `ProjectKnowledge` and write derived agent context files. They do not scan the repository, re-detect technologies, or call OpenRouter.
+
+| Component | Role |
+|---|---|
+| `exporter-contract.ts` | `AgentExporter` interface, `ExportTarget`, `ExportOptions`, `ExportResult` |
+| `exporter-constants.ts` | Default targets and output paths |
+| `export-target-resolver.ts` | CLI target parsing and validation |
+| `exporter-registry.ts` | Registry of available exporters |
+| `export-file-writer.ts` | Shared write policy for export files |
+| `generic-agent-pack-renderer.ts` | Pure PKM → Markdown rendering |
+| `generic-agent-exporter.ts` | Generic target exporter (render + write) |
+| `cursor-rules-renderer.ts` | Pure PKM → Cursor `.mdc` rule rendering |
+| `cursor-exporter.ts` | Cursor target exporter (render + write) |
+| `agent-export-service.ts` | Orchestrates exporters, enriches `analysis.agentExports` |
+
+When `--export-agents` is passed, exporters run for the resolved `--target` (default: `generic`; `all` runs generic + cursor). The generic exporter writes `.ai-docs/agent-pack/AGENTS.generated.md`. The Cursor exporter writes `.cursor/rules/ai-project-docs.mdc` with `alwaysApply: true`. Claude Code, Codex, and Copilot targets are reserved but not implemented yet — the CLI rejects them with a clear error.
+
+Exported files use the same generated-file marker policy as Markdown docs and are safe to regenerate. Agent-specific files are derived presentations; `.ai-docs/knowledge/project-knowledge.json` remains the source of truth.
 
 ## Documentation writing
 
-`src/docs/documentation-writer.ts` implements step 14 (Write Documentation). It receives `ProjectKnowledge` and writes Markdown files into `<repository.rootPath>/<documentation.plan.docsDir>/`.
+`src/docs/documentation-writer.ts` implements step 16 (Write Documentation). It receives `ProjectKnowledge` and an optional `DocumentImpactSummary` from `analysis.documentImpact`.
 
 The writer is a **generator**: it reads only from the PKM. It does not receive `RuntimeConfig` and does not call the scanner or detectors directly.
 
@@ -315,6 +361,7 @@ The writer is intentionally conservative:
 - It creates the docs directory if it does not exist.
 - It never deletes files.
 - It only overwrites files that start with the generated-file marker `<!-- Generated by AI Project Docs. Safe to update. -->`.
+- On incremental runs, it skips unchanged generated files listed in `documentImpact.unchangedDocuments`.
 - It skips unmarked files with a warning so user-created documentation is preserved.
 
 Future AI stages will enrich PKM sections; the same renderers then surface the richer data without changing the ownership rule.
@@ -359,10 +406,11 @@ Analysis stages produce typed outputs defined in `src/domain/` and `src/docs/`. 
 | `RepositoryNode` | 3 — Scan Structure | (future: `knowledge.repository`) |
 | `TechnologyProfile` | 4 — Detect Technologies | `knowledge.technologies` |
 | `DocumentationPlan` | 7 — Generate Plan | `knowledge.documentation.plan` |
-| `AnalysisResult` | 6 — Analyze Architecture | (future: `knowledge.analysis`) |
+| `AnalysisResult` | 6 — Analyze Architecture (legacy placeholder) | (not used — see `aiInsights`) |
+| `AiInsightsKnowledge` | 14 — Analyze AI Insights (optional) | `knowledge.analysis.aiInsights` |
 | `ProjectKnowledge` | 8 — Build Project Knowledge | consumed by all generators |
 
-`ProjectContext` in `src/domain/context.ts` remains for the future AI analysis stage. Generators must use `ProjectKnowledge`, not `ProjectContext`.
+`ProjectContext` in `src/domain/context.ts` remains for a future consolidated AI stage. The current optional enrichment uses summarized `ProjectKnowledge` via `src/ai/`. Generators must use `ProjectKnowledge`, not `ProjectContext`.
 
 ---
 
@@ -400,12 +448,31 @@ cli.ts
                                  │    knowledge/knowledge-builder → ProjectKnowledge
                                  ├─ Write Documentation
                                  │    docs/documentation-writer → .ai-docs/*.md
+                                 ├─ Detect Changes
+                                 │    incremental/ → analysis.changeSummary
                                  ├─ Persist Project Knowledge
                                  │    knowledge/knowledge-writer → .ai-docs/knowledge/*.json
-                                 └─ (remaining steps: placeholder)
+                                 └─ (legacy placeholders: Build Repository Model, Analyze Architecture)
 ```
 
 Key invariant: `process.argv` and `process.env` are read only inside `src/config/`. Every other module receives a `RuntimeConfig` or a domain type.
+
+---
+
+## Optional AI analysis (`src/ai/`)
+
+OpenRouter integration is **opt-in**. The CLI works without an API key. When the user passes `--ai` and a key is available (`--openrouter-key` or `OPENROUTER_API_KEY`), step 14 sends a **compact PKM summary** to the model — modules, folders, technologies, dependency graph counts/edges, conventions, and navigation map entries. No source code or secrets are included.
+
+The model must return structured JSON. `ai-analysis-service.ts` validates the payload before writing `knowledge.analysis.aiInsights`. Invalid responses or network errors emit warnings and the pipeline continues — AI never fails the MVP run.
+
+| Principle | Rule |
+|---|---|
+| Authority | Deterministic PKM sections remain the source of truth |
+| AI role | Enrichment only (`architectureSummary`, `risks`, `recommendations`, `agentGuidance`) |
+| Opt-in | `--ai` required; default pipeline skips the step |
+| Presentation | `architecture.md`, `ai-context.md`, `implementation-guide.md`, and `agent-navigation.md` append a labeled **AI Insights** section when `analysis.aiInsights` is present; renderers read PKM only and never call OpenRouter |
+
+Default model: `openai/gpt-4.1-mini` (override with `--model`).
 
 ---
 
@@ -423,7 +490,7 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 
 **Plan before generate.** The documentation plan (step 7) commits to a deterministic file manifest before any content is generated or written. Future generation steps work against this manifest rather than deciding on-the-fly which files to create.
 
-**Deterministic write before AI enrichment.** Step 14 writes predictable Markdown rendered from PKM data already available in the pipeline — deterministic renderers for key documents, a generic template for the rest. This validates ownership rules, path safety, and incremental file updates before introducing AI-generated architecture analysis.
+**AI after deterministic analyzers, before generators.** Optional step 14 enriches the PKM from a summarized snapshot after folder/module/dependency/convention/navigation analysis. Step 15 writes Markdown that may include AI insights when available.
 
 **Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`.
 
@@ -431,7 +498,7 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 
 **Fail fast, fail clearly.** Configuration validation runs before any I/O. A failed step marks the pipeline `success: false` and surfaces a `PipelineExecutionError`.
 
-**Incremental updates by design.** The generated-file marker is the first incremental safety mechanism: tool-managed files can be refreshed while user-managed files are preserved. Step 10 (Save Incremental State) will later add finer-grained regeneration.
+**Incremental updates by design.** The generated-file marker protects user-managed files during regeneration. Step 15 (Detect Changes) records PKM diffs and document impact; step 16 (Write Documentation) regenerates only impacted tool-managed Markdown on incremental runs.
 
 ---
 
@@ -441,8 +508,10 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 |---|---|---|
 | 1 (highest) | CLI flag `--openrouter-key` | `openRouterApiKey` |
 | 2 | Environment variable `OPENROUTER_API_KEY` | `openRouterApiKey` |
-| 3 | Default value | `docsDir` → `.ai-docs` |
-| 4 (planned) | Project config file `.ai-docs.json` | multiple fields |
+| 3 | CLI flag `--ai` | `enableAiAnalysis` |
+| 4 | CLI flag `--model` | `aiModel` (default `openai/gpt-4.1-mini`) |
+| 5 | Default value | `docsDir` → `.ai-docs` |
+| 6 (planned) | Project config file `.ai-docs.json` | multiple fields |
 
 ---
 

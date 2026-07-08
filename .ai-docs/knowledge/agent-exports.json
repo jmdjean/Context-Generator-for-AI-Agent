@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "agentExports": {
+    "enabled": true,
+    "enabledTargets": [
+      "cursor"
+    ],
+    "results": [
+      {
+        "target": "cursor",
+        "filesWritten": 1,
+        "filesSkipped": 0,
+        "warnings": [],
+        "generatedAt": "2026-07-08T23:18:43.691Z",
+        "files": [
+          {
+            "relativePath": ".cursor/rules/ai-project-docs.mdc",
+            "status": "written"
+          }
+        ]
+      }
+    ],
+    "generatedAt": "2026-07-08T23:18:43.691Z",
+    "warnings": []
+  }
+}

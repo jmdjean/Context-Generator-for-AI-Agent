@@ -18,7 +18,8 @@ This module is split into three concerns that must stay separate:
 | `documentation-planner.ts` | `createDocumentationPlan()` — deterministic plan from config + metadata |
 | `document-template.ts` | `renderDeterministicDocument()` — generic fallback Markdown template with the generated-file marker |
 | `markdown-renderers/` | PKM-powered renderers for key documents (see below) |
-| `documentation-writer.ts` | `writeDocumentation()` — writes planned docs from `ProjectKnowledge`, preserves unmarked files, reports written/skipped and PKM-powered/generic counts |
+| `documentation-writer.ts` | `writeDocumentation()` — writes planned docs from `ProjectKnowledge`, supports selective regeneration via `DocumentImpactSummary`, preserves unmarked files, reports written/skipped counts |
+| `documentation-validator.ts` | `validateDocumentation()` — verifies written docs exist, carry the generated marker, and reports errors/warnings |
 | `markdown-renderers.test.ts` | Renderer dispatch and content tests |
 
 ---
@@ -60,7 +61,9 @@ This module is split into three concerns that must stay separate:
 
 The documentation writer is a **generator**. It consumes only `ProjectKnowledge` — no `RuntimeConfig`, `RepositoryInfo`, `TechnologyProfile`, or `DocumentationPlan`.
 
-- `writeDocumentation(knowledge)` resolves paths from `knowledge.repository.rootPath` and `knowledge.documentation.plan.docsDir`.
+- `writeDocumentation(knowledge, impactSummary?)` resolves paths from `knowledge.repository.rootPath` and `knowledge.documentation.plan.docsDir`.
+- When `impactSummary` is omitted, every tool-managed planned document is rewritten (legacy behavior).
+- When `impactSummary` is present, only impacted generated documents are rewritten; unchanged generated files are skipped; missing files are still created.
 - `renderPlannedDocument(document, knowledge)` dispatches to the PKM renderer for that document, or to the generic template when none exists.
 - Markdown is an **output derived from the PKM**. The PKM (persisted to `.ai-docs/knowledge/`) remains the source of truth; Markdown generation must never perform repository analysis of its own.
 
@@ -164,7 +167,7 @@ The writer uses that marker to decide whether a file may be overwritten on futur
 - If the file exists and starts with the marker, it is treated as tool-managed and may be updated.
 - If the file exists and does not start with the marker, it is treated as user-managed and is skipped with a warning.
 
-This policy preserves hand-written documentation while still allowing safe incremental regeneration of files the tool owns.
+This policy preserves hand-written documentation while still allowing safe incremental regeneration of files the tool owns. Selective regeneration is driven by PKM section changes (`analysis.documentImpact`) — not file watching or git history.
 
 ## Why deterministic docs come before AI-generated docs
 
@@ -173,7 +176,21 @@ Deterministic docs are the safest first implementation of the writing stage:
 - They prove the docs directory, path resolution, and overwrite rules work correctly.
 - They give agents a stable baseline context layer immediately.
 - They avoid pretending that AI analysis exists before that stage is ready — PKM-powered documents state their deterministic origin and current limitations explicitly.
-- They make future enrichment obvious: the AI stage will enrich PKM sections, and the same renderers will automatically surface the richer data without changing ownership semantics.
+- They make future enrichment obvious: the AI stage enriches `analysis.aiInsights` in the PKM, and the same renderers automatically surface the richer data without changing ownership semantics.
+
+## AI insights in Markdown renderers
+
+Optional AI analysis (pipeline step 14, `--ai`) writes `analysis.aiInsights` into the PKM. Markdown renderers in `markdown-renderers/` read that section at write time (step 15) and append a labeled **AI Insights** block when insights are present.
+
+| Rule | Detail |
+|---|---|
+| Source of truth | Deterministic PKM sections rendered above the AI block |
+| Renderer input | `ProjectKnowledge` only — including already-persisted `analysis.aiInsights` |
+| No AI calls | Renderers never invoke OpenRouter or perform repository analysis |
+| Opt-in | Without `--ai`, or when insights are missing or empty after sanitization, no AI section is rendered |
+| Documents | `architecture.md`, `ai-context.md`, `implementation-guide.md`, `agent-navigation.md` |
+
+Shared formatting lives in `markdown-renderers/ai-insights-renderer.ts`.
 
 ---
 
@@ -197,14 +214,14 @@ Do not add framework-specific logic directly to `executePipeline`. The orchestra
 - PKM-powered Markdown renderers (`markdown-renderers/`) — presentation only.
 - Deterministic Markdown rendering for planned documents.
 - Safe overwrite rules for generated files only.
-- Future: per-technology document template functions, incremental update logic.
+- Future: per-technology document template functions.
 
 ## What does NOT belong here
 
 - Technology detection — that belongs in `src/detectors/`.
 - Repository scanning — that belongs in `src/scanner/`.
 - Repository analysis of any kind — analyzers in `src/analyzers/` enrich the PKM; renderers only present it.
-- AI calls — that belongs in `src/ai/`.
+- AI calls — that belongs in `src/ai/`. Renderers only read `analysis.aiInsights` from the PKM; they never call OpenRouter.
 - Domain types (`DocumentModel`, `DocumentSection`) — those stay in `src/domain/`.
 
 ---
@@ -223,7 +240,7 @@ Do not add framework-specific logic directly to `executePipeline`. The orchestra
 | Generated-file marker protection | ✅ Done |
 | PKM-powered renderers for 7 key documents | ✅ Done |
 | Generic fallback template for remaining documents | ✅ Done |
-| Incremental update logic beyond marker checks | Planned |
+| Incremental update logic beyond marker checks | ✅ Done (selective regeneration via `documentImpact`) |
 
 ## Expected output structure (planned)
 

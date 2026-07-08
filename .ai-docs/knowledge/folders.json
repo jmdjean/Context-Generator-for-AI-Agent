@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:19:08.450Z",
+  "generatedAt": "2026-07-08T23:18:43.505Z",
   "folders": [
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
       "relativePath": "",
       "name": "Context-Generator-for-AI-Agent",
       "depth": 0,
@@ -17,6 +17,7 @@
       ],
       "childFolders": [
         "docs",
+        "scripts",
         "src"
       ],
       "signals": [
@@ -25,7 +26,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/docs",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
       "relativePath": "docs",
       "name": "docs",
       "depth": 1,
@@ -40,7 +41,22 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\scripts",
+      "relativePath": "scripts",
+      "name": "scripts",
+      "depth": 1,
+      "classification": "scripts",
+      "responsibility": "Contains automation and utility scripts.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:scripts",
+        "name-match:scripts"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
       "relativePath": "src",
       "name": "src",
       "depth": 1,
@@ -55,6 +71,8 @@
         "detectors",
         "docs",
         "domain",
+        "exporters",
+        "incremental",
         "knowledge",
         "scanner",
         "utils"
@@ -66,7 +84,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
       "relativePath": "src/ai",
       "name": "ai",
       "depth": 2,
@@ -78,14 +96,16 @@
       "childFolders": [],
       "signals": [
         "folder-name:ai",
+        "test-file:ai-analysis.test.ts",
+        "test-file:openrouter-client.test.ts",
         "doc-file:README.md",
-        "refined-from:unknown",
+        "path-context:source-files",
         "path-context:source-module"
       ],
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
       "relativePath": "src/analyzers",
       "name": "analyzers",
       "depth": 2,
@@ -113,7 +133,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
       "relativePath": "src/config",
       "name": "config",
       "depth": 2,
@@ -131,7 +151,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
       "relativePath": "src/core",
       "name": "core",
       "depth": 2,
@@ -143,14 +163,17 @@
       "childFolders": [],
       "signals": [
         "folder-name:core",
+        "test-file:exit-codes.test.ts",
+        "test-file:pipeline-handlers.test.ts",
         "doc-file:README.md",
+        "test-file:run-summary.test.ts",
         "path-context:source-files",
         "path-context:source-module"
       ],
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
       "relativePath": "src/detectors",
       "name": "detectors",
       "depth": 2,
@@ -172,7 +195,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
       "relativePath": "src/docs",
       "name": "docs",
       "depth": 2,
@@ -192,7 +215,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\markdown-renderers",
       "relativePath": "src/docs/markdown-renderers",
       "name": "markdown-renderers",
       "depth": 3,
@@ -207,7 +230,7 @@
       "confidence": "medium"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
       "relativePath": "src/domain",
       "name": "domain",
       "depth": 2,
@@ -226,7 +249,52 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\exporters",
+      "relativePath": "src/exporters",
+      "name": "exporters",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains exporters application source code.",
+      "importantFiles": [
+        "src/exporters/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:exporters",
+        "test-file:agent-export-sections.test.ts",
+        "test-file:agent-export-service.test.ts",
+        "test-file:cursor-rules-renderer.test.ts",
+        "test-file:export-file-writer.test.ts",
+        "test-file:export-target-resolver.test.ts",
+        "test-file:generic-agent-pack-renderer.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\incremental",
+      "relativePath": "src/incremental",
+      "name": "incremental",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains incremental application source code.",
+      "importantFiles": [
+        "src/incremental/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:incremental",
+        "test-file:change-detector.test.ts",
+        "test-file:document-impact-analyzer.test.ts",
+        "test-file:document-impact-formatter.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
       "relativePath": "src/knowledge",
       "name": "knowledge",
       "depth": 2,
@@ -247,7 +315,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
       "relativePath": "src/scanner",
       "name": "scanner",
       "depth": 2,
@@ -270,7 +338,7 @@
       "confidence": "high"
     },
     {
-      "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
+      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
       "relativePath": "src/utils",
       "name": "utils",
       "depth": 2,
@@ -282,6 +350,7 @@
       "childFolders": [],
       "signals": [
         "folder-name:utils",
+        "test-file:ai-text-sanitizer.test.ts",
         "doc-file:README.md",
         "path-context:source-files",
         "path-context:source-module"

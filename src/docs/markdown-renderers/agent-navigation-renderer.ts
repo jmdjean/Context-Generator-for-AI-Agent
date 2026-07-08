@@ -6,6 +6,7 @@ import {
   humanizeIdentifier,
   renderDocumentHeader,
 } from './render-helpers';
+import { renderAiInsightsSection } from './ai-insights-renderer';
 
 function renderNavigationEntry(entry: NavigationEntry): string[] {
   const lines = [
@@ -41,15 +42,20 @@ export function renderAgentNavigationDocument(
 
   if (!navigationMap || navigationMap.entries.length === 0) {
     lines.push('');
-    lines.push('The AI navigation map has not been built for this snapshot. Run the full pipeline to populate it.');
-    return finishDocument(lines);
+    lines.push(
+      'The AI navigation map has not been built for this snapshot. Run the full pipeline to populate it.',
+    );
+  } else {
+    lines.push('');
+    lines.push(
+      'Find the task type that matches your current task, then load only the knowledge and documents it recommends. Related modules and folders are resolved against actual PKM data — empty lists mean nothing matched, not that the map is broken.',
+    );
+    for (const entry of navigationMap.entries) {
+      lines.push(...renderNavigationEntry(entry));
+    }
   }
 
-  lines.push('');
-  lines.push('Find the task type that matches your current task, then load only the knowledge and documents it recommends. Related modules and folders are resolved against actual PKM data — empty lists mean nothing matched, not that the map is broken.');
-  for (const entry of navigationMap.entries) {
-    lines.push(...renderNavigationEntry(entry));
-  }
+  lines.push(...renderAiInsightsSection(knowledge));
 
   return finishDocument(lines);
 }

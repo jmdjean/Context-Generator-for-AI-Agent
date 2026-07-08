@@ -17,6 +17,8 @@ interface RuntimeConfig {
   targetProjectPath: string;  // Resolved absolute path to the target repository
   docsDir: string;            // Output docs folder name (default: '.ai-docs')
   openRouterApiKey?: string;  // API key — present if resolved from flag or env var
+  enableAiAnalysis: boolean;  // true when --ai is passed
+  aiModel: string;            // OpenRouter model id (default: openai/gpt-4.1-mini)
 }
 ```
 
@@ -40,7 +42,9 @@ Returns `true` if `--help` or `-h` is present in `argv`.
 |---|---|---|
 | 1 (highest) | CLI flag `--openrouter-key` | `openRouterApiKey` |
 | 2 | Environment variable `OPENROUTER_API_KEY` | `openRouterApiKey` |
-| 3 | Default value | `docsDir` (→ `.ai-docs`) |
+| 3 | CLI flag `--ai` | `enableAiAnalysis` |
+| 4 | CLI flag `--model` | `aiModel` |
+| 5 | Default value | `docsDir` (→ `.ai-docs`), `aiModel` (→ `openai/gpt-4.1-mini`) |
 
 ---
 
@@ -48,9 +52,13 @@ Returns `true` if `--help` or `-h` is present in `argv`.
 
 | Input | Rules |
 |---|---|
-| `targetProjectPath` | Required. Must exist on disk. Must be a directory. |
-| `docsDir` | Must not be empty or blank. |
+| `targetProjectPath` | Required. Must exist on disk. Must be a directory. Permission errors produce a clear message. |
+| `docsDir` | Must not be empty or blank after trimming. Must be a single relative folder name (not `.`, `/`, `\`, or `..`, and not absolute). |
 | `openRouterApiKey` | Optional. No format validation — passed through as-is. |
+| `enableAiAnalysis` | Optional. Set by `--ai`; defaults to `false`. |
+| `aiModel` | Optional. Set by `--model`; defaults to `openai/gpt-4.1-mini`. |
+| Unknown flags | Rejected with a descriptive error. |
+| Flags without values | Rejected (`--docs-dir` and `--openrouter-key` require a value). |
 
 ---
 
@@ -60,7 +68,7 @@ The module has three internal concerns kept as private functions:
 
 - `parseArgs(argv)` — extracts positional and named flags from the raw argument array.
 - `resolveApiKey(flagValue)` — returns the flag value if present, otherwise falls back to `process.env['OPENROUTER_API_KEY']`.
-- Validation inside `resolveConfig()` — uses `src/utils/fs.ts` helpers (`pathExists`, `isDirectory`).
+- Validation inside `resolveConfig()` — uses `assertReadableDirectory()` from `src/utils/fs.ts` for existence, directory, and permission checks.
 
 ---
 

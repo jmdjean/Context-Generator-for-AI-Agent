@@ -1,178 +1,233 @@
 # AI Project Docs
 
-A local CLI tool that analyzes any software repository and generates high-quality, AI-readable documentation so that AI coding agents can understand the project architecture before modifying code.
-
----
-
-## Vision
-
-AI coding agents often fail not because they lack capability, but because they lack context. They read files blindly, guess at conventions, and hallucinate structure.
-
-**AI Project Docs** solves this by analyzing a repository, assembling a **Project Knowledge Model (PKM)**, and generating structured outputs — starting with a `.ai-docs/` folder inside the target repository. That folder becomes the authoritative context layer for agents: it tells them where to start, what each module does, what the conventions are, and what has changed recently.
-
-The goal is not to replace code comments or wikis. It is to create a structured, always-current knowledge layer that agents can load *before* they touch any code.
-
----
-
-## Architecture
-
-The tool follows a compiler-like pipeline: analysis stages populate a single knowledge model; generators read from that model.
-
-```
-Repository
-    ↓
-Repository Loader + Scanner
-    ↓
-Technology Detection
-    ↓
-Project Knowledge Model (PKM)
-    ↓
-Generators (Markdown, Cursor rules, skills, agent packs…)
-    ↓
-Outputs (.ai-docs/knowledge/*.json, .ai-docs/*.md, future formats)
-```
-
-The PKM is persisted to `.ai-docs/knowledge/` as machine-readable JSON. Markdown files are one derived output format — not the source of truth. Each key Markdown document (`architecture.md`, `folder-structure.md`, `dependency-map.md`, `conventions.md`, `agent-navigation.md`, `ai-context.md`, `implementation-guide.md`) is produced by a small deterministic renderer in `src/docs/markdown-renderers/` that only presents PKM data — Markdown generation never analyzes the repository itself.
-
----
-
-## Core Principles
-
-- **Agents should not read the whole repository blindly.** They need a guided entry point.
-- **Structure guides context.** Each folder should explain its own responsibility.
-- **Documentation reduces hallucination.** The more precise the context, the fewer the mistakes.
-- **Documentation is part of the source code.** It must be maintained like any other module.
-
----
-
-## Usage
+**Context Engineering CLI** — analyzes a software repository and generates AI-agent-friendly documentation plus a persisted **Project Knowledge Model (PKM)**.
 
 ```bash
-npx ai-project-docs <target-path> [options]
-```
-
-### Arguments
-
-| Argument | Description |
-|---|---|
-| `<target-path>` | Path to the project directory to analyze (required) |
-
-### Options
-
-| Option | Description | Default |
-|---|---|---|
-| `--openrouter-key <key>` | OpenRouter API key for AI-powered analysis | `OPENROUTER_API_KEY` env var |
-| `--docs-dir <name>` | Output docs folder name | `.ai-docs` |
-| `--help` | Show usage information | — |
-
-### Examples
-
-```bash
-# Analyze a project (API key resolved from environment variable)
+npm install -g ai-project-docs   # after publish
 ai-project-docs ./my-project
-
-# Pass the API key directly
-ai-project-docs ./my-project --openrouter-key sk-or-xxx
-
-# Use a custom docs folder name
-ai-project-docs ./my-project --docs-dir .project-docs
-
-# All options combined
-ai-project-docs ./my-project --openrouter-key sk-or-xxx --docs-dir .project-docs
-
-# Show help
-ai-project-docs --help
 ```
 
-### Example output
-
-```
-AI Project Docs
-
-Target project: /absolute/path/to/my-project
-Docs directory: .ai-docs
-OpenRouter key: detected
-Status: configuration resolved
-```
-
-If the API key is not provided:
-
-```
-AI Project Docs
-
-Target project: /absolute/path/to/my-project
-Docs directory: .ai-docs
-OpenRouter key: missing
-
-Warning: OPENROUTER_API_KEY was not provided. AI-powered analysis will be skipped in future steps.
-
-Status: configuration resolved
-```
+No API key required. No source code modified. Outputs land in `.ai-docs/` inside the target repo and can be safely regenerated.
 
 ---
 
-## Current Implementation Status
-
-| Feature | Status |
-|---|---|
-| CLI entry point | ✅ Done |
-| Project structure | ✅ Done |
-| Initial documentation | ✅ Done |
-| Argument parsing | ✅ Done |
-| Runtime configuration resolver | ✅ Done |
-| Target path validation | ✅ Done |
-| OpenRouter key resolution (flag + env) | ✅ Done |
-| Repository scanner | ✅ Done |
-| Folder knowledge analyzer | ✅ Done |
-| Module discovery analyzer | ✅ Done |
-| Dependency graph analyzer | ✅ Done |
-| Convention analyzer | ✅ Done |
-| AI navigation map | ✅ Done |
-| Project Knowledge Model (PKM) | ✅ Done |
-| PKM persistence (`.ai-docs/knowledge/`) | ✅ Done |
-| OpenRouter integration | 🔜 Planned |
-| `.ai-docs/` Markdown generation | ✅ Done |
-| PKM-powered Markdown renderers | ✅ Done |
-| Incremental diffing | 🔜 Planned |
-
----
-
-## Installation (development)
+## Quick start
 
 ```bash
-git clone <repo-url>
-cd context-generator-for-ai-agent
+git clone https://github.com/jmdjean/Context-Generator-for-AI-Agent.git
+cd Context-Generator-for-AI-Agent
 npm install
 npm run build
 node dist/cli.js ./my-project
 ```
 
+Open `.ai-docs/agent-navigation.md` with your AI coding agent, or load `.ai-docs/knowledge/project-knowledge.json` for machine-readable context.
+
 ---
 
-## Project Structure
+## What it does
+
+| Stage | Output |
+|---|---|
+| Repository scan | Folder tree with ignore rules and safety limits |
+| Technology detection | Languages, frameworks, package managers |
+| PKM assembly | Single machine-readable knowledge model |
+| Deterministic analyzers | Folders, modules, dependencies, conventions, navigation map |
+| Markdown generation | Docs rendered **from the PKM** (not by re-scanning the repo) |
+| Validation + summary | Exit code, counts, and next steps in the terminal |
+| Change detection | Compares current PKM to previous snapshot; persists `change-summary.json` |
+| Selective regeneration | Rewrites only impacted generated Markdown based on PKM section changes |
+
+The authoritative output is `.ai-docs/knowledge/project-knowledge.json`. Markdown files are derived presentations.
+
+---
+
+## What it does not do yet
+
+- Cursor rules, skills, or other agent-specific exporters
+- File watching or git-based incremental sync
+- Any modification of project source files
+
+Optional OpenRouter AI analysis is available with `--ai` (see CLI reference). When enabled, insights are persisted in the PKM under `analysis.aiInsights` and rendered into selected Markdown documents as **non-authoritative enrichment**. Deterministic PKM sections remain the source of truth; renderers read already-persisted PKM data and never call OpenRouter directly.
+
+---
+
+## Installation
+
+### npm (after publish)
+
+```bash
+npm install -g ai-project-docs
+ai-project-docs ./my-project
+```
+
+### Local development
+
+```bash
+npm install
+npm run build
+node dist/cli.js ./my-project
+```
+
+### Global link (development)
+
+```bash
+npm run build
+npm link
+ai-project-docs ./my-project
+# remove later: npm unlink -g ai-project-docs
+```
+
+---
+
+## CLI reference
+
+```bash
+ai-project-docs <target-path> [options]
+```
+
+| Argument / option | Description | Default |
+|---|---|---|
+| `<target-path>` | Project directory to analyze (required) | — |
+| `--docs-dir <name>` | Output folder inside the target repo | `.ai-docs` |
+| `--ai` | Run optional OpenRouter AI analysis (requires API key) | off |
+| `--export-agents` | Export agent-specific context files from the PKM | off |
+| `--target <name>` | Export target: `generic`, `cursor`, or `all` (requires `--export-agents`) | `generic` |
+| `--openrouter-key <key>` | OpenRouter API key | `OPENROUTER_API_KEY` |
+| `--model <id>` | OpenRouter model identifier | `openai/gpt-4.1-mini` |
+| `--help`, `-h` | Show usage | — |
+
+### Examples
+
+```bash
+ai-project-docs ./my-project
+ai-project-docs ./my-project --docs-dir .project-docs
+ai-project-docs ./my-project --ai --openrouter-key "$OPENROUTER_API_KEY"
+ai-project-docs ./my-project --export-agents
+ai-project-docs ./my-project --export-agents --target cursor
+ai-project-docs ./my-project --export-agents --target all
+ai-project-docs --help
+```
+
+### Exit codes
+
+| Code | When |
+|---|---|
+| `0` | Success — PKM persisted, docs written, validation passed |
+| `1` | Config error — missing path, path not found, not a directory, invalid `--docs-dir`, unknown flag |
+| `2` | Validation failed — generated docs missing or malformed |
+| `3` | Runtime error — pipeline step failed, permission error during write |
+
+When the run completes, the summary includes an **AI Analysis** section (`Enabled`, `Model`, `Insights generated`) — including `no (see warnings)` when `--ai` ran but insights could not be validated.
+
+When `--export-agents` is passed, the summary also includes **Agent exporters** (`Enabled`, `Targets`, `Files written`, `Files skipped`).
+
+---
+
+## Generated output
 
 ```
-src/
-  cli.ts          — CLI entry point (argument parsing, delegates to core)
-  core/           — Orchestration (runs the pipeline in order)
-  config/         — Configuration resolver (flags, env vars, validation)
-  scanner/        — Repository analysis
-  detectors/      — Technology detection
-  knowledge/      — Project Knowledge Model (PKM) — single source of truth
-  analyzers/      — Deterministic PKM enrichment (folder, module, dependency graph, conventions, navigation map)
-  docs/           — Documentation planning, PKM-powered Markdown renderers, and writing (generators)
-  ai/             — OpenRouter integration (planned)
-  utils/          — Shared utilities (filesystem helpers, etc.)
-docs/
-  architecture.md        — System architecture
-  folder-structure.md    — Folder responsibility map
-  context-engineering.md — Documentation philosophy
+.ai-docs/
+  README.md                 # Human overview
+  AGENTS.md                   # Agent entry point
+  agent-navigation.md         # Task → document routing; includes optional AI insights when present
+  architecture.md             # PKM-powered; includes optional AI insights when present
+  folder-structure.md         # PKM-powered
+  dependency-map.md           # PKM-powered
+  conventions.md              # PKM-powered
+  ai-context.md               # PKM-powered; includes optional AI insights when present
+  implementation-guide.md     # PKM-powered; includes optional AI insights when present
+  technology-overview.md
+  change-log.md
+  agent-pack/
+    AGENTS.generated.md     # Generic agent context pack (--export-agents --target generic)
+  knowledge/
+    project-knowledge.json    # Full PKM (start here for tooling)
+    repository.json
+    repository-tree.json
+    technologies.json
+    analysis.json
+    folders.json
+    modules.json
+    dependencies.json
+    conventions.json
+    navigation-map.json
+    change-summary.json       # PKM diff vs previous run (when a prior snapshot exists)
+    agent-exports.json        # Agent export results (when --export-agents ran)
+
+.cursor/                      # Cursor exporter output (--export-agents --target cursor)
+  rules/
+    ai-project-docs.mdc       # Always-on Cursor rule derived from the PKM
 ```
 
-See [`docs/folder-structure.md`](docs/folder-structure.md) for a full breakdown.
+**Regeneration policy:** files starting with `<!-- Generated by AI Project Docs. Safe to update. -->` are tool-managed. Files without that marker are preserved.
+
+---
+
+## For AI coding agents
+
+1. Load `.ai-docs/agent-navigation.md` — it routes task types to the right docs and PKM sections.
+2. Read `.ai-docs/AGENTS.md` — mandatory conventions for working in the repo.
+3. Use `.ai-docs/knowledge/project-knowledge.json` when you need structured, machine-readable context.
+
+The tool never touches source code — only the configured docs folder and tool-managed agent export paths (such as `.cursor/rules/` when using the Cursor exporter).
+
+---
+
+## Development commands
+
+```bash
+npm run build    # compile TypeScript → dist/
+npm test         # unit tests
+npm run smoke    # end-to-end CLI smoke test
+node dist/cli.js .   # analyze this repository
+```
+
+---
+
+## MVP limitations
+
+- AI analysis is opt-in (`--ai`) — default runs are deterministic only
+- Full scan every run — PKM analysis always runs; only Markdown regeneration is selective on incremental runs
+- Markdown is the primary human/agent output format; agent packs are optional via `--export-agents`
+- Large repos may hit scanner depth/file limits (`truncated` flagged in PKM)
+- Permission-denied directories are skipped during scan
+
+---
+
+## Roadmap
+
+| Feature | Status |
+|---|---|
+| CLI, scanner, detectors | Done |
+| PKM + deterministic analyzers | Done |
+| PKM-powered Markdown + validation | Done |
+| OpenRouter integration (optional `--ai`) | Done |
+| Change detection (PKM diff) | Done |
+| Selective regeneration from change summary | Done |
+| Generic agent exporter (`--export-agents`) | Done |
+| Cursor exporter (`--export-agents --target cursor`) | Done |
+| Agent exporters (Claude Code, Codex, Copilot) | Planned |
+
+---
+
+## Architecture
+
+```
+Repository → Scanner → Detection → PKM → Generators → .ai-docs/
+```
+
+Details: [`docs/architecture.md`](docs/architecture.md)
 
 ---
 
 ## Contributing
 
-Read [`AGENTS.md`](AGENTS.md) before making any changes. It explains how to navigate this codebase and what conventions to follow.
+- [`AGENTS.md`](AGENTS.md) — conventions, PKM rules, safety constraints
+- [`docs/release-checklist.md`](docs/release-checklist.md) — pre-release verification
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).

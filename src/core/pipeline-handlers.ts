@@ -6,11 +6,17 @@ import { scanRepository } from '../scanner/repository-scanner';
 import { detectTechnologies } from '../detectors/technology-detector';
 import { createDocumentationPlan } from '../docs/documentation-planner';
 import { writeDocumentation } from '../docs/documentation-writer';
+import { validateDocumentation } from '../docs/documentation-validator';
 import { enrichProjectKnowledgeWithFolderAnalysis, enrichProjectKnowledgeWithModuleAnalysis, enrichProjectKnowledgeWithDependencyGraph, enrichProjectKnowledgeWithConventions, enrichProjectKnowledgeWithNavigationMap } from '../analyzers';
+import { runAiAnalysis } from '../ai';
 import { buildProjectKnowledge, persistProjectKnowledge, ProjectKnowledge } from '../knowledge';
+import { enrichProjectKnowledgeWithIncrementalAnalysis, describeIncrementalAnalysis, printChangeDetectionSummary, printDocumentImpactSummary } from '../incremental';
+import { runAgentExports, summarizeAgentExportResults } from '../exporters';
+import { createEmptyPipelineMetrics, PipelineRunMetrics } from './pipeline-metrics';
 
 export interface PipelineContext {
   config: RuntimeConfig;
+  metrics: PipelineRunMetrics;
   repositoryInfo?: RepositoryInfo;
   technologyProfile?: TechnologyProfile;
   documentationPlan?: DocumentationPlan;
@@ -18,7 +24,7 @@ export interface PipelineContext {
 }
 
 export type StepHandlerResult = {
-  status: 'completed' | 'skipped';
+  status: 'completed' | 'skipped' | 'failed';
   message: string;
 };
 
@@ -63,19 +69,8 @@ export async function handleScanRepositoryStructure(
 
   context.repositoryInfo.repositoryTree = scanResult.tree;
   context.repositoryInfo.ignoredPaths = scanResult.ignoredPaths;
-
-  console.log('');
-  console.log('Repository scanner:');
-  console.log(`Files scanned: ${scanResult.stats.filesScanned}`);
-  console.log(`Directories scanned: ${scanResult.stats.directoriesScanned}`);
-  console.log(`Max depth reached: ${scanResult.stats.maxDepthReached}`);
-  console.log(`Limit reached: ${scanResult.stats.limitReached}`);
-  if (scanResult.stats.permissionDenied) {
-    console.log('Permission denied: true');
-  }
-  if (scanResult.stats.symlinksSkipped > 0) {
-    console.log(`Symlinks skipped: ${scanResult.stats.symlinksSkipped}`);
-  }
+  context.metrics.filesScanned = scanResult.stats.filesScanned;
+  context.metrics.repositoryTreeGenerated = true;
 
   return {
     status: 'completed',
@@ -148,12 +143,7 @@ export async function handleAnalyzeFolderKnowledge(
 
   const { knowledge, result } = enrichProjectKnowledgeWithFolderAnalysis(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-
-  console.log('');
-  console.log('Folder analyzer:');
-  console.log(`Folders analyzed: ${result.totalFolders}`);
-  console.log(`Documentable folders: ${result.documentableFolders}`);
-  console.log(`Ignored folders: ${result.ignoredFolders}`);
+  context.metrics.foldersAnalyzed = result.totalFolders;
 
   return {
     status: 'completed',
@@ -171,12 +161,7 @@ export async function handleAnalyzeModules(
 
   const { knowledge, result } = enrichProjectKnowledgeWithModuleAnalysis(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-
-  console.log('');
-  console.log('Module analyzer:');
-  console.log(`Modules discovered: ${result.totalModules}`);
-  console.log(`High confidence: ${result.highConfidenceModules}`);
-  console.log(`Medium confidence: ${result.mediumConfidenceModules}`);
+  context.metrics.modulesDiscovered = result.totalModules;
 
   return {
     status: 'completed',
@@ -194,15 +179,7 @@ export async function handleAnalyzeDependencyGraph(
 
   const { knowledge, result } = enrichProjectKnowledgeWithDependencyGraph(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-
-  console.log('');
-  console.log('Dependency graph:');
-  console.log(`Nodes: ${result.totalNodes}`);
-  console.log(`Edges: ${result.totalEdges}`);
-  console.log(`Imports analyzed: ${result.importsAnalyzed}`);
-  if (result.filesSkipped > 0) {
-    console.log(`Files skipped: ${result.filesSkipped}`);
-  }
+  context.metrics.dependencyEdges = result.totalEdges;
 
   return {
     status: 'completed',
@@ -220,13 +197,7 @@ export async function handleAnalyzeConventions(
 
   const { knowledge, result } = enrichProjectKnowledgeWithConventions(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-
-  console.log('');
-  console.log('Convention analyzer:');
-  console.log(`Conventions detected: ${result.totalConventions}`);
-  console.log(`High confidence: ${result.highConfidenceConventions}`);
-  console.log(`Medium confidence: ${result.mediumConfidenceConventions}`);
-  console.log(`Low confidence: ${result.lowConfidenceConventions}`);
+  context.metrics.conventionsDetected = result.totalConventions;
 
   return {
     status: 'completed',
@@ -244,17 +215,56 @@ export async function handleBuildNavigationMap(
 
   const { knowledge, result } = enrichProjectKnowledgeWithNavigationMap(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-
-  console.log('');
-  console.log('AI navigation map:');
-  console.log(`Entries: ${result.totalEntries}`);
-  console.log(`High confidence: ${result.highConfidenceEntries}`);
-  console.log(`Medium confidence: ${result.mediumConfidenceEntries}`);
-  console.log(`Low confidence: ${result.lowConfidenceEntries}`);
+  context.metrics.navigationEntries = result.totalEntries;
 
   return {
     status: 'completed',
     message: `built navigation map with ${result.totalEntries} entr(ies), ${result.highConfidenceEntries} high confidence`,
+  };
+}
+
+export async function handleAnalyzeAiInsights(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  if (!context.config.enableAiAnalysis) {
+    return {
+      status: 'skipped',
+      message: 'skipped: --ai not provided',
+    };
+  }
+
+  if (!context.config.openRouterApiKey) {
+    console.warn(
+      'Warning: --ai was provided but no OpenRouter API key was found. Set OPENROUTER_API_KEY or pass --openrouter-key. Skipping AI analysis.',
+    );
+    context.metrics.aiInsightsAttempted = true;
+    return {
+      status: 'skipped',
+      message: 'skipped: OpenRouter API key missing',
+    };
+  }
+
+  const analysisResult = await runAiAnalysis(context.projectKnowledge, {
+    apiKey: context.config.openRouterApiKey,
+    model: context.config.aiModel,
+  });
+
+  context.projectKnowledge = analysisResult.knowledge;
+  context.metrics.aiInsightsGenerated = analysisResult.insightsGenerated;
+  context.metrics.aiInsightsAttempted = analysisResult.attempted;
+
+  for (const warning of analysisResult.warnings) {
+    console.warn(`Warning: ${warning}`);
+  }
+
+  return {
+    status: analysisResult.insightsGenerated ? 'completed' : 'skipped',
+    message: analysisResult.message,
   };
 }
 
@@ -266,18 +276,107 @@ export async function handleWriteDocumentation(
     return placeholderResult(step);
   }
 
-  const writeResult = writeDocumentation(context.projectKnowledge);
-  console.log('');
-  console.log('Documentation writer:');
-  console.log(`Written: ${writeResult.writtenCount}`);
-  console.log(`Skipped: ${writeResult.skippedCount}`);
-  console.log(`PKM-powered documents: ${writeResult.pkmPoweredCount}`);
-  console.log(`Generic documents: ${writeResult.genericCount}`);
-  console.log(`Docs directory: ${writeResult.docsDirectoryPath}`);
+  const impactSummary = context.projectKnowledge.analysis.documentImpact;
+  const writeResult = writeDocumentation(context.projectKnowledge, impactSummary);
+  context.metrics.documentationWrite = writeResult;
+
+  const messageParts = [`written ${writeResult.writtenCount}`];
+  if (impactSummary !== undefined) {
+    messageParts.push(`skipped unchanged ${writeResult.skippedUnchangedCount}`);
+  } else {
+    messageParts.push(`skipped ${writeResult.skippedCount}`);
+  }
+  if (writeResult.skippedProtectedCount > 0) {
+    messageParts.push(`skipped protected ${writeResult.skippedProtectedCount}`);
+  }
 
   return {
     status: 'completed',
-    message: `written ${writeResult.writtenCount}, skipped ${writeResult.skippedCount}`,
+    message: messageParts.join(', '),
+  };
+}
+
+export async function handleValidateDocumentation(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge || !context.metrics.documentationWrite) {
+    return placeholderResult(step);
+  }
+
+  const validationResult = validateDocumentation(
+    context.projectKnowledge,
+    context.metrics.documentationWrite,
+  );
+  context.metrics.validation = validationResult;
+
+  const message = `${validationResult.status} (${validationResult.errorCount} error(s), ${validationResult.warningCount} warning(s))`;
+
+  return {
+    status: validationResult.status === 'failed' ? 'failed' : 'completed',
+    message,
+  };
+}
+
+export async function handleDetectChanges(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  const { knowledge, changeSummary, impactSummary } =
+    enrichProjectKnowledgeWithIncrementalAnalysis(context.projectKnowledge);
+  context.projectKnowledge = knowledge;
+  printChangeDetectionSummary(changeSummary);
+  printDocumentImpactSummary(impactSummary);
+
+  for (const warning of changeSummary.warnings) {
+    console.warn(`Warning: ${warning}`);
+  }
+
+  return {
+    status: 'completed',
+    message: describeIncrementalAnalysis(changeSummary, impactSummary),
+  };
+}
+
+export async function handleExportAgentContext(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  if (!context.config.enableAgentExports) {
+    return {
+      status: 'skipped',
+      message: 'skipped: --export-agents not provided',
+    };
+  }
+
+  const { knowledge, summary } = runAgentExports({
+    knowledge: context.projectKnowledge,
+    targetProjectPath: context.config.targetProjectPath,
+    docsDir: context.config.docsDir,
+    enabledTargets: context.config.exportTargets,
+  });
+
+  context.projectKnowledge = knowledge;
+  const totals = summarizeAgentExportResults(summary);
+  context.metrics.agentExports = {
+    enabled: true,
+    enabledTargets: summary.enabledTargets,
+    filesWritten: totals.filesWritten,
+    filesSkipped: totals.filesSkipped,
+    warnings: totals.warnings,
+  };
+
+  return {
+    status: 'completed',
+    message: `exported ${totals.filesWritten} file(s), skipped ${totals.filesSkipped}`,
   };
 }
 
@@ -290,13 +389,7 @@ export async function handlePersistProjectKnowledge(
   }
 
   const persistenceResult = persistProjectKnowledge(context.projectKnowledge);
-  console.log('');
-  console.log('Project Knowledge:');
-  console.log(`Schema version: ${persistenceResult.schemaVersionLabel}`);
-  console.log('Persisted:');
-  for (const relativePath of persistenceResult.persistedRelativePaths) {
-    console.log(`* ${relativePath}`);
-  }
+  context.metrics.knowledgeFilesPersisted = persistenceResult.persistedRelativePaths.length;
 
   return {
     status: 'completed',
@@ -316,7 +409,11 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Analyze Dependency Graph': handleAnalyzeDependencyGraph,
   'Analyze Conventions': handleAnalyzeConventions,
   'Build AI Navigation Map': handleBuildNavigationMap,
+  'Analyze AI Insights': handleAnalyzeAiInsights,
+  'Detect Changes': handleDetectChanges,
   'Write Documentation': handleWriteDocumentation,
+  'Validate Documentation': handleValidateDocumentation,
+  'Export Agent Context': handleExportAgentContext,
   'Persist Project Knowledge': handlePersistProjectKnowledge,
 };
 

@@ -69,7 +69,9 @@ After pipeline step **Persist Project Knowledge**, the target repository contain
     ├── modules.json             # module knowledge only (when module analysis ran)
     ├── dependencies.json        # dependency graph only (when dependency graph analysis ran)
     ├── conventions.json         # convention knowledge only (when convention analysis ran)
-    └── navigation-map.json      # AI navigation map only (when the navigation map was built)
+    ├── navigation-map.json      # AI navigation map only (when the navigation map was built)
+    └── change-summary.json      # change summary vs previous PKM (when Detect Changes ran)
+    └── document-impact.json     # selective regeneration decisions (when Detect Changes ran)
 ```
 
 ### `FolderKnowledge`
@@ -154,7 +156,7 @@ Persisted to `analysis.json` and `navigation-map.json`. Future agent-specific ex
 
 - **Reusable artifact** — knowledge survives beyond a single pipeline run.
 - **Debugging** — inspect exactly what the tool knew when it generated outputs.
-- **Future incremental updates** — compare persisted snapshots to detect changes.
+- **Incremental change detection and selective regeneration** — step **Detect Changes** compares persisted snapshots, derives `documentImpact`, and step **Write Documentation** regenerates only impacted generated Markdown.
 - **External integrations** — agents, CI, and other tools can read JSON without re-running analysis.
 - **Agent-specific exporters** — future generators can load persisted knowledge instead of rebuilding it.
 

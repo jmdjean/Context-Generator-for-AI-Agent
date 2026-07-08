@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:19:08.450Z",
+  "generatedAt": "2026-07-08T23:18:43.505Z",
   "dependencyGraph": {
     "nodes": [
       {
@@ -65,6 +65,46 @@
       }
     ],
     "edges": [
+      {
+        "from": "src/ai",
+        "to": "src/config",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/ai/index.ts",
+            "importPath": "../config/constants"
+          }
+        ]
+      },
+      {
+        "from": "src/ai",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/ai/ai-analysis-service.ts",
+            "importPath": "../knowledge"
+          },
+          {
+            "sourceFile": "src/ai/prompt-builder.ts",
+            "importPath": "../knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/ai",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/ai/ai-analysis-service.ts",
+            "importPath": "../utils/ai-text-sanitizer"
+          }
+        ]
+      },
       {
         "from": "src/analyzers",
         "to": "src/domain",
@@ -147,6 +187,18 @@
       },
       {
         "from": "src/config",
+        "to": "src/knowledge",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/config/index.ts",
+            "importPath": "../knowledge"
+          }
+        ]
+      },
+      {
+        "from": "src/config",
         "to": "src/utils",
         "type": "imports",
         "confidence": "high",
@@ -154,6 +206,18 @@
           {
             "sourceFile": "src/config/index.ts",
             "importPath": "../utils/fs"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/ai",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../ai"
           }
         ]
       },
@@ -186,6 +250,10 @@
           {
             "sourceFile": "src/core/pipeline-orchestrator.ts",
             "importPath": "../config"
+          },
+          {
+            "sourceFile": "src/core/run-summary.ts",
+            "importPath": "../config"
           }
         ]
       },
@@ -213,6 +281,18 @@
           },
           {
             "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../docs/documentation-writer"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../docs/documentation-validator"
+          },
+          {
+            "sourceFile": "src/core/pipeline-metrics.ts",
+            "importPath": "../docs/documentation-validator"
+          },
+          {
+            "sourceFile": "src/core/pipeline-metrics.ts",
             "importPath": "../docs/documentation-writer"
           }
         ]
@@ -246,6 +326,14 @@
           {
             "sourceFile": "src/core/pipeline-handlers.ts",
             "importPath": "../knowledge"
+          },
+          {
+            "sourceFile": "src/core/pipeline-metrics.ts",
+            "importPath": "../knowledge"
+          },
+          {
+            "sourceFile": "src/core/run-summary.ts",
+            "importPath": "../knowledge"
           }
         ]
       },
@@ -262,6 +350,18 @@
           {
             "sourceFile": "src/core/pipeline-handlers.ts",
             "importPath": "../scanner/repository-scanner"
+          }
+        ]
+      },
+      {
+        "from": "src/core",
+        "to": "src/utils",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/core/pipeline-orchestrator.ts",
+            "importPath": "../utils/error-format"
           }
         ]
       },
@@ -356,7 +456,11 @@
             "importPath": "../knowledge"
           },
           {
-            "sourceFile": "src/docs/documentation-writer.ts",
+            "sourceFile": "src/docs/documentation-validator.ts",
+            "importPath": "../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/documentation-write-policy.ts",
             "importPath": "../knowledge"
           },
           {
@@ -365,6 +469,10 @@
           },
           {
             "sourceFile": "src/docs/markdown-renderers/ai-context-renderer.ts",
+            "importPath": "../../knowledge"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/ai-insights-renderer.ts",
             "importPath": "../../knowledge"
           },
           {
@@ -400,8 +508,16 @@
         "confidence": "high",
         "evidence": [
           {
+            "sourceFile": "src/docs/documentation-validator.ts",
+            "importPath": "../utils/fs"
+          },
+          {
             "sourceFile": "src/docs/documentation-writer.ts",
             "importPath": "../utils/fs"
+          },
+          {
+            "sourceFile": "src/docs/markdown-renderers/ai-insights-renderer.ts",
+            "importPath": "../../utils/ai-text-sanitizer"
           }
         ]
       },
@@ -490,6 +606,6 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-07T12:19:08.450Z"
+    "generatedAt": "2026-07-08T23:18:43.505Z"
   }
 }

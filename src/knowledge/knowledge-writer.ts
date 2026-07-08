@@ -78,6 +78,18 @@ interface PersistedNavigationMapKnowledge extends PersistedKnowledgeHeader {
   navigationMap: NavigationMapKnowledge;
 }
 
+interface PersistedChangeSummaryKnowledge extends PersistedKnowledgeHeader {
+  changeSummary: NonNullable<AnalysisKnowledge['changeSummary']>;
+}
+
+interface PersistedDocumentImpactKnowledge extends PersistedKnowledgeHeader {
+  documentImpact: NonNullable<AnalysisKnowledge['documentImpact']>;
+}
+
+interface PersistedAgentExportsKnowledge extends PersistedKnowledgeHeader {
+  agentExports: NonNullable<AnalysisKnowledge['agentExports']>;
+}
+
 function buildKnowledgeFiles(
   knowledge: ProjectKnowledge,
 ): ReadonlyArray<[KnowledgeFileName, unknown]> {
@@ -137,6 +149,30 @@ function buildKnowledgeFiles(
       navigationMap: knowledge.analysis.navigationMap,
     };
     files.push([KNOWLEDGE_FILE_NAMES.navigationMap, navigationMapPayload]);
+  }
+
+  if (knowledge.analysis.changeSummary !== undefined) {
+    const changeSummaryPayload: PersistedChangeSummaryKnowledge = {
+      ...header,
+      changeSummary: knowledge.analysis.changeSummary,
+    };
+    files.push([KNOWLEDGE_FILE_NAMES.changeSummary, changeSummaryPayload]);
+  }
+
+  if (knowledge.analysis.documentImpact !== undefined) {
+    const documentImpactPayload: PersistedDocumentImpactKnowledge = {
+      ...header,
+      documentImpact: knowledge.analysis.documentImpact,
+    };
+    files.push([KNOWLEDGE_FILE_NAMES.documentImpact, documentImpactPayload]);
+  }
+
+  if (knowledge.analysis.agentExports !== undefined) {
+    const agentExportsPayload: PersistedAgentExportsKnowledge = {
+      ...header,
+      agentExports: knowledge.analysis.agentExports,
+    };
+    files.push([KNOWLEDGE_FILE_NAMES.agentExports, agentExportsPayload]);
   }
 
   return files;
@@ -222,6 +258,33 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
     fs.unlinkSync(navigationMapPath);
   }
 
+  const changeSummaryPath = resolveKnowledgeFilePath(
+    rootPath,
+    docsDir,
+    KNOWLEDGE_FILE_NAMES.changeSummary,
+  );
+  const hasChangeSummary = knowledge.analysis.changeSummary !== undefined;
+
+  if (!hasChangeSummary && fs.existsSync(changeSummaryPath)) {
+    fs.unlinkSync(changeSummaryPath);
+  }
+
+  const documentImpactPath = resolveKnowledgeFilePath(
+    rootPath,
+    docsDir,
+    KNOWLEDGE_FILE_NAMES.documentImpact,
+  );
+  const hasDocumentImpact = knowledge.analysis.documentImpact !== undefined;
+
+  if (!hasDocumentImpact && fs.existsSync(documentImpactPath)) {
+    fs.unlinkSync(documentImpactPath);
+  }
+
+  const hasAgentExports = knowledge.analysis.agentExports !== undefined;
+
+  // agent-exports.json is written only when --export-agents runs. When export is skipped,
+  // preserve the previous split file on disk so it stays aligned with any existing pack.
+
   return {
     schemaVersion: knowledge.metadata.schemaVersion,
     schemaVersionLabel: formatSchemaVersionLabel(knowledge.metadata.schemaVersion),
@@ -234,6 +297,9 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
       hasDependencyGraph,
       hasConventions,
       hasNavigationMap,
+      hasChangeSummary,
+      hasDocumentImpact,
+      hasAgentExports,
     ),
   };
 }

@@ -30,7 +30,8 @@ export function finishDocument(lines: string[]): string {
 }
 
 export function inlineCode(value: string): string {
-  return `\`${value}\``;
+  const safeValue = value.replace(/`/g, "'");
+  return `\`${safeValue}\``;
 }
 
 export function formatInlineList(items: readonly string[], fallback = 'None detected'): string {

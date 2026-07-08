@@ -1,26 +1,47 @@
 {
   "name": "ai-project-docs",
   "version": "0.1.0",
-  "description": "Context Engineering CLI — analyzes software repositories and generates AI-readable documentation",
+  "description": "Context Engineering CLI that analyzes software repositories and generates AI-agent-friendly documentation plus a persisted Project Knowledge Model (PKM)",
   "main": "dist/cli.js",
   "bin": {
     "ai-project-docs": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "AGENTS.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
-    "test": "npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js",
-    "clean": "rm -rf dist"
+    "test": "npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/utils/*.test.js dist/cli.integration.test.js",
+    "smoke": "npm run build && node scripts/smoke-test.mjs",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "prepublishOnly": "npm test && node scripts/smoke-test.mjs"
   },
   "keywords": [
     "ai",
+    "agents",
+    "cli",
     "context-engineering",
     "documentation",
-    "cli",
-    "agents"
+    "project-knowledge",
+    "pkm",
+    "codebase-analysis",
+    "repository-analysis"
   ],
+  "author": "Jean Medes Dinelli",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmdjean/Context-Generator-for-AI-Agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jmdjean/Context-Generator-for-AI-Agent/issues"
+  },
+  "homepage": "https://github.com/jmdjean/Context-Generator-for-AI-Agent#readme",
   "engines": {
     "node": ">=18.0.0"
   },

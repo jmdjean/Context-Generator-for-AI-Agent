@@ -9,7 +9,7 @@ Overview of the detected technology stack and its conventions
 ## Project
 
 - Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-08T23:17:35.065Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 - Status: initial deterministic documentation
@@ -27,14 +27,14 @@ This document uses the generic deterministic template. Key documents (architectu
 
 ## Current known context
 
-- Project root: `/home/user/Context-Generator-for-AI-Agent`
-- Detected top-level files: 12
+- Project root: `C:\projeto\Context-Generator-for-AI-Agent`
+- Detected top-level files: 15
 - Languages: TypeScript
 - Frameworks: None detected yet
 - Package managers: npm
 - Tooling: TypeScript
 - Detection confidence: high
-- Analyzed folders: 14
+- Analyzed folders: 17
 - Discovered modules: 12
 - Detected conventions: 30
 

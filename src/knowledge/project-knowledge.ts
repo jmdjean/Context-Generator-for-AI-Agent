@@ -194,15 +194,107 @@ export interface NavigationMapKnowledge {
   generatedAt: string;
 }
 
+export interface AiInsightsKnowledge {
+  architectureSummary?: string;
+  risks?: string[];
+  recommendations?: string[];
+  agentGuidance?: string[];
+  generatedAt: string;
+  model: string;
+}
+
+export type AgentExportTarget =
+  | 'generic'
+  | 'cursor'
+  | 'claude'
+  | 'codex'
+  | 'copilot';
+
+export interface AgentExportFileKnowledge {
+  relativePath: string;
+  status: 'written' | 'skipped';
+  reason?: string;
+}
+
+export interface AgentExportResultKnowledge {
+  target: AgentExportTarget;
+  filesWritten: number;
+  filesSkipped: number;
+  warnings: string[];
+  generatedAt: string;
+  files: AgentExportFileKnowledge[];
+}
+
+export interface AgentExportsKnowledge {
+  enabled: boolean;
+  enabledTargets: AgentExportTarget[];
+  results: AgentExportResultKnowledge[];
+  generatedAt: string;
+  warnings: string[];
+}
+
 export interface AnalysisKnowledge {
   status: AnalysisKnowledgeStatus;
   architecture?: string;
+  aiInsights?: AiInsightsKnowledge;
+  agentExports?: AgentExportsKnowledge;
+  changeSummary?: ChangeSummaryKnowledge;
+  documentImpact?: DocumentImpactSummaryKnowledge;
   conventions?: ConventionKnowledge[];
   dependencyGraph?: DependencyGraphKnowledge;
   navigationMap?: NavigationMapKnowledge;
   folderContexts?: FolderKnowledge[];
   modules?: ModuleKnowledge[];
   implementationRecommendations?: string[];
+}
+
+export type ChangeSection =
+  | 'detectedFiles'
+  | 'repositoryTree'
+  | 'technologies'
+  | 'folderContexts'
+  | 'modules'
+  | 'dependencyGraph'
+  | 'conventions'
+  | 'navigationMap'
+  | 'aiInsights'
+  | 'documentation';
+
+export interface DependencyEdgeChangeKnowledge {
+  from: string;
+  to: string;
+  type: DependencyEdgeType;
+  change: 'added' | 'removed';
+}
+
+export type ChangeBaselineStatus = 'none' | 'loaded' | 'unreadable' | 'repository-mismatch';
+
+export interface ChangeSummaryKnowledge {
+  isInitialRun: boolean;
+  baselineStatus: ChangeBaselineStatus;
+  warnings: string[];
+  changedSections: ChangeSection[];
+  addedModules: string[];
+  removedModules: string[];
+  changedTechnologies: string[];
+  technologyConfidenceChanged: boolean;
+  addedFolders: string[];
+  removedFolders: string[];
+  dependencyEdgeChanges: DependencyEdgeChangeKnowledge[];
+  generatedAt: string;
+}
+
+export interface DocumentImpactKnowledge {
+  documentPath: string;
+  reason: string;
+  impactedBy: ChangeSection[];
+  shouldRegenerate: boolean;
+}
+
+export interface DocumentImpactSummaryKnowledge {
+  impactedDocuments: DocumentImpactKnowledge[];
+  unchangedDocuments: string[];
+  generatedAt: string;
 }
 
 export interface ProjectKnowledge {

@@ -15,6 +15,9 @@ export const KNOWLEDGE_FILE_NAMES = {
   dependencies: 'dependencies.json',
   conventions: 'conventions.json',
   navigationMap: 'navigation-map.json',
+  changeSummary: 'change-summary.json',
+  documentImpact: 'document-impact.json',
+  agentExports: 'agent-exports.json',
 } as const;
 
 export type KnowledgeFileName =
@@ -71,6 +74,9 @@ export function listPersistedKnowledgeRelativeFilePaths(
   includeDependencies = true,
   includeConventions = true,
   includeNavigationMap = true,
+  includeChangeSummary = true,
+  includeDocumentImpact = true,
+  includeAgentExports = true,
 ): string[] {
   const fileNames = Object.values(KNOWLEDGE_FILE_NAMES).filter((fileName) => {
     if (fileName === KNOWLEDGE_FILE_NAMES.repositoryTree) {
@@ -90,6 +96,15 @@ export function listPersistedKnowledgeRelativeFilePaths(
     }
     if (fileName === KNOWLEDGE_FILE_NAMES.navigationMap) {
       return includeNavigationMap;
+    }
+    if (fileName === KNOWLEDGE_FILE_NAMES.changeSummary) {
+      return includeChangeSummary;
+    }
+    if (fileName === KNOWLEDGE_FILE_NAMES.documentImpact) {
+      return includeDocumentImpact;
+    }
+    if (fileName === KNOWLEDGE_FILE_NAMES.agentExports) {
+      return includeAgentExports;
     }
     return true;
   });

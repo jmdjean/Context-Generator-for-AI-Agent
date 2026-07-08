@@ -348,4 +348,152 @@ describe('knowledge-writer', () => {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
   });
+
+  it('writes change-summary.json when changeSummary exists and removes stale file when cleared', () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-writer-change-summary-'));
+
+    try {
+      const withChangeSummary = createKnowledge(tempRoot, { includeTree: true });
+      withChangeSummary.analysis.changeSummary = {
+        isInitialRun: false,
+        baselineStatus: 'loaded',
+        warnings: [],
+        changedSections: ['modules'],
+        addedModules: ['src/incremental'],
+        removedModules: [],
+        changedTechnologies: [],
+        technologyConfidenceChanged: false,
+        addedFolders: [],
+        removedFolders: [],
+        dependencyEdgeChanges: [],
+        generatedAt: '2026-01-01T00:00:00.000Z',
+      };
+
+      const persistenceWithSummary = persistProjectKnowledge(withChangeSummary);
+      const changeSummaryPath = resolveKnowledgeFilePath(
+        tempRoot,
+        '.ai-docs',
+        KNOWLEDGE_FILE_NAMES.changeSummary,
+      );
+
+      assert.equal(fs.existsSync(changeSummaryPath), true);
+      assert.ok(
+        persistenceWithSummary.persistedRelativePaths.includes(
+          '.ai-docs/knowledge/change-summary.json',
+        ),
+      );
+
+      const withoutChangeSummary = createKnowledge(tempRoot, { includeTree: true });
+      persistProjectKnowledge(withoutChangeSummary);
+
+      assert.equal(fs.existsSync(changeSummaryPath), false);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('writes document-impact.json when documentImpact exists and removes stale file when cleared', () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-writer-document-impact-'));
+
+    try {
+      const withDocumentImpact = createKnowledge(tempRoot, { includeTree: true });
+      withDocumentImpact.analysis.changeSummary = {
+        isInitialRun: false,
+        baselineStatus: 'loaded',
+        warnings: [],
+        changedSections: ['modules'],
+        addedModules: ['src/incremental'],
+        removedModules: [],
+        changedTechnologies: [],
+        technologyConfidenceChanged: false,
+        addedFolders: [],
+        removedFolders: [],
+        dependencyEdgeChanges: [],
+        generatedAt: '2026-01-01T00:00:00.000Z',
+      };
+      withDocumentImpact.analysis.documentImpact = {
+        impactedDocuments: [
+          {
+            documentPath: 'architecture.md',
+            reason: 'Modules changed',
+            impactedBy: ['modules'],
+            shouldRegenerate: true,
+          },
+        ],
+        unchangedDocuments: ['README.md'],
+        generatedAt: '2026-01-01T00:00:00.000Z',
+      };
+
+      const persistenceWithImpact = persistProjectKnowledge(withDocumentImpact);
+      const documentImpactPath = resolveKnowledgeFilePath(
+        tempRoot,
+        '.ai-docs',
+        KNOWLEDGE_FILE_NAMES.documentImpact,
+      );
+
+      assert.equal(fs.existsSync(documentImpactPath), true);
+      assert.ok(
+        persistenceWithImpact.persistedRelativePaths.includes(
+          '.ai-docs/knowledge/document-impact.json',
+        ),
+      );
+
+      const withoutDocumentImpact = createKnowledge(tempRoot, { includeTree: true });
+      persistProjectKnowledge(withoutDocumentImpact);
+
+      assert.equal(fs.existsSync(documentImpactPath), false);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('writes agent-exports.json when agentExports exists and preserves it when export did not run', () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-writer-agent-exports-'));
+
+    try {
+      const withAgentExports = createKnowledge(tempRoot, { includeTree: true });
+      withAgentExports.analysis.agentExports = {
+        enabled: true,
+        enabledTargets: ['generic'],
+        results: [
+          {
+            target: 'generic',
+            filesWritten: 1,
+            filesSkipped: 0,
+            warnings: [],
+            generatedAt: '2026-01-01T00:00:00.000Z',
+            files: [
+              {
+                relativePath: 'agent-pack/AGENTS.generated.md',
+                status: 'written',
+              },
+            ],
+          },
+        ],
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        warnings: [],
+      };
+
+      const persistenceWithExports = persistProjectKnowledge(withAgentExports);
+      const agentExportsPath = resolveKnowledgeFilePath(
+        tempRoot,
+        '.ai-docs',
+        KNOWLEDGE_FILE_NAMES.agentExports,
+      );
+
+      assert.equal(fs.existsSync(agentExportsPath), true);
+      assert.ok(
+        persistenceWithExports.persistedRelativePaths.includes(
+          '.ai-docs/knowledge/agent-exports.json',
+        ),
+      );
+
+      const withoutAgentExports = createKnowledge(tempRoot, { includeTree: true });
+      persistProjectKnowledge(withoutAgentExports);
+
+      assert.equal(fs.existsSync(agentExportsPath), true);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
 });

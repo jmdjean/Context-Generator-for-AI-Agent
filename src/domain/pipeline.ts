@@ -52,8 +52,8 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
   {
     name: 'Analyze Architecture',
     description:
-      'Use the AI provider to identify modules, architectural patterns, coding conventions, risks, and actionable recommendations. Future: enrich ProjectKnowledge.analysis.',
-    input: 'ProjectKnowledge',
+      'Legacy placeholder. Optional AI enrichment now runs at Analyze AI Insights after deterministic analyzers enrich the PKM.',
+    input: 'ProjectContext',
     output: 'AnalysisResult',
     status: 'pending',
   },
@@ -114,10 +114,26 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
+    name: 'Analyze AI Insights',
+    description:
+      'Optionally call OpenRouter with a compact PKM summary to produce non-authoritative architecture insights. Enriches ProjectKnowledge.analysis.aiInsights when --ai is set and an API key is available.',
+    input: 'ProjectKnowledge, RuntimeConfig (ai flags)',
+    output: 'AiInsightsKnowledge',
+    status: 'pending',
+  },
+  {
+    name: 'Detect Changes',
+    description:
+      'Compare the current Project Knowledge Model against the previously persisted snapshot. Records a deterministic ChangeSummary and DocumentImpactSummary for selective documentation regeneration.',
+    input: 'ProjectKnowledge, previous .ai-docs/knowledge/project-knowledge.json',
+    output: 'ChangeSummary and DocumentImpactSummary in analysis',
+    status: 'pending',
+  },
+  {
     name: 'Write Documentation',
     description:
-      'Render deterministic Markdown for each planned document and write it into the .ai-docs/ folder inside the target repository. Only overwrite tool-managed files marked as safe to update.',
-    input: 'ProjectKnowledge',
+      'Render deterministic Markdown for each planned document and write it into the .ai-docs/ folder inside the target repository. Uses DocumentImpactSummary to regenerate only impacted tool-managed files when available.',
+    input: 'ProjectKnowledge, DocumentImpactSummary (optional)',
     output: '.ai-docs/ directory contents',
     status: 'pending',
   },
@@ -127,6 +143,14 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
       'Verify that all planned documentation sections were written and that each file can be parsed. Surface any missing or malformed sections.',
     input: 'DocumentModel[], written file paths',
     output: 'Validation report',
+    status: 'pending',
+  },
+  {
+    name: 'Export Agent Context',
+    description:
+      'Optionally run agent-specific exporters that translate the PKM into portable context files for AI coding agents. Runs only when --export-agents is set. Enriches analysis.agentExports.',
+    input: 'ProjectKnowledge, RuntimeConfig (export flags)',
+    output: 'Agent export files and AgentExportsKnowledge',
     status: 'pending',
   },
   {

@@ -5,18 +5,18 @@
 Maps every folder to its single responsibility
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-08T23:17:35.065Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
 ## Folder contexts
 
-The folder analyzer documented 14 folder(s). Each entry below carries a deterministic classification and an inferred responsibility.
+The folder analyzer documented 17 folder(s). Each entry below carries a deterministic classification and an inferred responsibility.
 
 ### Source folders
 
 - `src` — Contains the main source code of the project. (confidence: high)
-  - Child folders: `ai`, `analyzers`, `config`, `core`, `detectors`, `docs`, `domain`, `knowledge`, `scanner`, `utils`
+  - Child folders: `ai`, `analyzers`, `config`, `core`, `detectors`, `docs`, `domain`, `exporters`, `incremental`, `knowledge`, `scanner`, `utils`
 - `src/ai` — Integrates with AI providers for architecture analysis. (confidence: high)
   - Important files: `src/ai/README.md`
 - `src/analyzers` — Derives higher-level architectural knowledge from the PKM. (confidence: high)
@@ -33,6 +33,10 @@ The folder analyzer documented 14 folder(s). Each entry below carries a determin
 - `src/docs/markdown-renderers` — Contains markdown-renderers application source code. (confidence: medium)
 - `src/domain` — Defines pure domain types and the declarative analysis pipeline. (confidence: high)
   - Important files: `src/domain/README.md`
+- `src/exporters` — Contains exporters application source code. (confidence: medium)
+  - Important files: `src/exporters/README.md`
+- `src/incremental` — Contains incremental application source code. (confidence: medium)
+  - Important files: `src/incremental/README.md`
 - `src/knowledge` — Represents and persists the Project Knowledge Model used as the source of truth. (confidence: high)
   - Important files: `src/knowledge/README.md`
 - `src/scanner` — Builds the repository tree used by analyzers. (confidence: high)
@@ -44,11 +48,15 @@ The folder analyzer documented 14 folder(s). Each entry below carries a determin
 
 - `.` — Project root containing top-level configuration, documentation, and source entry points. (confidence: high)
   - Important files: `AGENTS.md`, `README.md`, `package.json`, `tsconfig.json`
-  - Child folders: `docs`, `src`
+  - Child folders: `docs`, `scripts`, `src`
 
 ### Documentation folders
 
 - `docs` — Contains human-readable project documentation. (confidence: high)
+
+### Scripts folders
+
+- `scripts` — Contains automation and utility scripts. (confidence: high)
 
 ## Documentable vs ignored folders
 

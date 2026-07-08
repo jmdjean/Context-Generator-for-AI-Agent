@@ -11,15 +11,19 @@ This module is the central coordinator. It receives a validated `RuntimeConfig` 
 | File | Role |
 |---|---|
 | `index.ts` | Public entry point. Exports `run()` and re-exports orchestrator types. |
+| `exit-codes.ts` | Maps `PipelineExecutionResult` to CLI exit codes (0–3). |
 | `pipeline-orchestrator.ts` | Execution engine. Loads pipeline steps, runs handlers, tracks status, prints progress, returns a structured result. |
+| `pipeline-metrics.ts` | Collects run-time counters (files scanned, analyzers, docs written, validation). |
+| `run-summary.ts` | Formats and prints the final CLI summary after pipeline completion. |
+| `pipeline-handlers.ts` | Step handler dispatch and `PipelineContext` state. |
 
 ---
 
 ## Exports
 
-### `run(config: RuntimeConfig): Promise<void>`
+### `run(config: RuntimeConfig): Promise<number>`
 
-Called by `src/cli.ts`. Prints the configuration summary, delegates execution to `executePipeline`, and prints the final status line.
+Called by `src/cli.ts`. Delegates execution to `executePipeline`, prints the final run summary via `printRunSummary()`, and returns the CLI exit code (`0` success, `2` validation failure, `3` runtime failure).
 
 ### `executePipeline(config: RuntimeConfig): Promise<PipelineExecutionResult>`
 
@@ -56,6 +60,7 @@ interface PipelineExecutionResult {
   startedAt: string;
   finishedAt: string;
   errors: PipelineExecutionError[];
+  metrics: PipelineRunMetrics;
 }
 ```
 
@@ -122,8 +127,10 @@ executePipeline(config)
   ├─ Build Project Knowledge      → knowledge/knowledge-builder → ProjectKnowledge     ✅
   ├─ Analyze Folder Knowledge     → analyzers/folder-analyzer → FolderKnowledge[]      ✅
   ├─ Analyze Modules              → analyzers/module-analyzer → ModuleKnowledge[]     ✅
+  ├─ Analyze AI Insights          → ai/ai-analysis-service → AiInsightsKnowledge (optional) ✅
+  ├─ Detect Changes               → incremental/ → ChangeSummary + DocumentImpact ✅
   ├─ Write Documentation          → docs/documentation-writer → DocumentationWriteResult ✅
-  ├─ Validate Documentation       → placeholder ✓
+  ├─ Validate Documentation       → docs/documentation-validator → Validation report ✅
   └─ Persist Project Knowledge    → knowledge/knowledge-writer → .ai-docs/knowledge/  ✅
 ```
 
@@ -132,6 +139,5 @@ executePipeline(config)
 ```
 executePipeline(config)
   ├─ Build Repository Model       → assembleContext(repositoryInfo, tree, profile)
-  ├─ Analyze Architecture         → ai.analyze(projectContext) + future analyzers
-  ├─ Validate Documentation       → docs.validate(documentModels)
+  └─ Analyze Architecture         → ai.analyze(projectContext) + future analyzers
 ```

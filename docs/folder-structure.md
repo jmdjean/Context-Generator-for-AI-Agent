@@ -191,7 +191,49 @@ Contains no file I/O.
 
 **When to modify:** When the AI provider, model, prompt strategy, or response format changes.
 
-**Status:** Planned. Implement against `ProjectContext` and `AnalysisResult` from `src/domain/`. Wire into `executePipeline` in `src/core/pipeline-orchestrator.ts` once ready.
+**Status:** ✅ Optional OpenRouter enrichment when `--ai` is set.
+
+---
+
+### `src/exporters/`
+
+Agent-specific context exporters. Consumes `ProjectKnowledge`, writes derived agent context files under the docs folder or agent-specific paths (for example `.cursor/rules/`).
+
+Contains:
+- `exporter-contract.ts` — `AgentExporter` interface and export types
+- `exporter-constants.ts` — default targets and output paths
+- `export-target-resolver.ts` — CLI target parsing and validation
+- `exporter-registry.ts` — registry and target resolution helpers
+- `export-file-writer.ts` — shared write policy (generated-file marker)
+- `generic-agent-pack-renderer.ts` — pure PKM → Markdown rendering
+- `generic-agent-exporter.ts` — generic agent pack for `--export-agents --target generic`
+- `cursor-rules-renderer.ts` — pure PKM → Cursor `.mdc` rule rendering
+- `cursor-exporter.ts` — Cursor rules for `--export-agents --target cursor`
+- `agent-export-service.ts` — orchestrates exporters and enriches `analysis.agentExports`
+
+Does not scan the repository, detect technologies, or call OpenRouter. Respects the generated-file marker policy.
+
+**When to modify:** When adding a new agent target (Claude Code, Codex, Copilot) or extending export formats.
+
+**Status:** ✅ Generic and Cursor exporters done. Other targets planned.
+
+---
+
+### `src/incremental/`
+
+Incremental state loading and deterministic change detection between pipeline runs.
+
+Contains:
+- `state-loader.ts` — safe read of previous `project-knowledge.json`
+- `change-detector.ts` — compares previous vs current PKM sections
+- `change-summary.ts` — re-exports `ChangeSummaryKnowledge` types from the PKM
+- `index.ts` — enrichment helper and CLI output formatter
+
+Implements pipeline step **Detect Changes** and **document impact analysis**. Does not write files (persistence is in `src/knowledge/knowledge-writer.ts`). Selective Markdown regeneration is performed by `src/docs/documentation-writer.ts` using `analysis.documentImpact`.
+
+**When to modify:** When change detection rules expand, new PKM sections need diff support, or document impact mappings change.
+
+**Status:** ✅ Change detection done. Selective regeneration planned.
 
 ---
 

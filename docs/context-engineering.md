@@ -49,8 +49,11 @@ The output of `ai-project-docs` is a `.ai-docs/` folder inside the target reposi
 | `dependencies.json` | Dependency graph only (when dependency graph analysis ran) |
 | `conventions.json` | Convention knowledge only (when convention analysis ran) |
 | `navigation-map.json` | AI navigation map only (when the navigation map was built) |
+| `change-summary.json` | PKM diff vs the previous run (when change detection ran) |
+| `document-impact.json` | Selective regeneration decisions (when change detection ran) |
+| `agent-exports.json` | Agent export results (when `--export-agents` ran) |
 
-Future generators and external tools should prefer loading persisted JSON over re-analyzing the repository. Incremental updates, diff-based refresh, and validation will compare these files across runs.
+Future generators and external tools should prefer loading persisted JSON over re-analyzing the repository. **Change detection** compares `project-knowledge.json` across runs and records results in `change-summary.json`. Selective Markdown regeneration uses `document-impact.json`. Agent export results are recorded in `agent-exports.json` when `--export-agents` runs.
 
 ### Markdown context files
 
@@ -65,6 +68,30 @@ Markdown is an **output derived from the PKM** — presentation, not analysis. E
 - **How do I change things safely?** → `implementation-guide.md`
 
 Each file is written so that an agent loading it gains enough context to make correct decisions without reading the source code first. Renderers never perform repository analysis of their own — the PKM remains the source of truth, and documents state honestly when a PKM section has not been populated yet. Documents without a dedicated renderer use a generic deterministic template until they get one; richer AI analysis is layered into the PKM later and flows through the same renderers.
+
+### Agent export files
+
+Agent exporters (`src/exporters/`) translate the same PKM into portable context files for specific agent runtimes. They are generators — not analyzers — and follow the same rules as Markdown renderers:
+
+- Consume `ProjectKnowledge` only; never scan the repository or call OpenRouter.
+- Write derived outputs under the configured docs folder or agent-specific paths (for example `.cursor/rules/` for Cursor).
+- Respect the generated-file marker; skip user-managed files without it.
+
+Enable exports with `--export-agents`. Choose a target with `--target`:
+
+| Target | Output |
+|---|---|
+| `generic` (default) | `.ai-docs/agent-pack/AGENTS.generated.md` |
+| `cursor` | `.cursor/rules/ai-project-docs.mdc` |
+| `all` | Both generic pack and Cursor rule |
+
+The **generic exporter** writes a portable agent pack with a project summary, reading order, task navigation from `navigationMap`, key modules, conventions, dependency graph summary, and agent safety rules.
+
+The **Cursor exporter** writes an always-on Cursor rule (`.mdc`) with the same PKM-derived facts formatted for Cursor: project summary, mandatory reading order, architecture boundaries, module map, convention summary, navigation map by task type, dependency graph summary, safety rules, and an explicit instruction that the PKM in `.ai-docs/knowledge/` is the source of truth.
+
+Cursor rules are derived from the PKM — they do not re-analyze the repository. Agent-specific files must never become the source of truth; regenerate them when PKM sections change. Future Claude Code, Codex, and Copilot exporters will follow the same contract.
+
+Export results are stored in `analysis.agentExports` and persisted to `agent-exports.json`. Exported files are safe to regenerate whenever the underlying PKM sections change.
 
 ---
 
@@ -146,13 +173,21 @@ Three properties make the map trustworthy:
 - **Confidence is verification-based.** An entry is `high` confidence only when every recommended knowledge section is populated and every recommended document is in the documentation plan.
 - **It is deterministic in the MVP.** No AI, no filesystem access — the same PKM always produces the same map, at zero token cost.
 
-`navigationMap` lives in `knowledge.analysis.navigationMap` and is persisted to `analysis.json` and `navigation-map.json`. Future agent-specific exporters — Cursor rules, Claude skills, agent packs — must consume this PKM section rather than embedding their own reading lists, so that every output format gives agents the same navigation guidance.
+`navigationMap` lives in `knowledge.analysis.navigationMap` and is persisted to `analysis.json` and `navigation-map.json`. Agent exporters and future output formats must consume this PKM section rather than embedding their own reading lists, so that every output format gives agents the same navigation guidance.
 
-### 11. Documentation must be kept current
+### 11. Agent exporters derive context without re-analysis
 
-Stale documentation is worse than no documentation. It misleads agents into making decisions based on outdated information. The tool supports incremental updates: step 10 of the pipeline (Save Incremental State) persists a snapshot of the current analysis so that future runs only regenerate sections that reflect actual changes.
+Markdown documents answer "what should an agent know about this project?" Agent exporters answer "how should this project's context be packaged for a specific agent runtime?" Both are **derived outputs** from the same PKM.
 
-### 12. Safe ownership matters
+The generic exporter (`--export-agents --target generic`) produces a portable agent pack under `.ai-docs/agent-pack/`. The Cursor exporter (`--export-agents --target cursor`) produces `.cursor/rules/ai-project-docs.mdc`. Use `--target all` to run both. Claude Code, Codex, and Copilot exporters will follow the same contract: consume PKM, write formatted files, never analyze the repository. Export results live in `analysis.agentExports` and `agent-exports.json`.
+
+Agent-specific files are presentation layers. They must never replace the PKM as the source of truth — when outputs disagree, trust `.ai-docs/knowledge/project-knowledge.json`.
+
+### 12. Documentation must be kept current
+
+Stale documentation is worse than no documentation. It misleads agents into making decisions based on outdated information. The tool persists a PKM snapshot on every run. **Detect Changes** (step 15) compares the current PKM against the previous snapshot, recording `analysis.changeSummary` and `change-summary.json`. **Write Documentation** (step 16) then regenerates only impacted generated Markdown based on `analysis.documentImpact` — not every file on every run. User-created docs without the generated marker remain protected. This is not file watching or background sync.
+
+### 13. Safe ownership matters
 
 Generated files in `.ai-docs/` are owned by the tool, but user-created files must still be protected. Every tool-managed file starts with a marker comment:
 
@@ -253,6 +288,8 @@ Writing deterministic placeholders first has four benefits:
 
 This is an example of safe incremental documentation: start with what the pipeline knows for sure, then enrich the same files as later stages become available.
 
+When `--ai` runs successfully, `analysis.aiInsights` is persisted in the PKM and surfaced by PKM-powered Markdown renderers (`architecture.md`, `ai-context.md`, `implementation-guide.md`, `agent-navigation.md`). Renderers append a clearly labeled **AI Insights** section after deterministic content. They consume already-persisted PKM data only — they never call OpenRouter or re-analyze the repository. Deterministic PKM sections remain authoritative; AI output is optional enrichment.
+
 ---
 
 ## Placeholder handlers and why they exist
@@ -269,14 +306,15 @@ Placeholder handlers are replaced step by step as real implementations are added
 
 ## How the pipeline supports incremental documentation
 
-Generating documentation for a large repository is expensive. Doing it on every save is impractical. The pipeline addresses this with step 10 (Save Incremental State):
+Generating documentation for a large repository is expensive. Doing it on every save is impractical without knowing what actually changed. The pipeline addresses this in two phases:
 
-- Today, files generated by the writer can be refreshed safely because they carry the generated-file marker.
-- After a successful future run, a `.ai-docs/.state.json` file will record which `DocumentModel` sections were generated and from what input hash.
-- On the next run, the pipeline compares the current `ProjectContext` against the saved state.
-- Only sections whose inputs have changed since the last run are regenerated.
+**Phase 1 (implemented): change detection.** Step 15 (Detect Changes) loads the previous PKM from `.ai-docs/knowledge/project-knowledge.json`, compares it to the current in-memory PKM, and records a deterministic `ChangeSummary` in `analysis.changeSummary` and `change-summary.json`. The CLI prints which sections changed (modules, dependency graph, technologies, etc.).
 
-This means that fixing a typo in one file does not re-analyze the entire repository. The incremental model also makes the tool composable: a CI system can run it on every commit, and only the documentation sections affected by that commit's changes will be updated.
+**Phase 2 (implemented): selective regeneration.** `document-impact-analyzer.ts` maps `changedSections` to affected Markdown documents and stores `analysis.documentImpact` (persisted to `document-impact.json`). Step 16 (Write Documentation) regenerates only impacted tool-managed files on incremental runs; initial runs regenerate every planned document. The generated-file marker policy protects user-managed files. Unchanged generated files are left on disk as-is — nothing is deleted.
+
+**Why persisted PKM enables this.** Without a machine-readable baseline on disk, each run has no memory of the previous analysis. The PKM snapshot makes cross-run comparison deterministic, testable, and independent of git history or file watchers.
+
+This model also makes the tool composable: a CI system can run it on every commit, inspect `change-summary.json`, and eventually update only the documentation sections affected by that commit's changes.
 
 ---
 
