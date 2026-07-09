@@ -5,7 +5,8 @@ import { loadRepositoryMetadata } from '../scanner/repository-loader';
 import { scanRepository } from '../scanner/repository-scanner';
 import { detectTechnologies } from '../detectors/technology-detector';
 import { createDocumentationPlan } from '../docs/documentation-planner';
-import { writeDocumentation } from '../docs/documentation-writer';
+import { DocumentationWriteResult, writeDocumentation } from '../docs/documentation-writer';
+import { validateGeneratedOutputs } from '../validation';
 import { enrichProjectKnowledgeWithFolderAnalysis, enrichProjectKnowledgeWithModuleAnalysis, enrichProjectKnowledgeWithDependencyGraph, enrichProjectKnowledgeWithConventions, enrichProjectKnowledgeWithNavigationMap } from '../analyzers';
 import { buildProjectKnowledge, persistProjectKnowledge, ProjectKnowledge } from '../knowledge';
 
@@ -15,6 +16,7 @@ export interface PipelineContext {
   technologyProfile?: TechnologyProfile;
   documentationPlan?: DocumentationPlan;
   projectKnowledge?: ProjectKnowledge;
+  documentationWriteResult?: DocumentationWriteResult;
 }
 
 export type StepHandlerResult = {
@@ -267,6 +269,7 @@ export async function handleWriteDocumentation(
   }
 
   const writeResult = writeDocumentation(context.projectKnowledge);
+  context.documentationWriteResult = writeResult;
   console.log('');
   console.log('Documentation writer:');
   console.log(`Written: ${writeResult.writtenCount}`);
@@ -278,6 +281,44 @@ export async function handleWriteDocumentation(
   return {
     status: 'completed',
     message: `written ${writeResult.writtenCount}, skipped ${writeResult.skippedCount}`,
+  };
+}
+
+export async function handleValidateDocumentation(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  const result = validateGeneratedOutputs(context.projectKnowledge, {
+    skippedDocumentPaths: context.documentationWriteResult?.skippedPaths,
+  });
+  const { summary } = result;
+
+  console.log('');
+  console.log('Validation:');
+  console.log(`Errors: ${summary.errors}`);
+  console.log(`Warnings: ${summary.warnings}`);
+  if (summary.info > 0) {
+    console.log(`Info: ${summary.info}`);
+  }
+  console.log(`Status: ${result.success ? 'passed' : 'failed'}`);
+
+  for (const issue of result.issues) {
+    if (issue.severity !== 'info') {
+      console.log(`* [${issue.severity}] ${issue.code}: ${issue.message}`);
+    }
+  }
+
+  if (!result.success) {
+    throw new Error(`validation failed with ${summary.errors} error(s)`);
+  }
+
+  return {
+    status: 'completed',
+    message: `validation passed with ${summary.warnings} warning(s) and ${summary.info} info issue(s)`,
   };
 }
 
@@ -318,6 +359,7 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Build AI Navigation Map': handleBuildNavigationMap,
   'Write Documentation': handleWriteDocumentation,
   'Persist Project Knowledge': handlePersistProjectKnowledge,
+  'Validate Documentation': handleValidateDocumentation,
 };
 
 export async function runStepHandler(

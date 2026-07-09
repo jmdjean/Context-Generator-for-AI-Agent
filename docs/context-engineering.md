@@ -50,7 +50,7 @@ The output of `ai-project-docs` is a `.ai-docs/` folder inside the target reposi
 | `conventions.json` | Convention knowledge only (when convention analysis ran) |
 | `navigation-map.json` | AI navigation map only (when the navigation map was built) |
 
-Future generators and external tools should prefer loading persisted JSON over re-analyzing the repository. Incremental updates, diff-based refresh, and validation will compare these files across runs.
+Future generators and external tools should prefer loading persisted JSON over re-analyzing the repository. The Validate Documentation step already checks that the core knowledge files exist and that the full snapshot parses with its required fields; incremental updates and diff-based refresh will compare these files across runs.
 
 ### Markdown context files
 
@@ -161,6 +161,16 @@ Generated files in `.ai-docs/` are owned by the tool, but user-created files mus
 ```
 
 The writer updates only files with that marker. If a file exists without the marker, it is preserved and skipped with a warning. This allows safe incremental adoption: teams can keep hand-written docs alongside generated docs without risking accidental overwrite.
+
+### 13. Validation keeps the context layer trustworthy
+
+Agents trust `.ai-docs/` blindly — that is the point of a context layer. Stale or incomplete context is worse than no context: an empty `architecture.md` or a navigation map pointing at missing documents produces confidently wrong agent decisions. The final pipeline step validates the generated outputs before the run is declared successful:
+
+- **Knowledge checks** — the persisted knowledge files exist, the full snapshot parses with schema version, timestamp, repository, and technology data, and the analysis sections are populated.
+- **Documentation checks** — required planned documents exist, generated files carry the ownership marker, and the seven key documents have real content.
+- **Consistency checks** — dependency graph nodes match discovered modules, folder contexts use valid relative paths, module paths exist in folder knowledge or the tree, and navigation recommendations reference planned documents.
+
+Severities encode trust: an `error` means the context would mislead an agent and fails the pipeline; a `warning` is an actionable gap the context survives; `info` records benign facts such as preserved user-managed files. The MVP is deliberately lightweight — deterministic generation guarantees most invariants by construction, so validation targets what construction cannot guarantee: deletions, corruption, user edits, and drift between sections. Validators never mutate files, never call AI, and never re-analyze the project; stronger checks (per-file schemas, cross-run drift detection, AI-assisted semantic validation) will be added on top of the same result model.
 
 ---
 

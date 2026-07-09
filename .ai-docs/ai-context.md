@@ -5,7 +5,7 @@
 Curated context snapshot optimized for AI agent consumption
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-09T22:20:19.886Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -14,7 +14,7 @@ Curated context snapshot optimized for AI agent consumption
 - Languages: TypeScript
 - Frameworks: None detected
 - Planned documents: 11
-- Folder contexts: 14
+- Folder contexts: 15
 - Modules: 12
 - Dependency graph: 10 node(s), 21 edge(s)
 - Conventions: 30

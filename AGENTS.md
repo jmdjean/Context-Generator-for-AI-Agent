@@ -58,6 +58,7 @@ Analysis-stage types live in `src/domain/`. The application contract for generat
 - **Implementing a generator (docs writer, future formats)?** Read `src/knowledge/`. Consume `ProjectKnowledge` in memory or load from `.ai-docs/knowledge/project-knowledge.json`.
 - **Implementing deterministic document rendering or writing?** Read `src/docs/documentation-plan.ts`, `src/docs/document-template.ts`, `src/docs/markdown-renderers/`, and `src/docs/documentation-writer.ts`. Renderers consume the PKM and are presentation-only — no repository analysis, no filesystem access, no AI. Keep them small and deterministic. Preserve the generated-file marker policy and do not overwrite unmarked files.
 - **Adding a PKM-powered renderer for a document?** Create `src/docs/markdown-renderers/<name>-renderer.ts`, read only from `ProjectKnowledge`, and register it in `PKM_RENDERERS` in `src/docs/markdown-renderers/index.ts`. Documents without a renderer fall back to the generic template in `document-template.ts`.
+- **Adding or changing validation checks?** Read `src/validation/README.md` and `src/validation/validation-result.ts`. Validators only read generated outputs and the in-memory PKM — they must not mutate files, call AI, or re-scan repository source. Emit `ValidationIssue` values with a stable kebab-case `code`; reserve `error` severity for context that would mislead agents.
 - **Understanding the full pipeline?** Read `src/domain/pipeline.ts`. The `ANALYSIS_PIPELINE` constant is the authoritative description of every step, its input, and its output.
 - **Wiring a real handler into execution?** Read `src/core/pipeline-orchestrator.ts`. Replace the placeholder call for the relevant step and import the handler from the appropriate module.
 
@@ -106,6 +107,7 @@ Never put scanner logic, detection logic, AI calls, or file writes directly insi
 - `src/detectors/` — detects technology stack from `RepositoryInfo`, produces `TechnologyProfile`. No directory walking.
 - `src/knowledge/` — Project Knowledge Model. Builder assembles `ProjectKnowledge`; writer persists it to `.ai-docs/knowledge/`.
 - `src/docs/` — documentation planning and writing (generators). `documentation-writer.ts` writes from `ProjectKnowledge` only.
+- `src/validation/` — validates generated outputs (Markdown + knowledge JSON). Read-only over outputs and the PKM; never mutates files, never calls AI, never re-scans source.
 - `src/ai/` — calls OpenRouter, consumes `ProjectContext`, produces `AnalysisResult`.
 - `src/utils/` — pure utility functions with no side effects and no domain knowledge.
 
@@ -151,9 +153,10 @@ The project has:
 - Step 12 (Analyze Conventions) implemented in `src/analyzers/convention-analyzer.ts` — produces `ConventionKnowledge[]` in `analysis.conventions` from the PKM, technologies, module knowledge, and safe reads of `tsconfig.json`/`package.json`.
 - Step 13 (Build AI Navigation Map) implemented in `src/analyzers/navigation-map-analyzer.ts` — produces `NavigationMapKnowledge` in `analysis.navigationMap`, telling agents which knowledge sections and documents to read per task type.
 - Step 14 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — writes Markdown from `ProjectKnowledge`, dispatching key documents to PKM-powered renderers in `src/docs/markdown-renderers/` and the rest to the generic template.
-- Step 16 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/`.
+- Step 15 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/`. Persistence runs before validation so the validator can check the persisted files.
+- Step 16 (Validate Documentation) implemented in `src/validation/` — validates generated Markdown and persisted knowledge JSON for completeness and consistency. Errors fail the pipeline; warnings and info do not.
 
-The scanner full tree walk (step 3) is implemented. The AI integration (step 6) and validation (step 15) are not yet implemented.
+The scanner full tree walk (step 3) is implemented. The AI integration (step 6) is not yet implemented.
 
 ---
 
@@ -187,5 +190,6 @@ The build must succeed with zero TypeScript errors before any commit.
 - Do not write PKM JSON files from `src/docs/` — persistence belongs in `src/knowledge/knowledge-writer.ts`.
 - Do not pass `RepositoryInfo`, `TechnologyProfile`, or `DocumentationPlan` directly to generators — use `ProjectKnowledge`.
 - Do not perform repository analysis inside Markdown renderers — they present PKM data only. Facts come from analyzers; the PKM remains the source of truth; Markdown is a derived output.
+- Do not mutate files, call AI, or re-scan repository source inside `src/validation/` — validators read generated outputs and validate them against the PKM.
 - Do not add new document templates to `src/core/` or `src/detectors/`. Document template functions belong in `src/docs/documentation-planner.ts`.
 - Do not overwrite user-created files inside `.ai-docs/`. Only files starting with `<!-- Generated by AI Project Docs. Safe to update. -->` may be updated by the writer.

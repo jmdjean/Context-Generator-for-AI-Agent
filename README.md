@@ -133,6 +133,7 @@ Status: configuration resolved
 | OpenRouter integration | 🔜 Planned |
 | `.ai-docs/` Markdown generation | ✅ Done |
 | PKM-powered Markdown renderers | ✅ Done |
+| Documentation & knowledge validation | ✅ Done |
 | Incremental diffing | 🔜 Planned |
 
 ---
@@ -161,6 +162,7 @@ src/
   knowledge/      — Project Knowledge Model (PKM) — single source of truth
   analyzers/      — Deterministic PKM enrichment (folder, module, dependency graph, conventions, navigation map)
   docs/           — Documentation planning, PKM-powered Markdown renderers, and writing (generators)
+  validation/     — Validates generated docs and persisted knowledge (final pipeline gate)
   ai/             — OpenRouter integration (planned)
   utils/          — Shared utilities (filesystem helpers, etc.)
 docs/

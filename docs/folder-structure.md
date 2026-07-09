@@ -64,7 +64,7 @@ Does not contain scanner logic, detection logic, AI calls, or file I/O. When fut
 
 **When to modify:** When the overall execution flow changes — a new pipeline stage is wired in, step ordering changes, or conditional logic is added.
 
-**Status:** ✅ Orchestration skeleton done. Steps 1–4, 7–14, and 16 use real handlers. Steps 5, 6, and 15 run as placeholders.
+**Status:** ✅ Orchestration skeleton done. Steps 1–4 and 7–16 use real handlers. Steps 5 and 6 run as placeholders.
 
 ---
 
@@ -179,7 +179,26 @@ The plan includes core docs (always), agent docs (always), and technology-specif
 
 **When to modify:** When new document types are added, new framework document sets are supported, or a document gets its own PKM-powered renderer.
 
-**Status:** Planning implemented (step 7). PKM-powered Markdown rendering and writing implemented (step 14). PKM JSON persistence is in `src/knowledge/` (step 16), not here.
+**Status:** Planning implemented (step 7). PKM-powered Markdown rendering and writing implemented (step 14). PKM JSON persistence is in `src/knowledge/` (step 15), not here.
+
+---
+
+### `src/validation/`
+
+Validates generated outputs — the final pipeline gate (step 16, Validate Documentation). Runs after documentation is written and knowledge is persisted, so it checks exactly what a future agent will load.
+
+Contains:
+- `validation-result.ts` — `ValidationSeverity`, `ValidationIssue`, `ValidationSummary`, `ValidationResult`, `buildValidationResult()`.
+- `knowledge-validator.ts` — `validateKnowledge(knowledge)` checks persisted knowledge files, snapshot structure, analysis sections, and PKM-internal consistency.
+- `documentation-validator.ts` — `validateDocumentation(knowledge)` checks the docs directory, planned documents, generated markers, key document content, and navigation references.
+- `index.ts` — public exports plus `validateGeneratedOutputs()` combining both validators.
+- `validation.test.ts` — unit tests against a temp-directory fixture project.
+
+**Rules:** validators only read. No file mutation, no AI calls, no re-scanning of repository source — they validate outputs derived from the PKM. Errors fail the pipeline; warnings and info do not.
+
+**When to modify:** When adding a new validation check, a new severity policy, or validation for a new output format.
+
+**Status:** ✅ Done — MVP knowledge, documentation, and consistency checks (step 16).
 
 ---
 

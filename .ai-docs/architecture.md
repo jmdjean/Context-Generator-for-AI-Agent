@@ -5,7 +5,7 @@
 System design, layer diagram, and key architectural decisions
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-09T22:20:19.886Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 

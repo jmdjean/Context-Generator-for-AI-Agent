@@ -5,7 +5,7 @@
 Coding, naming, and structural conventions to follow
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-09T22:20:19.886Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -191,7 +191,7 @@ Tests run through the package manager test script.
 - Category: testing
 - Confidence: medium
 - Evidence:
-  - config — `package.json`: Defines a "test" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js
+  - config — `package.json`: Defines a "test" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/validation/*.test.js
 
 ## Package management
 

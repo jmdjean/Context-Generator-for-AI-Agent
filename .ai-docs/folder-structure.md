@@ -5,18 +5,18 @@
 Maps every folder to its single responsibility
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-09T22:20:19.886Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
 ## Folder contexts
 
-The folder analyzer documented 14 folder(s). Each entry below carries a deterministic classification and an inferred responsibility.
+The folder analyzer documented 15 folder(s). Each entry below carries a deterministic classification and an inferred responsibility.
 
 ### Source folders
 
 - `src` — Contains the main source code of the project. (confidence: high)
-  - Child folders: `ai`, `analyzers`, `config`, `core`, `detectors`, `docs`, `domain`, `knowledge`, `scanner`, `utils`
+  - Child folders: `ai`, `analyzers`, `config`, `core`, `detectors`, `docs`, `domain`, `knowledge`, `scanner`, `utils`, `validation`
 - `src/ai` — Integrates with AI providers for architecture analysis. (confidence: high)
   - Important files: `src/ai/README.md`
 - `src/analyzers` — Derives higher-level architectural knowledge from the PKM. (confidence: high)
@@ -39,6 +39,8 @@ The folder analyzer documented 14 folder(s). Each entry below carries a determin
   - Important files: `src/scanner/README.md`
 - `src/utils` — Provides shared utility functions with no domain knowledge. (confidence: high)
   - Important files: `src/utils/README.md`
+- `src/validation` — Contains validation application source code. (confidence: medium)
+  - Important files: `src/validation/README.md`
 
 ### Config folders
 

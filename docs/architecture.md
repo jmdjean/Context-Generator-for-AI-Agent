@@ -48,6 +48,7 @@ This separation means a new output format only needs a new generator. It does no
 │  src/knowledge/      Project Knowledge Model    │  ✅ done — PKM types + builder
 │  src/ai/             OpenRouter integration     │  planned
 │  src/docs/           Generators (Markdown…)     │  ✅ planning + PKM-powered rendering + writing
+│  src/validation/     Output validation          │  ✅ knowledge + documentation validators
 ├─────────────────────────────────────────────────┤
 │  src/domain/         Pipeline + legacy types    │  ✅ done
 │  src/utils/          Pure shared helpers        │  ✅ done
@@ -77,11 +78,11 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 12. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
 13. Build AI Navigation Map   ProjectKnowledge                → NavigationMapKnowledge ✅
 14. Write Documentation        ProjectKnowledge                → .ai-docs/*.md        ✅
-15. Validate Documentation     DocumentModel[], file paths     → validation report
-16. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
+15. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
+16. Validate Documentation     ProjectKnowledge + outputs      → ValidationResult     ✅
 ```
 
-Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, and 16 are implemented. Step 8 assembles the PKM in memory; step 9 enriches `knowledge.analysis.folderContexts`; step 10 enriches `knowledge.analysis.modules`; step 11 enriches `knowledge.analysis.dependencyGraph`; step 12 enriches `knowledge.analysis.conventions`; step 13 enriches `knowledge.analysis.navigationMap`; step 16 persists it as JSON; step 14 writes Markdown derived from the PKM. Steps 5, 6, and 15 still have placeholder handlers.
+Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, and 16 are implemented. Step 8 assembles the PKM in memory; step 9 enriches `knowledge.analysis.folderContexts`; step 10 enriches `knowledge.analysis.modules`; step 11 enriches `knowledge.analysis.dependencyGraph`; step 12 enriches `knowledge.analysis.conventions`; step 13 enriches `knowledge.analysis.navigationMap`; step 14 writes Markdown derived from the PKM; step 15 persists the PKM as JSON; step 16 validates the generated Markdown and persisted knowledge. Persistence deliberately runs **before** validation so the validator can check the exact files a future agent will load. Steps 5 and 6 still have placeholder handlers.
 
 ---
 
@@ -264,7 +265,7 @@ The PKM is the application contract. Every generator downstream reads from `Proj
 
 ## Project Knowledge persistence
 
-`src/knowledge/knowledge-writer.ts` implements step 16 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
+`src/knowledge/knowledge-writer.ts` implements step 15 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
 
 | File | Contents |
 |---|---|
@@ -318,6 +319,21 @@ The writer is intentionally conservative:
 - It skips unmarked files with a warning so user-created documentation is preserved.
 
 Future AI stages will enrich PKM sections; the same renderers then surface the richer data without changing the ownership rule.
+
+---
+
+## Output validation
+
+`src/validation/` implements step 16 (Validate Documentation) — the final pipeline gate. It runs after documentation is written and the PKM is persisted, so it validates exactly the on-disk outputs a future agent will load.
+
+Two validators feed one combined `ValidationResult`:
+
+- **Knowledge validation** (`knowledge-validator.ts`) — the five core knowledge files exist, `project-knowledge.json` parses and carries schema version, timestamp, repository and technology data, the analysis sections are populated, and PKM sections agree with each other (dependency nodes match modules, folder paths are valid relative paths, module paths exist in folder knowledge or the tree).
+- **Documentation validation** (`documentation-validator.ts`) — the docs directory exists, required planned documents exist, generated files carry the marker, the seven key documents are not empty, and navigation map recommendations reference planned documents.
+
+**Severity model:** `error` fails the step (and the pipeline), `warning` reports an actionable gap without failing, `info` records benign facts such as preserved user-managed files. The MVP prefers actionable warnings over strict failure — validation exists to stop agents from loading broken or misleading context, not to abort runs that produced usable output.
+
+Validators only read: they never mutate files, never call AI, and never re-scan the repository source — they validate outputs derived from the PKM. Stronger validation (per-file JSON schemas, cross-run drift detection, per-renderer content assertions, AI-assisted semantic checks) plugs into `validateGeneratedOutputs()` later without changing the pipeline shape.
 
 ---
 

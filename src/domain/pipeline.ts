@@ -122,19 +122,19 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
-    name: 'Validate Documentation',
+    name: 'Persist Project Knowledge',
     description:
-      'Verify that all planned documentation sections were written and that each file can be parsed. Surface any missing or malformed sections.',
-    input: 'DocumentModel[], written file paths',
-    output: 'Validation report',
+      'Write the Project Knowledge Model to disk as machine-readable JSON. Produces a full snapshot and split section files under .ai-docs/knowledge/. Runs before validation so the validator can check the persisted outputs.',
+    input: 'ProjectKnowledge',
+    output: '.ai-docs/knowledge/*.json',
     status: 'pending',
   },
   {
-    name: 'Persist Project Knowledge',
+    name: 'Validate Documentation',
     description:
-      'Write the Project Knowledge Model to disk as machine-readable JSON. Produces a full snapshot and split section files under .ai-docs/knowledge/.',
-    input: 'ProjectKnowledge',
-    output: '.ai-docs/knowledge/*.json',
+      'Verify that generated Markdown and persisted knowledge JSON are complete and consistent: planned documents exist, generated files carry the marker, key documents have content, and PKM sections agree with each other. Errors fail the pipeline; warnings surface actionable gaps.',
+    input: 'ProjectKnowledge, .ai-docs/ contents, .ai-docs/knowledge/*.json',
+    output: 'ValidationResult',
     status: 'pending',
   },
 ];

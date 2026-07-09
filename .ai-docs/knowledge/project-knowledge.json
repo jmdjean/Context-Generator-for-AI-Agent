@@ -1,7 +1,7 @@
 {
   "metadata": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-07-07T12:19:08.450Z",
+    "generatedAt": "2026-07-09T22:20:19.886Z",
     "generatorVersion": "0.1.0",
     "projectName": "Context-Generator-for-AI-Agent",
     "docsDir": ".ai-docs"
@@ -61,7 +61,7 @@
           "relativePath": "AGENTS.md",
           "type": "file",
           "extension": "md",
-          "sizeBytes": 13850
+          "sizeBytes": 14837
         },
         {
           "name": "docs",
@@ -75,7 +75,7 @@
               "relativePath": "docs/architecture.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 32694
+              "sizeBytes": 34695
             },
             {
               "name": "context-engineering.md",
@@ -83,7 +83,7 @@
               "relativePath": "docs/context-engineering.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 25131
+              "sizeBytes": 26922
             },
             {
               "name": "folder-structure.md",
@@ -91,7 +91,7 @@
               "relativePath": "docs/folder-structure.md",
               "type": "file",
               "extension": "md",
-              "sizeBytes": 12471
+              "sizeBytes": 13778
             }
           ]
         },
@@ -101,7 +101,7 @@
           "relativePath": "package.json",
           "type": "file",
           "extension": "json",
-          "sizeBytes": 792
+          "sizeBytes": 818
         },
         {
           "name": "README.md",
@@ -109,7 +109,7 @@
           "relativePath": "README.md",
           "type": "file",
           "extension": "md",
-          "sizeBytes": 5774
+          "sizeBytes": 5919
         },
         {
           "name": "src",
@@ -377,7 +377,7 @@
                   "relativePath": "src/core/pipeline-handlers.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 11331
+                  "sizeBytes": 12670
                 },
                 {
                   "name": "pipeline-orchestrator.ts",
@@ -657,7 +657,7 @@
                   "relativePath": "src/domain/pipeline.ts",
                   "type": "file",
                   "extension": "ts",
-                  "sizeBytes": 5606
+                  "sizeBytes": 5845
                 },
                 {
                   "name": "README.md",
@@ -892,6 +892,62 @@
                   "sizeBytes": 1460
                 }
               ]
+            },
+            {
+              "name": "validation",
+              "path": "/home/user/Context-Generator-for-AI-Agent/src/validation",
+              "relativePath": "src/validation",
+              "type": "directory",
+              "children": [
+                {
+                  "name": "documentation-validator.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/validation/documentation-validator.ts",
+                  "relativePath": "src/validation/documentation-validator.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 5953
+                },
+                {
+                  "name": "index.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/validation/index.ts",
+                  "relativePath": "src/validation/index.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 920
+                },
+                {
+                  "name": "knowledge-validator.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/validation/knowledge-validator.ts",
+                  "relativePath": "src/validation/knowledge-validator.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 9468
+                },
+                {
+                  "name": "README.md",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/validation/README.md",
+                  "relativePath": "src/validation/README.md",
+                  "type": "file",
+                  "extension": "md",
+                  "sizeBytes": 5478
+                },
+                {
+                  "name": "validation-result.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/validation/validation-result.ts",
+                  "relativePath": "src/validation/validation-result.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 1066
+                },
+                {
+                  "name": "validation.test.ts",
+                  "path": "/home/user/Context-Generator-for-AI-Agent/src/validation/validation.test.ts",
+                  "relativePath": "src/validation/validation.test.ts",
+                  "type": "file",
+                  "extension": "ts",
+                  "sizeBytes": 13426
+                }
+              ]
             }
           ]
         },
@@ -1017,7 +1073,7 @@
           ]
         }
       ],
-      "generatedAt": "2026-07-07T12:19:08.450Z",
+      "generatedAt": "2026-07-09T22:20:19.886Z",
       "strategy": "standard"
     }
   },
@@ -1079,7 +1135,8 @@
           "domain",
           "knowledge",
           "scanner",
-          "utils"
+          "utils",
+          "validation"
         ],
         "signals": [
           "folder-name:src",
@@ -1309,6 +1366,25 @@
           "path-context:source-module"
         ],
         "confidence": "high"
+      },
+      {
+        "path": "/home/user/Context-Generator-for-AI-Agent/src/validation",
+        "relativePath": "src/validation",
+        "name": "validation",
+        "depth": 2,
+        "classification": "source",
+        "responsibility": "Contains validation application source code.",
+        "importantFiles": [
+          "src/validation/README.md"
+        ],
+        "childFolders": [],
+        "signals": [
+          "folder-name:validation",
+          "doc-file:README.md",
+          "test-file:validation.test.ts",
+          "path-context:source-files"
+        ],
+        "confidence": "medium"
       }
     ],
     "modules": [
@@ -2030,7 +2106,7 @@
           ]
         }
       ],
-      "generatedAt": "2026-07-07T12:19:08.450Z"
+      "generatedAt": "2026-07-09T22:20:19.886Z"
     },
     "conventions": [
       {
@@ -2303,7 +2379,7 @@
           {
             "type": "config",
             "source": "package.json",
-            "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js"
+            "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/validation/*.test.js"
           }
         ],
         "confidence": "medium"
@@ -2671,7 +2747,7 @@
           "confidence": "high"
         }
       ],
-      "generatedAt": "2026-07-07T12:19:08.450Z"
+      "generatedAt": "2026-07-09T22:20:19.886Z"
     }
   }
 }

@@ -9,7 +9,7 @@ Mandatory entry point for any AI agent working in this repository
 ## Project
 
 - Name: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-09T22:20:19.886Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 - Status: initial deterministic documentation
@@ -35,7 +35,7 @@ This document uses the generic deterministic template. Key documents (architectu
 - Package managers: npm
 - Tooling: TypeScript
 - Detection confidence: high
-- Analyzed folders: 14
+- Analyzed folders: 15
 - Discovered modules: 12
 - Detected conventions: 30
 
