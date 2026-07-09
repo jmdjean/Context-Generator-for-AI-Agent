@@ -2,10 +2,11 @@ import { RuntimeConfig } from '../config';
 import { AnalysisPipelineStep, RepositoryInfo, TechnologyProfile } from '../domain';
 import { DocumentationPlan } from '../domain/documentation-plan';
 import { loadRepositoryMetadata } from '../scanner/repository-loader';
-import { scanRepository } from '../scanner/repository-scanner';
+import { RepositoryScanStats, scanRepository } from '../scanner/repository-scanner';
 import { detectTechnologies } from '../detectors/technology-detector';
 import { createDocumentationPlan } from '../docs/documentation-planner';
-import { writeDocumentation } from '../docs/documentation-writer';
+import { DocumentationWriteResult, writeDocumentation } from '../docs/documentation-writer';
+import { DocumentationValidationResult, validateDocumentation } from '../docs/documentation-validator';
 import { enrichProjectKnowledgeWithFolderAnalysis, enrichProjectKnowledgeWithModuleAnalysis, enrichProjectKnowledgeWithDependencyGraph, enrichProjectKnowledgeWithConventions, enrichProjectKnowledgeWithNavigationMap } from '../analyzers';
 import { buildProjectKnowledge, persistProjectKnowledge, ProjectKnowledge } from '../knowledge';
 
@@ -15,6 +16,9 @@ export interface PipelineContext {
   technologyProfile?: TechnologyProfile;
   documentationPlan?: DocumentationPlan;
   projectKnowledge?: ProjectKnowledge;
+  scanStats?: RepositoryScanStats;
+  documentationWriteResult?: DocumentationWriteResult;
+  validationResult?: DocumentationValidationResult;
 }
 
 export type StepHandlerResult = {
@@ -63,19 +67,7 @@ export async function handleScanRepositoryStructure(
 
   context.repositoryInfo.repositoryTree = scanResult.tree;
   context.repositoryInfo.ignoredPaths = scanResult.ignoredPaths;
-
-  console.log('');
-  console.log('Repository scanner:');
-  console.log(`Files scanned: ${scanResult.stats.filesScanned}`);
-  console.log(`Directories scanned: ${scanResult.stats.directoriesScanned}`);
-  console.log(`Max depth reached: ${scanResult.stats.maxDepthReached}`);
-  console.log(`Limit reached: ${scanResult.stats.limitReached}`);
-  if (scanResult.stats.permissionDenied) {
-    console.log('Permission denied: true');
-  }
-  if (scanResult.stats.symlinksSkipped > 0) {
-    console.log(`Symlinks skipped: ${scanResult.stats.symlinksSkipped}`);
-  }
+  context.scanStats = scanResult.stats;
 
   return {
     status: 'completed',
@@ -149,12 +141,6 @@ export async function handleAnalyzeFolderKnowledge(
   const { knowledge, result } = enrichProjectKnowledgeWithFolderAnalysis(context.projectKnowledge);
   context.projectKnowledge = knowledge;
 
-  console.log('');
-  console.log('Folder analyzer:');
-  console.log(`Folders analyzed: ${result.totalFolders}`);
-  console.log(`Documentable folders: ${result.documentableFolders}`);
-  console.log(`Ignored folders: ${result.ignoredFolders}`);
-
   return {
     status: 'completed',
     message: `analyzed ${result.totalFolders} folder(s), ${result.documentableFolders} documentable`,
@@ -171,12 +157,6 @@ export async function handleAnalyzeModules(
 
   const { knowledge, result } = enrichProjectKnowledgeWithModuleAnalysis(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-
-  console.log('');
-  console.log('Module analyzer:');
-  console.log(`Modules discovered: ${result.totalModules}`);
-  console.log(`High confidence: ${result.highConfidenceModules}`);
-  console.log(`Medium confidence: ${result.mediumConfidenceModules}`);
 
   return {
     status: 'completed',
@@ -195,15 +175,6 @@ export async function handleAnalyzeDependencyGraph(
   const { knowledge, result } = enrichProjectKnowledgeWithDependencyGraph(context.projectKnowledge);
   context.projectKnowledge = knowledge;
 
-  console.log('');
-  console.log('Dependency graph:');
-  console.log(`Nodes: ${result.totalNodes}`);
-  console.log(`Edges: ${result.totalEdges}`);
-  console.log(`Imports analyzed: ${result.importsAnalyzed}`);
-  if (result.filesSkipped > 0) {
-    console.log(`Files skipped: ${result.filesSkipped}`);
-  }
-
   return {
     status: 'completed',
     message: `built dependency graph with ${result.totalNodes} node(s) and ${result.totalEdges} edge(s)`,
@@ -220,13 +191,6 @@ export async function handleAnalyzeConventions(
 
   const { knowledge, result } = enrichProjectKnowledgeWithConventions(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-
-  console.log('');
-  console.log('Convention analyzer:');
-  console.log(`Conventions detected: ${result.totalConventions}`);
-  console.log(`High confidence: ${result.highConfidenceConventions}`);
-  console.log(`Medium confidence: ${result.mediumConfidenceConventions}`);
-  console.log(`Low confidence: ${result.lowConfidenceConventions}`);
 
   return {
     status: 'completed',
@@ -245,13 +209,6 @@ export async function handleBuildNavigationMap(
   const { knowledge, result } = enrichProjectKnowledgeWithNavigationMap(context.projectKnowledge);
   context.projectKnowledge = knowledge;
 
-  console.log('');
-  console.log('AI navigation map:');
-  console.log(`Entries: ${result.totalEntries}`);
-  console.log(`High confidence: ${result.highConfidenceEntries}`);
-  console.log(`Medium confidence: ${result.mediumConfidenceEntries}`);
-  console.log(`Low confidence: ${result.lowConfidenceEntries}`);
-
   return {
     status: 'completed',
     message: `built navigation map with ${result.totalEntries} entr(ies), ${result.highConfidenceEntries} high confidence`,
@@ -267,17 +224,28 @@ export async function handleWriteDocumentation(
   }
 
   const writeResult = writeDocumentation(context.projectKnowledge);
-  console.log('');
-  console.log('Documentation writer:');
-  console.log(`Written: ${writeResult.writtenCount}`);
-  console.log(`Skipped: ${writeResult.skippedCount}`);
-  console.log(`PKM-powered documents: ${writeResult.pkmPoweredCount}`);
-  console.log(`Generic documents: ${writeResult.genericCount}`);
-  console.log(`Docs directory: ${writeResult.docsDirectoryPath}`);
+  context.documentationWriteResult = writeResult;
 
   return {
     status: 'completed',
     message: `written ${writeResult.writtenCount}, skipped ${writeResult.skippedCount}`,
+  };
+}
+
+export async function handleValidateDocumentation(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge || !context.documentationWriteResult) {
+    return placeholderResult(step);
+  }
+
+  const validationResult = validateDocumentation(context.projectKnowledge);
+  context.validationResult = validationResult;
+
+  return {
+    status: 'completed',
+    message: `${validationResult.status} with ${validationResult.errors.length} error(s), ${validationResult.warnings.length} warning(s)`,
   };
 }
 
@@ -290,13 +258,6 @@ export async function handlePersistProjectKnowledge(
   }
 
   const persistenceResult = persistProjectKnowledge(context.projectKnowledge);
-  console.log('');
-  console.log('Project Knowledge:');
-  console.log(`Schema version: ${persistenceResult.schemaVersionLabel}`);
-  console.log('Persisted:');
-  for (const relativePath of persistenceResult.persistedRelativePaths) {
-    console.log(`* ${relativePath}`);
-  }
 
   return {
     status: 'completed',
@@ -317,6 +278,7 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Analyze Conventions': handleAnalyzeConventions,
   'Build AI Navigation Map': handleBuildNavigationMap,
   'Write Documentation': handleWriteDocumentation,
+  'Validate Documentation': handleValidateDocumentation,
   'Persist Project Knowledge': handlePersistProjectKnowledge,
 };
 

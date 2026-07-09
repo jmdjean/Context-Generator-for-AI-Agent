@@ -5,7 +5,7 @@
 Key internal and external dependencies with rationale
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-09T22:27:11.432Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -52,11 +52,13 @@ Each edge lists the imports that prove the relationship:
   - `src/core/index.ts` imports `../config`
   - `src/core/pipeline-handlers.ts` imports `../config`
   - `src/core/pipeline-orchestrator.ts` imports `../config`
+  - …and 1 more import(s)
 - `src/core` → `src/detectors` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../detectors/technology-detector`
 - `src/core` → `src/docs` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../docs/documentation-planner`
   - `src/core/pipeline-handlers.ts` imports `../docs/documentation-writer`
+  - `src/core/pipeline-handlers.ts` imports `../docs/documentation-validator`
 - `src/core` → `src/domain` (imports, confidence: high)
   - `src/core/pipeline-handlers.ts` imports `../domain`
   - `src/core/pipeline-handlers.ts` imports `../domain/documentation-plan`
@@ -77,10 +79,11 @@ Each edge lists the imports that prove the relationship:
   - …and 10 more import(s)
 - `src/docs` → `src/knowledge` (imports, confidence: high)
   - `src/docs/document-template.ts` imports `../knowledge`
+  - `src/docs/documentation-validator.ts` imports `../knowledge`
   - `src/docs/documentation-writer.ts` imports `../knowledge`
-  - `src/docs/markdown-renderers/agent-navigation-renderer.ts` imports `../../knowledge`
-  - …and 7 more import(s)
+  - …and 8 more import(s)
 - `src/docs` → `src/utils` (imports, confidence: high)
+  - `src/docs/documentation-validator.ts` imports `../utils/fs`
   - `src/docs/documentation-writer.ts` imports `../utils/fs`
 - `src/knowledge` → `src/domain` (imports, confidence: high)
   - `src/knowledge/accessors.ts` imports `../domain/documentation-plan`

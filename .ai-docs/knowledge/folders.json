@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:19:08.450Z",
+  "generatedAt": "2026-07-09T22:27:11.432Z",
   "folders": [
     {
       "path": "/home/user/Context-Generator-for-AI-Agent",
@@ -144,6 +144,7 @@
       "signals": [
         "folder-name:core",
         "doc-file:README.md",
+        "test-file:run-summary.test.ts",
         "path-context:source-files",
         "path-context:source-module"
       ],

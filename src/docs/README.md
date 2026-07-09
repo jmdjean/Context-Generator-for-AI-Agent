@@ -19,7 +19,9 @@ This module is split into three concerns that must stay separate:
 | `document-template.ts` | `renderDeterministicDocument()` — generic fallback Markdown template with the generated-file marker |
 | `markdown-renderers/` | PKM-powered renderers for key documents (see below) |
 | `documentation-writer.ts` | `writeDocumentation()` — writes planned docs from `ProjectKnowledge`, preserves unmarked files, reports written/skipped and PKM-powered/generic counts |
+| `documentation-validator.ts` | `validateDocumentation()` — checks every planned document exists, is non-empty, and (for marker-owned files) has a top-level heading; returns errors, warnings, and a passed/failed status |
 | `markdown-renderers.test.ts` | Renderer dispatch and content tests |
+| `documentation-validator.test.ts` | Validation status, error, and warning tests |
 
 ---
 
@@ -223,6 +225,7 @@ Do not add framework-specific logic directly to `executePipeline`. The orchestra
 | Generated-file marker protection | ✅ Done |
 | PKM-powered renderers for 7 key documents | ✅ Done |
 | Generic fallback template for remaining documents | ✅ Done |
+| Documentation validation against the plan | ✅ Done |
 | Incremental update logic beyond marker checks | Planned |
 
 ## Expected output structure (planned)

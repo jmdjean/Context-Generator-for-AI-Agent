@@ -32,7 +32,11 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  await run(config);
+  const result = await run(config);
+
+  if (!result.success) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch((err) => {

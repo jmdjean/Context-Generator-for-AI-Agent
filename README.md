@@ -47,9 +47,16 @@ The PKM is persisted to `.ai-docs/knowledge/` as machine-readable JSON. Markdown
 
 ## Usage
 
+The MVP flow is three steps: point the CLI at a repository, let the pipeline run, then hand the generated `.ai-docs/` folder to your AI coding agent.
+
 ```bash
 npx ai-project-docs <target-path> [options]
 ```
+
+1. **Run the CLI** against any project directory.
+2. **Watch the pipeline** — each step prints a `✓` (completed), `○` (skipped), or `✗` (failed) line with a short result message.
+3. **Read the final summary** — it reports what was analyzed, what was written, and whether validation passed.
+4. **Use the output** — review `.ai-docs/README.md`, then share `.ai-docs/agent-navigation.md` with your AI coding agent.
 
 ### Arguments
 
@@ -86,28 +93,63 @@ ai-project-docs --help
 
 ### Example output
 
-```
-AI Project Docs
-
-Target project: /absolute/path/to/my-project
-Docs directory: .ai-docs
-OpenRouter key: detected
-Status: configuration resolved
-```
-
-If the API key is not provided:
+Each pipeline step prints a one-line status while running, followed by a final run summary:
 
 ```
 AI Project Docs
 
 Target project: /absolute/path/to/my-project
 Docs directory: .ai-docs
-OpenRouter key: missing
 
-Warning: OPENROUTER_API_KEY was not provided. AI-powered analysis will be skipped in future steps.
+Pipeline:
+✓ Resolve Configuration — target: /absolute/path/to/my-project
+✓ Load Repository Metadata — loaded metadata for "my-project"
+✓ Scan Repository Structure — scanned 97 file(s) across 14 director(ies)
+✓ Detect Technologies — detected 1 language(s)
+○ Build Repository Model — skipped: Build Repository Model is not implemented yet
+○ Analyze Architecture — skipped: Analyze Architecture is not implemented yet
+✓ Generate Documentation Plan — planned 11 documents (strategy: standard)
+✓ Build Project Knowledge — assembled PKM for "my-project" (schema: 1.0.0)
+✓ Analyze Folder Knowledge — analyzed 14 folder(s), 14 documentable
+✓ Analyze Modules — discovered 12 module(s), 12 high confidence
+✓ Analyze Dependency Graph — built dependency graph with 10 node(s) and 21 edge(s)
+✓ Analyze Conventions — detected 30 convention(s), 27 high confidence
+✓ Build AI Navigation Map — built navigation map with 8 entr(ies), 8 high confidence
+✓ Write Documentation — written 11, skipped 0
+✓ Validate Documentation — passed with 0 error(s), 0 warning(s)
+✓ Persist Project Knowledge — persisted 11 knowledge files
 
-Status: configuration resolved
+AI Project Docs completed
+
+Project: my-project
+Target: /absolute/path/to/my-project
+Docs: .ai-docs
+Technologies: TypeScript, npm
+
+Knowledge:
+- Repository tree: generated
+- Files scanned: 97
+- Folders analyzed: 14
+- Modules discovered: 12
+- Dependency edges: 21
+- Conventions detected: 30
+- Navigation entries: 8
+
+Documentation:
+- Written: 11
+- Skipped: 0
+
+Validation:
+- Errors: 0
+- Warnings: 0
+- Status: passed
+
+Next steps:
+- Review .ai-docs/README.md
+- Share .ai-docs/agent-navigation.md with your AI coding agent
 ```
+
+If any step fails, the summary header becomes `AI Project Docs completed with errors`, an `Errors:` section lists each failed step, the `Next steps` section is omitted, and the process exits with code 1.
 
 ---
 
@@ -133,6 +175,8 @@ Status: configuration resolved
 | OpenRouter integration | 🔜 Planned |
 | `.ai-docs/` Markdown generation | ✅ Done |
 | PKM-powered Markdown renderers | ✅ Done |
+| Documentation validation | ✅ Done |
+| Final run summary | ✅ Done |
 | Incremental diffing | 🔜 Planned |
 
 ---

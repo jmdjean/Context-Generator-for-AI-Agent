@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:19:08.450Z",
+  "generatedAt": "2026-07-09T22:27:11.432Z",
   "tree": {
     "name": "Context-Generator-for-AI-Agent",
     "path": "/home/user/Context-Generator-for-AI-Agent",
@@ -13,7 +13,7 @@
         "relativePath": "AGENTS.md",
         "type": "file",
         "extension": "md",
-        "sizeBytes": 13850
+        "sizeBytes": 16981
       },
       {
         "name": "docs",
@@ -53,7 +53,7 @@
         "relativePath": "package.json",
         "type": "file",
         "extension": "json",
-        "sizeBytes": 792
+        "sizeBytes": 812
       },
       {
         "name": "README.md",
@@ -61,7 +61,7 @@
         "relativePath": "README.md",
         "type": "file",
         "extension": "md",
-        "sizeBytes": 5774
+        "sizeBytes": 8064
       },
       {
         "name": "src",
@@ -283,7 +283,7 @@
             "relativePath": "src/cli.ts",
             "type": "file",
             "extension": "ts",
-            "sizeBytes": 1007
+            "sizeBytes": 1078
           },
           {
             "name": "config",
@@ -321,7 +321,7 @@
                 "relativePath": "src/core/index.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 3263
+                "sizeBytes": 738
               },
               {
                 "name": "pipeline-handlers.ts",
@@ -329,7 +329,7 @@
                 "relativePath": "src/core/pipeline-handlers.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 11331
+                "sizeBytes": 9675
               },
               {
                 "name": "pipeline-orchestrator.ts",
@@ -337,7 +337,7 @@
                 "relativePath": "src/core/pipeline-orchestrator.ts",
                 "type": "file",
                 "extension": "ts",
-                "sizeBytes": 2643
+                "sizeBytes": 3035
               },
               {
                 "name": "README.md",
@@ -345,7 +345,23 @@
                 "relativePath": "src/core/README.md",
                 "type": "file",
                 "extension": "md",
-                "sizeBytes": 6041
+                "sizeBytes": 6894
+              },
+              {
+                "name": "run-summary.test.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/core/run-summary.test.ts",
+                "relativePath": "src/core/run-summary.test.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 5053
+              },
+              {
+                "name": "run-summary.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/core/run-summary.ts",
+                "relativePath": "src/core/run-summary.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 3180
               }
             ]
           },
@@ -442,6 +458,22 @@
                 "type": "file",
                 "extension": "ts",
                 "sizeBytes": 6510
+              },
+              {
+                "name": "documentation-validator.test.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/documentation-validator.test.ts",
+                "relativePath": "src/docs/documentation-validator.test.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 4764
+              },
+              {
+                "name": "documentation-validator.ts",
+                "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/documentation-validator.ts",
+                "relativePath": "src/docs/documentation-validator.ts",
+                "type": "file",
+                "extension": "ts",
+                "sizeBytes": 2545
               },
               {
                 "name": "documentation-writer.ts",
@@ -545,7 +577,7 @@
                 "relativePath": "src/docs/README.md",
                 "type": "file",
                 "extension": "md",
-                "sizeBytes": 11986
+                "sizeBytes": 12351
               }
             ]
           },

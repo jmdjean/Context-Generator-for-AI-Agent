@@ -12,14 +12,17 @@ This module is the central coordinator. It receives a validated `RuntimeConfig` 
 |---|---|
 | `index.ts` | Public entry point. Exports `run()` and re-exports orchestrator types. |
 | `pipeline-orchestrator.ts` | Execution engine. Loads pipeline steps, runs handlers, tracks status, prints progress, returns a structured result. |
+| `pipeline-handlers.ts` | `STEP_HANDLERS` registry mapping step names to handler functions, plus the shared `PipelineContext`. |
+| `run-summary.ts` | `formatRunSummary()` — pure formatter that turns a `PipelineExecutionResult` into the final run summary text. |
+| `run-summary.test.ts` | Summary content tests for success and failure runs. |
 
 ---
 
 ## Exports
 
-### `run(config: RuntimeConfig): Promise<void>`
+### `run(config: RuntimeConfig): Promise<PipelineExecutionResult>`
 
-Called by `src/cli.ts`. Prints the configuration summary, delegates execution to `executePipeline`, and prints the final status line.
+Called by `src/cli.ts`. Prints the configuration header, delegates execution to `executePipeline`, prints the final run summary via `formatRunSummary()`, and returns the execution result so the CLI can set the process exit code.
 
 ### `executePipeline(config: RuntimeConfig): Promise<PipelineExecutionResult>`
 
@@ -28,7 +31,7 @@ Drives the full pipeline. For each step in `ANALYSIS_PIPELINE`:
 2. Marks it `running` and records `startedAt`.
 3. Calls the step's handler (real handlers for metadata loading, technology detection, documentation planning, and deterministic documentation writing; placeholders for the remaining steps).
 4. Marks it `completed` (or `failed` on error) and records `finishedAt`.
-5. Prints `✓ <name>` or `✗ <name>` to the console.
+5. Prints `✓ <name> — <message>` (or `○`/`✗` for skipped/failed steps) to the console.
 
 Returns a `PipelineExecutionResult` with per-step records, timing, and any errors.
 
@@ -56,7 +59,16 @@ interface PipelineExecutionResult {
   startedAt: string;
   finishedAt: string;
   errors: PipelineExecutionError[];
+  projectKnowledge?: ProjectKnowledge;
+  scanStats?: RepositoryScanStats;
+  documentationWriteResult?: DocumentationWriteResult;
+  validationResult?: DocumentationValidationResult;
 }
+```
+
+The optional fields are populated as their producing steps complete; the run summary reads them to report knowledge counts, documents written/skipped, and validation status.
+
+```typescript
 ```
 
 ---
@@ -123,7 +135,7 @@ executePipeline(config)
   ├─ Analyze Folder Knowledge     → analyzers/folder-analyzer → FolderKnowledge[]      ✅
   ├─ Analyze Modules              → analyzers/module-analyzer → ModuleKnowledge[]     ✅
   ├─ Write Documentation          → docs/documentation-writer → DocumentationWriteResult ✅
-  ├─ Validate Documentation       → placeholder ✓
+  ├─ Validate Documentation       → docs/documentation-validator → DocumentationValidationResult ✅
   └─ Persist Project Knowledge    → knowledge/knowledge-writer → .ai-docs/knowledge/  ✅
 ```
 
@@ -133,5 +145,4 @@ executePipeline(config)
 executePipeline(config)
   ├─ Build Repository Model       → assembleContext(repositoryInfo, tree, profile)
   ├─ Analyze Architecture         → ai.analyze(projectContext) + future analyzers
-  ├─ Validate Documentation       → docs.validate(documentModels)
 ```

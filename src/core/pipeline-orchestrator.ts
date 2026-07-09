@@ -24,6 +24,9 @@ export interface PipelineExecutionResult {
   finishedAt: string;
   errors: PipelineExecutionError[];
   projectKnowledge?: PipelineContext['projectKnowledge'];
+  scanStats?: PipelineContext['scanStats'];
+  documentationWriteResult?: PipelineContext['documentationWriteResult'];
+  validationResult?: PipelineContext['validationResult'];
 }
 
 function initializeSteps(): ExecutedPipelineStep[] {
@@ -37,7 +40,8 @@ function initializeSteps(): ExecutedPipelineStep[] {
 function printStep(step: ExecutedPipelineStep): void {
   const icon =
     step.status === 'completed' ? '✓' : step.status === 'skipped' ? '○' : '✗';
-  console.log(`${icon} ${step.name}`);
+  const suffix = step.message ? ` — ${step.message}` : '';
+  console.log(`${icon} ${step.name}${suffix}`);
 }
 
 function markRemainingStepsSkipped(
@@ -95,5 +99,8 @@ export async function executePipeline(
     finishedAt: new Date().toISOString(),
     errors,
     projectKnowledge: context.projectKnowledge,
+    scanStats: context.scanStats,
+    documentationWriteResult: context.documentationWriteResult,
+    validationResult: context.validationResult,
   };
 }

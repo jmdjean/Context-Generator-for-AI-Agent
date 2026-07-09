@@ -5,7 +5,7 @@
 Maps every folder to its single responsibility
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-07T12:19:08.450Z
+- Generated: 2026-07-09T22:27:11.432Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 

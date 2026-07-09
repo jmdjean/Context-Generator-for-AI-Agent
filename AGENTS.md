@@ -105,7 +105,7 @@ Never put scanner logic, detection logic, AI calls, or file writes directly insi
 - `src/scanner/` — reads the target repository from disk, produces `RepositoryInfo` and `RepositoryNode`.
 - `src/detectors/` — detects technology stack from `RepositoryInfo`, produces `TechnologyProfile`. No directory walking.
 - `src/knowledge/` — Project Knowledge Model. Builder assembles `ProjectKnowledge`; writer persists it to `.ai-docs/knowledge/`.
-- `src/docs/` — documentation planning and writing (generators). `documentation-writer.ts` writes from `ProjectKnowledge` only.
+- `src/docs/` — documentation planning, writing, and validation (generators). `documentation-writer.ts` writes from `ProjectKnowledge` only; `documentation-validator.ts` checks the written output against the plan.
 - `src/ai/` — calls OpenRouter, consumes `ProjectContext`, produces `AnalysisResult`.
 - `src/utils/` — pure utility functions with no side effects and no domain knowledge.
 
@@ -151,9 +151,46 @@ The project has:
 - Step 12 (Analyze Conventions) implemented in `src/analyzers/convention-analyzer.ts` — produces `ConventionKnowledge[]` in `analysis.conventions` from the PKM, technologies, module knowledge, and safe reads of `tsconfig.json`/`package.json`.
 - Step 13 (Build AI Navigation Map) implemented in `src/analyzers/navigation-map-analyzer.ts` — produces `NavigationMapKnowledge` in `analysis.navigationMap`, telling agents which knowledge sections and documents to read per task type.
 - Step 14 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — writes Markdown from `ProjectKnowledge`, dispatching key documents to PKM-powered renderers in `src/docs/markdown-renderers/` and the rest to the generic template.
+- Step 15 (Validate Documentation) implemented in `src/docs/documentation-validator.ts` — checks every planned document exists, is non-empty, and (for generated files) carries the marker and a top-level heading. Produces `DocumentationValidationResult` with errors, warnings, and a passed/failed status.
 - Step 16 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/`.
+- The final run summary is formatted by `src/core/run-summary.ts` — a pure function that turns `PipelineExecutionResult` into the end-of-run report printed by `run()`.
 
-The scanner full tree walk (step 3) is implemented. The AI integration (step 6) and validation (step 15) are not yet implemented.
+The scanner full tree walk (step 3) is implemented. The AI integration (steps 5–6, Build Repository Model and Analyze Architecture) is not yet implemented; those steps are reported as skipped.
+
+---
+
+## How to interpret CLI output
+
+When you run `node dist/cli.js <target-path>`, the output has three parts. Use them to verify your changes without reading generated files manually.
+
+### 1. Header
+
+`Target project:` and `Docs directory:` echo the resolved configuration. If these are wrong, the problem is in `src/config/`, not in the pipeline.
+
+### 2. Pipeline step lines
+
+One line per step of `ANALYSIS_PIPELINE`, printed as the step finishes:
+
+| Prefix | Meaning |
+|---|---|
+| `✓ Step Name — message` | Step completed. The message is the step handler's one-line result (counts, names, status). |
+| `○ Step Name — skipped: …` | Step was skipped — either not implemented yet (expected for the AI steps) or a previous step failed. |
+| `✗ Step Name — message` | Step failed. The message is the error. All later steps are skipped. |
+
+An unexpected `○` on an implemented step means a required context value was missing — check the handler's guard in `src/core/pipeline-handlers.ts`.
+
+### 3. Final run summary
+
+The summary is rendered by `formatRunSummary()` in `src/core/run-summary.ts` and is the authoritative machine-checkable result of a run:
+
+- **Header** — `AI Project Docs completed` on success, `AI Project Docs completed with errors` otherwise. The process exit code is `0` on success and `1` on failure.
+- **Project / Target / Docs / Technologies** — what was analyzed and where output went.
+- **Knowledge** — counts from the PKM: repository tree, files scanned, folders analyzed, modules discovered, dependency edges, conventions detected, navigation entries. A `0` where you expected enrichment means the corresponding analyzer did not populate its PKM section.
+- **Documentation** — documents written vs skipped. Skipped documents are user-managed files (no generated marker) that the writer refuses to overwrite; this is expected behavior, not an error.
+- **Validation** — errors, warnings, and a `passed`/`failed` status from the documentation validator, with one indented line per issue. `failed` means a planned document is missing or empty. `not run` means the pipeline stopped before validation.
+- **Next steps** — where a human or agent should look first (`.ai-docs/README.md`, `.ai-docs/agent-navigation.md`). Only printed on success.
+
+When verifying a change, assert on the summary counts (e.g. "Written" increased after adding a planned document) rather than parsing intermediate step messages, which are informational and may change.
 
 ---
 
@@ -162,7 +199,7 @@ The scanner full tree walk (step 3) is implemented. The AI integration (step 6) 
 ```bash
 npm install
 npm run build          # compiles TypeScript to dist/ with zero errors
-npm test               # runs unit tests for scanner, detectors, knowledge, and analyzers
+npm test               # runs unit tests for scanner, detectors, knowledge, analyzers, docs, and core
 node dist/cli.js .     # runs the pipeline against this project; shows detected technologies
 node dist/cli.js --help
 ```

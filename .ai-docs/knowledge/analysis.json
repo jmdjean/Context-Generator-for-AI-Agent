@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-07T12:19:08.450Z",
+  "generatedAt": "2026-07-09T22:27:11.432Z",
   "status": "partial",
   "folderContexts": [
     {
@@ -145,6 +145,7 @@
       "signals": [
         "folder-name:core",
         "doc-file:README.md",
+        "test-file:run-summary.test.ts",
         "path-context:source-files",
         "path-context:source-module"
       ],
@@ -705,6 +706,10 @@
           {
             "sourceFile": "src/core/pipeline-orchestrator.ts",
             "importPath": "../config"
+          },
+          {
+            "sourceFile": "src/core/run-summary.ts",
+            "importPath": "../config"
           }
         ]
       },
@@ -733,6 +738,10 @@
           {
             "sourceFile": "src/core/pipeline-handlers.ts",
             "importPath": "../docs/documentation-writer"
+          },
+          {
+            "sourceFile": "src/core/pipeline-handlers.ts",
+            "importPath": "../docs/documentation-validator"
           }
         ]
       },
@@ -875,6 +884,10 @@
             "importPath": "../knowledge"
           },
           {
+            "sourceFile": "src/docs/documentation-validator.ts",
+            "importPath": "../knowledge"
+          },
+          {
             "sourceFile": "src/docs/documentation-writer.ts",
             "importPath": "../knowledge"
           },
@@ -918,6 +931,10 @@
         "type": "imports",
         "confidence": "high",
         "evidence": [
+          {
+            "sourceFile": "src/docs/documentation-validator.ts",
+            "importPath": "../utils/fs"
+          },
           {
             "sourceFile": "src/docs/documentation-writer.ts",
             "importPath": "../utils/fs"
@@ -1009,7 +1026,7 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-07T12:19:08.450Z"
+    "generatedAt": "2026-07-09T22:27:11.432Z"
   },
   "conventions": [
     {
@@ -1282,7 +1299,7 @@
         {
           "type": "config",
           "source": "package.json",
-          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js"
+          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/core/*.test.js"
         }
       ],
       "confidence": "medium"
@@ -1650,6 +1667,6 @@
         "confidence": "high"
       }
     ],
-    "generatedAt": "2026-07-07T12:19:08.450Z"
+    "generatedAt": "2026-07-09T22:27:11.432Z"
   }
 }
