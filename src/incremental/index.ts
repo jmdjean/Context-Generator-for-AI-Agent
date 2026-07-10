@@ -7,16 +7,10 @@ import {
   ProjectKnowledge,
 } from '../knowledge';
 import { detectChanges } from './change-detector';
-import {
-  formatChangeDetectionSummaryLine,
-  printChangeDetectionSummary,
-} from './change-summary-formatter';
+import { formatChangeDetectionSummaryLine } from './change-summary-formatter';
 import { ChangeSummary } from './change-summary';
 import { analyzeDocumentImpact } from './document-impact-analyzer';
-import {
-  formatDocumentImpactSummaryLine,
-  printDocumentImpactSummary,
-} from './document-impact-formatter';
+import { formatDocumentImpactSummaryLine } from './document-impact-formatter';
 import { loadPreviousKnowledgeBaseline } from './state-loader';
 
 export {
@@ -27,16 +21,12 @@ export {
 export { detectChanges } from './change-detector';
 export {
   appendChangeSummaryDetailLines,
-  formatChangeDetectionLines,
   formatChangeDetectionSummaryLine,
   formatRunSummaryChangeDetectionLines,
-  printChangeDetectionSummary,
 } from './change-summary-formatter';
 export {
-  formatDocumentImpactLines,
   formatDocumentImpactSummaryLine,
   formatRunSummaryDocumentImpactLines,
-  printDocumentImpactSummary,
 } from './document-impact-formatter';
 export {
   loadPreviousKnowledgeBaseline,

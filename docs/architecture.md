@@ -47,7 +47,7 @@ This separation means a new output format only needs a new generator. It does no
 │  src/analyzers/      PKM enrichment logic (wrapped by plugins) │  ✅ folder, module, dependency, conventions
 │  src/plugins/        Plugin contracts, registry, manager        │  ✅ built-in + technology placeholders
 │  src/knowledge/      Project Knowledge Model    │  ✅ done — PKM types + builder
-│  src/ai/             OpenRouter integration     │  ✅ optional --ai enrichment
+│  src/ai/             AI provider integration    │  ✅ optional --ai enrichment (provider-based)
 │  src/docs/           Generators (Markdown…)     │  ✅ planning + writing
 │  src/templates/      Markdown template engine     │  ✅ PKM → rendered content
 │  src/exporters/      Agent context exporters      │  ✅ generic pack + Cursor rules (--export-agents)
@@ -559,18 +559,38 @@ Key invariant: `process.argv` and `process.env` are read only inside `src/config
 
 ## Optional AI analysis (`src/ai/`)
 
-OpenRouter integration is **opt-in**. The CLI works without an API key. When the user passes `--ai` and a key is available (`--openrouter-key` or `OPENROUTER_API_KEY`), step 14 sends a **compact PKM summary** to the model — modules, folders, technologies, dependency graph counts/edges, conventions, and navigation map entries. No source code or secrets are included.
+AI analysis is **opt-in** and **provider-based**. The CLI works without an API key. When the user passes `--ai` and a key is available (`--openrouter-key` or `OPENROUTER_API_KEY`), step 14 sends a **compact PKM summary** to the selected provider — modules, folders, technologies, dependency graph counts/edges, conventions, and navigation map entries. No source code or secrets are included.
 
-The model must return structured JSON. `ai-analysis-service.ts` validates the payload before writing `knowledge.analysis.aiInsights`. Invalid responses or network errors emit warnings and the pipeline continues — AI never fails the MVP run.
+### Provider architecture
+
+The analysis service (`ai-analysis-service.ts`) depends on the `AIProvider` contract in `src/ai/providers/ai-provider.ts` — never on a concrete backend:
+
+```
+runAiAnalysis
+  ├─ prompt-builder.ts          builds the prompt (owns all text sent to providers)
+  ├─ provider-factory.ts        resolves the provider by id from the registry
+  │     └─ provider-registry.ts   built-in providers (OpenRouter today)
+  ├─ provider.analyze(prompt, { apiKey, model })
+  │     └─ openrouter-provider.ts → openrouter-client.ts → HTTPS
+  └─ parse + validate JSON → knowledge.analysis.aiInsights
+```
+
+`OpenRouterProvider` is the only built-in provider and the default (`--ai-provider openrouter`). Unsupported provider names fail configuration resolution with a clear error listing supported ids. Future backends (OpenAI, Anthropic, Google Gemini, Azure OpenAI, Ollama, local models) are added by implementing `AIProvider` and registering it in `createDefaultAiProviderRegistry()` — the analysis service, CLI validation, and help text pick them up automatically.
+
+Providers are **transports**: they receive fully assembled prompt strings and return raw model output (`content`, `model`, `provider`, optional `usage`/`raw`). They never scan source files, build prompts, read PKM data, or mutate anything. The prompt builder controls exactly what PKM summary is sent; keeping providers dumb keeps that guarantee in one place regardless of backend.
+
+The model must return structured JSON. `ai-analysis-service.ts` validates the payload before writing `knowledge.analysis.aiInsights`. Invalid responses, network errors, or an unavailable provider emit warnings and the pipeline continues — AI never fails the MVP run.
 
 | Principle | Rule |
 |---|---|
 | Authority | Deterministic PKM sections remain the source of truth |
 | AI role | Enrichment only (`architectureSummary`, `risks`, `recommendations`, `agentGuidance`) |
 | Opt-in | `--ai` required; default pipeline skips the step |
-| Presentation | `architecture.md`, `ai-context.md`, `implementation-guide.md`, and `agent-navigation.md` append a labeled **AI Insights** section when `analysis.aiInsights` is present; renderers read PKM only and never call OpenRouter |
+| Provider selection | `--ai-provider <name>`, default `openrouter`; unsupported names → exit code 1 |
+| Transport isolation | Providers receive prompt strings only — no filesystem, no PKM, no source mutation |
+| Presentation | `architecture.md`, `ai-context.md`, `implementation-guide.md`, and `agent-navigation.md` append a labeled **AI Insights** section when `analysis.aiInsights` is present; renderers read PKM only and never call AI providers |
 
-Default model: `openai/gpt-4.1-mini` (override with `--model`).
+Default model: `openai/gpt-4.1-mini` (override with `--model`; the id is passed through to the provider).
 
 ---
 
@@ -607,9 +627,10 @@ Default model: `openai/gpt-4.1-mini` (override with `--model`).
 | 1 (highest) | CLI flag `--openrouter-key` | `openRouterApiKey` |
 | 2 | Environment variable `OPENROUTER_API_KEY` | `openRouterApiKey` |
 | 3 | CLI flag `--ai` | `enableAiAnalysis` |
-| 4 | CLI flag `--model` | `aiModel` (default `openai/gpt-4.1-mini`) |
-| 5 | Default value | `docsDir` → `.ai-docs` |
-| 6 (planned) | Project config file `.ai-docs.json` | multiple fields |
+| 4 | CLI flag `--ai-provider` | `aiProvider` (default `openrouter`; validated against the provider registry) |
+| 5 | CLI flag `--model` | `aiModel` (default `openai/gpt-4.1-mini`) |
+| 6 | Default value | `docsDir` → `.ai-docs` |
+| 7 (planned) | Project config file `.ai-docs.json` | multiple fields |
 
 ---
 

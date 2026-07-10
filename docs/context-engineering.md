@@ -290,7 +290,19 @@ Writing deterministic placeholders first has four benefits:
 
 This is an example of safe incremental documentation: start with what the pipeline knows for sure, then enrich the same files as later stages become available.
 
-When `--ai` runs successfully, `analysis.aiInsights` is persisted in the PKM and surfaced by PKM-powered Markdown renderers (`architecture.md`, `ai-context.md`, `implementation-guide.md`, `agent-navigation.md`). Renderers append a clearly labeled **AI Insights** section after deterministic content. They consume already-persisted PKM data only — they never call OpenRouter or re-analyze the repository. Deterministic PKM sections remain authoritative; AI output is optional enrichment.
+When `--ai` runs successfully, `analysis.aiInsights` is persisted in the PKM and surfaced by PKM-powered Markdown renderers (`architecture.md`, `ai-context.md`, `implementation-guide.md`, `agent-navigation.md`). Renderers append a clearly labeled **AI Insights** section after deterministic content. They consume already-persisted PKM data only — they never call AI providers or re-analyze the repository. Deterministic PKM sections remain authoritative; AI output is optional enrichment.
+
+---
+
+## Provider-based AI layer
+
+The AI stage runs through a **provider architecture** (`src/ai/providers/`): the analysis service depends on the `AIProvider` contract, and concrete backends are resolved by id at runtime. OpenRouter is the built-in default (`--ai-provider openrouter`); OpenAI, Anthropic, Gemini, Azure OpenAI, Ollama, and local models can be added by registering new providers without changing the analysis service.
+
+This design exists to protect the context-engineering guarantees regardless of backend:
+
+- **Providers consume PKM summaries only.** The prompt builder (`src/ai/prompt-builder.ts`) owns every string sent to any provider — a compact, truncation-annotated PKM summary with no source code, no secrets, and no absolute paths. A provider cannot widen its own input: it receives a finished prompt string and returns raw output.
+- **Deterministic PKM stays authoritative.** Whatever backend produces the insights, the response is parsed, validated, and length-capped before `analysis.aiInsights` is written — and invalid output simply warns and continues. Swapping providers can change the *quality* of enrichment, never the *authority* of deterministic sections.
+- **Templates and exporters never call AI.** They read already-persisted PKM data. The provider layer is reachable only from pipeline step 14.
 
 ---
 

@@ -9,7 +9,7 @@ import { writeDocumentation } from '../docs/documentation-writer';
 import { validateDocumentation } from '../docs/documentation-validator';
 import { runAiAnalysis } from '../ai';
 import { buildProjectKnowledge, persistProjectKnowledge, ProjectKnowledge } from '../knowledge';
-import { enrichProjectKnowledgeWithIncrementalAnalysis, describeIncrementalAnalysis, printChangeDetectionSummary, printDocumentImpactSummary } from '../incremental';
+import { enrichProjectKnowledgeWithIncrementalAnalysis, describeIncrementalAnalysis } from '../incremental';
 import { runAgentExports, summarizeAgentExportResults } from '../exporters';
 import { ANALYZER_PLUGIN_IDS, executeAnalyzerPluginStep } from '../plugins/pipeline-integration';
 import { createEmptyPipelineMetrics, PipelineRunMetrics } from './pipeline-metrics';
@@ -272,6 +272,7 @@ export async function handleAnalyzeAiInsights(
   const analysisResult = await runAiAnalysis(context.projectKnowledge, {
     apiKey: context.config.openRouterApiKey,
     model: context.config.aiModel,
+    providerId: context.config.aiProvider,
   });
 
   context.projectKnowledge = analysisResult.knowledge;
@@ -349,8 +350,6 @@ export async function handleDetectChanges(
   const { knowledge, changeSummary, impactSummary } =
     enrichProjectKnowledgeWithIncrementalAnalysis(context.projectKnowledge);
   context.projectKnowledge = knowledge;
-  printChangeDetectionSummary(changeSummary);
-  printDocumentImpactSummary(impactSummary);
 
   for (const warning of changeSummary.warnings) {
     console.warn(`Warning: ${warning}`);

@@ -8,6 +8,21 @@ export interface OpenRouterChatMessage {
 export interface OpenRouterCompletionRequest {
   model: string;
   messages: OpenRouterChatMessage[];
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface OpenRouterUsage {
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+}
+
+export interface OpenRouterCompletionResult {
+  content: string;
+  model: string;
+  usage?: OpenRouterUsage;
+  raw: unknown;
 }
 
 export interface OpenRouterClientOptions {
@@ -22,6 +37,7 @@ export interface OpenRouterClientOptions {
 
 const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_MAX_RETRIES = 2;
+const DEFAULT_TEMPERATURE = 0.2;
 const DEFAULT_APP_REFERER = 'https://github.com/jmdjean/Context-Generator-for-AI-Agent';
 const DEFAULT_APP_TITLE = 'ai-project-docs';
 const RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
@@ -81,7 +97,7 @@ export class OpenRouterClient {
     this.appTitle = options.appTitle ?? DEFAULT_APP_TITLE;
   }
 
-  private async executeOnce(request: OpenRouterCompletionRequest): Promise<string> {
+  private async executeOnce(request: OpenRouterCompletionRequest): Promise<OpenRouterCompletionResult> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
@@ -102,7 +118,8 @@ export class OpenRouterClient {
           model: request.model,
           messages: request.messages,
           response_format: { type: 'json_object' },
-          temperature: 0.2,
+          temperature: request.temperature ?? DEFAULT_TEMPERATURE,
+          ...(request.maxTokens !== undefined ? { max_tokens: request.maxTokens } : {}),
         }),
       });
     } catch (err) {
@@ -132,15 +149,42 @@ export class OpenRouterClient {
 
     const payload = (await response.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
+      model?: string;
+      usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+      };
     };
     const content = payload.choices?.[0]?.message?.content;
     if (content === undefined || content.trim() === '') {
       throw new Error('OpenRouter response did not include message content');
     }
-    return content;
+
+    const result: OpenRouterCompletionResult = {
+      content,
+      model: payload.model ?? request.model,
+      raw: payload,
+    };
+
+    if (payload.usage !== undefined) {
+      result.usage = {
+        ...(payload.usage.prompt_tokens !== undefined
+          ? { promptTokens: payload.usage.prompt_tokens }
+          : {}),
+        ...(payload.usage.completion_tokens !== undefined
+          ? { completionTokens: payload.usage.completion_tokens }
+          : {}),
+        ...(payload.usage.total_tokens !== undefined
+          ? { totalTokens: payload.usage.total_tokens }
+          : {}),
+      };
+    }
+
+    return result;
   }
 
-  async complete(request: OpenRouterCompletionRequest): Promise<string> {
+  async complete(request: OpenRouterCompletionRequest): Promise<OpenRouterCompletionResult> {
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {

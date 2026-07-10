@@ -108,6 +108,7 @@ describe('resolveConfig', () => {
       assert.equal(config.targetProjectPath, path.resolve(tempDir));
       assert.equal(config.docsDir, '.project-docs');
       assert.equal(config.enableAiAnalysis, false);
+      assert.equal(config.aiProvider, 'openrouter');
       assert.equal(config.aiModel, 'openai/gpt-4.1-mini');
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
@@ -120,7 +121,32 @@ describe('resolveConfig', () => {
     try {
       const config = resolveConfig([tempDir, '--ai', '--model', 'anthropic/claude-3.5-sonnet']);
       assert.equal(config.enableAiAnalysis, true);
+      assert.equal(config.aiProvider, 'openrouter');
       assert.equal(config.aiModel, 'anthropic/claude-3.5-sonnet');
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('accepts --ai-provider openrouter in any casing', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-project-docs-config-'));
+
+    try {
+      const config = resolveConfig([tempDir, '--ai', '--ai-provider', 'OpenRouter']);
+      assert.equal(config.aiProvider, 'openrouter');
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects unsupported --ai-provider values with a clear error', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-project-docs-config-'));
+
+    try {
+      assert.throws(
+        () => resolveConfig([tempDir, '--ai', '--ai-provider', 'gemini']),
+        /Unsupported AI provider: gemini\. Supported providers: openrouter\./,
+      );
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }

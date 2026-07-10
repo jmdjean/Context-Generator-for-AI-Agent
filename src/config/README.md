@@ -14,11 +14,14 @@ The validated configuration type passed to the rest of the application.
 
 ```typescript
 interface RuntimeConfig {
-  targetProjectPath: string;  // Resolved absolute path to the target repository
-  docsDir: string;            // Output docs folder name (default: '.ai-docs')
-  openRouterApiKey?: string;  // API key — present if resolved from flag or env var
-  enableAiAnalysis: boolean;  // true when --ai is passed
-  aiModel: string;            // OpenRouter model id (default: openai/gpt-4.1-mini)
+  targetProjectPath: string;      // Resolved absolute path to the target repository
+  docsDir: string;                // Output docs folder name (default: '.ai-docs')
+  openRouterApiKey?: string;      // API key — present if resolved from flag or env var
+  enableAiAnalysis: boolean;      // true when --ai is passed
+  aiProvider: string;             // AI provider id (default: 'openrouter'; validated against the provider registry)
+  aiModel: string;                // Model id passed to the provider (default: openai/gpt-4.1-mini)
+  enableAgentExports: boolean;    // true when --export-agents is passed
+  exportTargets: AgentExportTarget[]; // resolved from --target (default: ['generic'])
 }
 ```
 
@@ -43,8 +46,9 @@ Returns `true` if `--help` or `-h` is present in `argv`.
 | 1 (highest) | CLI flag `--openrouter-key` | `openRouterApiKey` |
 | 2 | Environment variable `OPENROUTER_API_KEY` | `openRouterApiKey` |
 | 3 | CLI flag `--ai` | `enableAiAnalysis` |
-| 4 | CLI flag `--model` | `aiModel` |
-| 5 | Default value | `docsDir` (→ `.ai-docs`), `aiModel` (→ `openai/gpt-4.1-mini`) |
+| 4 | CLI flag `--ai-provider` | `aiProvider` |
+| 5 | CLI flag `--model` | `aiModel` |
+| 6 | Default value | `docsDir` (→ `.ai-docs`), `aiProvider` (→ `openrouter`), `aiModel` (→ `openai/gpt-4.1-mini`) |
 
 ---
 
@@ -56,7 +60,8 @@ Returns `true` if `--help` or `-h` is present in `argv`.
 | `docsDir` | Must not be empty or blank after trimming. Must be a single relative folder name (not `.`, `/`, `\`, or `..`, and not absolute). |
 | `openRouterApiKey` | Optional. No format validation — passed through as-is. |
 | `enableAiAnalysis` | Optional. Set by `--ai`; defaults to `false`. |
-| `aiModel` | Optional. Set by `--model`; defaults to `openai/gpt-4.1-mini`. |
+| `aiProvider` | Optional. Set by `--ai-provider`; defaults to `openrouter`. Normalized to lowercase and validated against the AI provider registry (`src/ai/providers/`); unsupported names fail with the supported list. |
+| `aiModel` | Optional. Set by `--model`; defaults to `openai/gpt-4.1-mini`. Passed through to the selected provider. |
 | Unknown flags | Rejected with a descriptive error. |
 | Flags without values | Rejected (`--docs-dir` and `--openrouter-key` require a value). |
 

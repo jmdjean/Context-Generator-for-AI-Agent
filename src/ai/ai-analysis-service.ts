@@ -1,13 +1,17 @@
 import { AiInsightsKnowledge, ProjectKnowledge } from '../knowledge';
 import { sanitizeAiInsightText } from '../utils/ai-text-sanitizer';
 import { AI_INSIGHTS_LIMITS } from './constants';
-import { createOpenRouterClient, OpenRouterClient } from './openrouter-client';
+import { AIProvider } from './providers/ai-provider';
+import { createAiProvider, DEFAULT_AI_PROVIDER_ID } from './providers/provider-factory';
 import { buildAiAnalysisPrompt } from './prompt-builder';
 
 export interface AiAnalysisServiceConfig {
   apiKey: string;
   model: string;
-  client?: OpenRouterClient;
+  /** Provider id resolved through the registry. Defaults to openrouter. */
+  providerId?: string;
+  /** Injected provider instance (tests, embedders). Takes precedence over providerId. */
+  provider?: AIProvider;
 }
 
 export interface AiAnalysisServiceResult {
@@ -165,23 +169,29 @@ export async function runAiAnalysis(
   config: AiAnalysisServiceConfig,
 ): Promise<AiAnalysisServiceResult> {
   const warnings: string[] = [];
-  const client = config.client ?? createOpenRouterClient(config.apiKey);
+  let provider: AIProvider;
+  try {
+    provider = config.provider ?? createAiProvider(config.providerId ?? DEFAULT_AI_PROVIDER_ID);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    warnings.push(`AI analysis failed: ${message}`);
+    return {
+      knowledge,
+      insightsGenerated: false,
+      attempted: true,
+      warnings,
+      message: 'skipped: AI provider unavailable',
+    };
+  }
 
   try {
     const prompt = buildAiAnalysisPrompt(knowledge);
-    const rawResponse = await client.complete({
+    const response = await provider.analyze(prompt, {
+      apiKey: config.apiKey,
       model: config.model,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You enrich a deterministic project knowledge model. Output a single JSON object. Never request secrets or source code.',
-        },
-        { role: 'user', content: prompt },
-      ],
     });
 
-    const parsed = parseAiInsightsResponse(rawResponse);
+    const parsed = parseAiInsightsResponse(response.content);
     if (parsed === undefined) {
       warnings.push('AI response was not valid structured JSON; continuing without AI insights');
       return {
@@ -193,7 +203,7 @@ export async function runAiAnalysis(
       };
     }
 
-    const insights = buildAiInsights(parsed, config.model, new Date().toISOString());
+    const insights = buildAiInsights(parsed, response.model || config.model, new Date().toISOString());
     const enriched = enrichProjectKnowledgeWithAiInsights(knowledge, insights);
 
     return {
@@ -201,7 +211,7 @@ export async function runAiAnalysis(
       insightsGenerated: true,
       attempted: true,
       warnings,
-      message: `generated AI insights with model ${config.model}`,
+      message: `generated AI insights with model ${config.model} via ${provider.id}`,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

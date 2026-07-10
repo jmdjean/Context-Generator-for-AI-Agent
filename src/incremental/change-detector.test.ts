@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { detectChanges } from './change-detector';
 import {
-  formatChangeDetectionLines,
+  formatRunSummaryChangeDetectionLines,
   formatChangeDetectionSummaryLine,
 } from './change-summary-formatter';
 import { loadPreviousKnowledgeBaseline } from './state-loader';
@@ -267,7 +267,7 @@ describe('change-summary-formatter', () => {
       generatedAt: '2026-01-01T00:00:00.000Z',
     };
 
-    const output = formatChangeDetectionLines(summary).join('\n');
+    const output = formatRunSummaryChangeDetectionLines(summary).join('\n');
 
     assert.match(output, /Initial run: no/);
     assert.match(output, /Added modules: 2/);
@@ -290,7 +290,7 @@ describe('change-summary-formatter', () => {
       generatedAt: '2026-01-01T00:00:00.000Z',
     };
 
-    const output = formatChangeDetectionLines(summary).join('\n');
+    const output = formatRunSummaryChangeDetectionLines(summary).join('\n');
     assert.match(output, /Technology confidence changed/);
   });
 });

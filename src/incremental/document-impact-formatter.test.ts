@@ -23,8 +23,8 @@ describe('document-impact-formatter', () => {
     assert.deepEqual(lines, [
       '',
       'Document impact:',
-      '* Impacted documents: 1',
-      '* Unchanged documents: 1',
+      '- Impacted documents: 1',
+      '- Unchanged documents: 1',
     ]);
   });
 
