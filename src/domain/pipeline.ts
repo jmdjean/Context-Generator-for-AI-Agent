@@ -42,22 +42,6 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
-    name: 'Build Repository Model',
-    description:
-      'Assemble repository tree and profile data into a ProjectContext for AI analysis. Generators consume ProjectKnowledge instead; this step remains for the future AI stage.',
-    input: 'RepositoryInfo, RepositoryNode (tree), TechnologyProfile',
-    output: 'ProjectContext',
-    status: 'pending',
-  },
-  {
-    name: 'Analyze Architecture',
-    description:
-      'Legacy placeholder. Optional AI enrichment now runs at Analyze AI Insights after deterministic analyzers enrich the PKM.',
-    input: 'ProjectContext',
-    output: 'AnalysisResult',
-    status: 'pending',
-  },
-  {
     name: 'Generate Documentation Plan',
     description:
       'Determine which documentation files to create and what each document is for. Produces a DocumentationPlan without writing any files yet.',

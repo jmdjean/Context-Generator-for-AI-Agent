@@ -7,7 +7,7 @@ export const nodePlugin: TechnologyPlugin = {
   id: 'technology.node',
   name: 'Node.js',
   description: 'Technology plugin for Node.js projects. Placeholder in v1.',
-  version: '0.1.0',
+  version: '1.0.0',
   kind: 'technology',
   framework: 'Node.js',
 

@@ -7,7 +7,7 @@ export const reactPlugin: TechnologyPlugin = {
   id: 'technology.react',
   name: 'React',
   description: 'Technology plugin for React projects. Placeholder in v1.',
-  version: '0.1.0',
+  version: '1.0.0',
   kind: 'technology',
   framework: 'React',
 

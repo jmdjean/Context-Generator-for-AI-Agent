@@ -1,0 +1,9 @@
+{
+  "name": "@myorg/api",
+  "version": "1.0.0",
+  "description": "API server",
+  "main": "dist/server.js",
+  "dependencies": {
+    "@myorg/shared": "workspace:*"
+  }
+}
