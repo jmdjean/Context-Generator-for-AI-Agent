@@ -22,7 +22,7 @@ The PKM is that model. It is analogous to an AST in a compiler: analysis stages 
 | `project-knowledge.ts` | PKM types: `ProjectKnowledge` and its section interfaces |
 | `knowledge-builder.ts` | Mapping functions and `buildProjectKnowledge()` — pure, no I/O |
 | `knowledge-paths.ts` | Safe path resolution for `.ai-docs/knowledge/` inside the target repo |
-| `knowledge-writer.ts` | `persistProjectKnowledge()` — writes full and split JSON files |
+| `knowledge-writer.ts` | `persistProjectKnowledge()` and `persistAiReadinessKnowledge()` — write full and split JSON files |
 | `accessors.ts` | Read helpers for generators (`getProjectRoot`, `getDocsDir`, etc.) |
 | `index.ts` | Public exports |
 
@@ -48,7 +48,7 @@ interface ProjectKnowledge {
 | `repository` | Mapped from `RepositoryInfo` (includes `repositoryTree`) | ✅ Done |
 | `technologies` | Mapped from `TechnologyProfile` | ✅ Done |
 | `documentation` | Contains `DocumentationPlan` | ✅ Done |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); AI fields pending | Architecture |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`), AI readiness (`aiReadiness`); AI fields pending | Architecture |
 
 ---
 
@@ -70,8 +70,9 @@ After pipeline step **Persist Project Knowledge**, the target repository contain
     ├── dependencies.json        # dependency graph only (when dependency graph analysis ran)
     ├── conventions.json         # convention knowledge only (when convention analysis ran)
     ├── navigation-map.json      # AI navigation map only (when the navigation map was built)
-    └── change-summary.json      # change summary vs previous PKM (when Detect Changes ran)
-    └── document-impact.json     # selective regeneration decisions (when Detect Changes ran)
+    ├── change-summary.json      # change summary vs previous PKM (when Detect Changes ran)
+    ├── document-impact.json     # selective regeneration decisions (when Detect Changes ran)
+    └── ai-readiness.json        # deterministic AI Readiness Score (when Calculate AI Readiness ran)
 ```
 
 ### `FolderKnowledge`
@@ -152,6 +153,23 @@ Populated by `src/analyzers/navigation-map-analyzer.ts` at pipeline step **Build
 
 Persisted to `analysis.json` and `navigation-map.json`. Future agent-specific exporters (Cursor rules, skills, agent packs) and `agent-navigation.md` generation must consume this section instead of hardcoding their own reading lists — one navigation contract, many output formats.
 
+### `AIReadinessKnowledge`
+
+The deterministic AI Readiness Score lives in `analysis.aiReadiness`:
+
+| Field | Purpose |
+|---|---|
+| `overallScore` | Weighted average of category scores, 0–100 |
+| `level` | `critical`, `low`, `moderate`, `good`, or `excellent` |
+| `categories` | Six weighted categories, each with 0–100 score, weight, findings, and recommendations |
+| `strengths` / `gaps` | Highest-impact passed findings / failed-or-partial findings |
+| `recommendations` | Actionable next steps, each grounded in a partial or failed finding, ordered by impact |
+| `calculatedAt` / `scoringVersion` | PKM snapshot timestamp and the versioned rule set used |
+
+The type itself is defined in `src/readiness/ai-readiness-model.ts` (a pure leaf module) and referenced here so the PKM stays the source of truth without a dependency cycle. Populated by `src/readiness/ai-readiness-calculator.ts` at pipeline step **Calculate AI Readiness** — deterministically, from the PKM and the validation result only, with no repository rescan and no AI provider calls. AI-generated insights never affect the score.
+
+Persisted to `analysis.json` and `ai-readiness.json`, and rendered as `ai-readiness.md` by the readiness template.
+
 ### Why PKM is persisted
 
 - **Reusable artifact** — knowledge survives beyond a single pipeline run.
@@ -203,3 +221,4 @@ Upstream producers (scanner, detectors, documentation planner) may still emit th
 - Documentation planning — `src/docs/documentation-planner.ts`
 - Markdown writing — `src/docs/documentation-writer.ts`
 - AI analysis — `src/ai/`
+- AI Readiness scoring rules and calculation — `src/readiness/` (only the persisted `aiReadiness` section and its JSON file live here)

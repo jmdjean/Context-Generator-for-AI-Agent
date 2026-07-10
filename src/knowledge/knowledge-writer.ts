@@ -90,6 +90,43 @@ interface PersistedAgentExportsKnowledge extends PersistedKnowledgeHeader {
   agentExports: NonNullable<AnalysisKnowledge['agentExports']>;
 }
 
+interface PersistedAiReadinessKnowledge extends PersistedKnowledgeHeader {
+  aiReadiness: NonNullable<AnalysisKnowledge['aiReadiness']>;
+}
+
+function buildAiReadinessPayload(
+  knowledge: ProjectKnowledge,
+): PersistedAiReadinessKnowledge | undefined {
+  if (knowledge.analysis.aiReadiness === undefined) {
+    return undefined;
+  }
+
+  return {
+    ...buildPersistedHeader(knowledge),
+    aiReadiness: knowledge.analysis.aiReadiness,
+  };
+}
+
+/**
+ * Persists only the ai-readiness.json split file. The readiness pipeline step
+ * uses this so validation can confirm the file exists before the final full
+ * PKM persistence rewrites it with identical content.
+ */
+export function persistAiReadinessKnowledge(knowledge: ProjectKnowledge): string {
+  const payload = buildAiReadinessPayload(knowledge);
+  if (payload === undefined) {
+    throw new Error('cannot persist ai-readiness.json without analysis.aiReadiness');
+  }
+
+  const rootPath = getProjectRoot(knowledge);
+  const docsDir = getDocsDir(knowledge);
+  fs.mkdirSync(resolveKnowledgeDirectory(rootPath, docsDir), { recursive: true });
+
+  const filePath = resolveKnowledgeFilePath(rootPath, docsDir, KNOWLEDGE_FILE_NAMES.aiReadiness);
+  writeJsonFile(filePath, payload);
+  return filePath;
+}
+
 function buildKnowledgeFiles(
   knowledge: ProjectKnowledge,
 ): ReadonlyArray<[KnowledgeFileName, unknown]> {
@@ -173,6 +210,11 @@ function buildKnowledgeFiles(
       agentExports: knowledge.analysis.agentExports,
     };
     files.push([KNOWLEDGE_FILE_NAMES.agentExports, agentExportsPayload]);
+  }
+
+  const aiReadinessPayload = buildAiReadinessPayload(knowledge);
+  if (aiReadinessPayload !== undefined) {
+    files.push([KNOWLEDGE_FILE_NAMES.aiReadiness, aiReadinessPayload]);
   }
 
   return files;
@@ -285,6 +327,17 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
   // agent-exports.json is written only when --export-agents runs. When export is skipped,
   // preserve the previous split file on disk so it stays aligned with any existing pack.
 
+  const aiReadinessPath = resolveKnowledgeFilePath(
+    rootPath,
+    docsDir,
+    KNOWLEDGE_FILE_NAMES.aiReadiness,
+  );
+  const hasAiReadiness = knowledge.analysis.aiReadiness !== undefined;
+
+  if (!hasAiReadiness && fs.existsSync(aiReadinessPath)) {
+    fs.unlinkSync(aiReadinessPath);
+  }
+
   return {
     schemaVersion: knowledge.metadata.schemaVersion,
     schemaVersionLabel: formatSchemaVersionLabel(knowledge.metadata.schemaVersion),
@@ -300,6 +353,7 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
       hasChangeSummary,
       hasDocumentImpact,
       hasAgentExports,
+      hasAiReadiness,
     ),
   };
 }

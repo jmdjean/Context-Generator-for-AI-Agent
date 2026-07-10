@@ -16,7 +16,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
-    "test": "npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/templates/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/ai/providers/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/plugins/*.test.js dist/utils/*.test.js dist/cli.integration.test.js",
+    "test": "npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/templates/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/ai/providers/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/plugins/*.test.js dist/readiness/*.test.js dist/utils/*.test.js dist/cli.integration.test.js",
     "smoke": "npm run build && node scripts/smoke-test.mjs",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "prepublishOnly": "npm test && node scripts/smoke-test.mjs"

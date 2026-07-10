@@ -1,5 +1,15 @@
 import { TechnologyProfile } from '../domain';
 import { DocumentationPlan, PlannedDocument } from '../domain/documentation-plan';
+import { AI_READINESS_DOCUMENT_PATH } from '../readiness/ai-readiness-model';
+
+export const AI_READINESS_DOCUMENT: PlannedDocument = {
+  title: 'AI Readiness Score',
+  relativePath: AI_READINESS_DOCUMENT_PATH,
+  purpose:
+    'Deterministic Context Engineering assessment of how prepared this repository is for AI coding agents',
+  priority: 'recommended',
+  source: 'core',
+};
 
 const CORE_DOCUMENTS: ReadonlyArray<PlannedDocument> = [
   {
@@ -213,6 +223,7 @@ export function createDocumentationPlan(
 ): DocumentationPlan {
   const documents: PlannedDocument[] = [
     ...CORE_DOCUMENTS,
+    AI_READINESS_DOCUMENT,
     ...AGENT_DOCUMENTS,
     ...buildTechnologyDocuments(technologyProfile),
   ];

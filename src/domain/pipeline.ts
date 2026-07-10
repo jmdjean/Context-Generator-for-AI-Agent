@@ -146,6 +146,14 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
+    name: 'Calculate AI Readiness',
+    description:
+      'Compute a deterministic AI Readiness Score from the final current-run PKM and the validation result. Consumes PKM only — no repository rescan and no AI provider calls. Enriches ProjectKnowledge.analysis.aiReadiness, refreshes ai-readiness.md, and persists ai-readiness.json.',
+    input: 'ProjectKnowledge, DocumentationValidationResult',
+    output: 'AIReadinessKnowledge',
+    status: 'pending',
+  },
+  {
     name: 'Export Agent Context',
     description:
       'Optionally run agent-specific exporters that translate the PKM into portable context files for AI coding agents. Runs only when --export-agents is set. Enriches analysis.agentExports.',

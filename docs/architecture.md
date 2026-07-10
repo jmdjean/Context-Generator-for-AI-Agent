@@ -83,11 +83,12 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 15. Detect Changes             ProjectKnowledge + previous PKM → ChangeSummary + DocumentImpact ✅
 16. Write Documentation        ProjectKnowledge + DocumentImpact → .ai-docs/*.md        ✅
 17. Validate Documentation     DocumentModel[], file paths     → validation report    ✅
-18. Export Agent Context       ProjectKnowledge + RuntimeConfig → agent export files  ✅ (optional)
-19. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
+18. Calculate AI Readiness     ProjectKnowledge + validation    → AIReadinessKnowledge ✅
+19. Export Agent Context       ProjectKnowledge + RuntimeConfig → agent export files  ✅ (optional)
+20. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
 ```
 
-Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14 (when `--ai` + API key), 15, 16, 17, 18 (when `--export-agents`), and 19 are implemented. Step 8 assembles the PKM in memory; steps 9–13 execute built-in analyzer plugins via `PluginManager` (wrapping `src/analyzers/`); step 14 optionally enriches `analysis.aiInsights` from a compact PKM summary (no source code); step 15 compares against the previous persisted PKM and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 optionally runs agent exporters and records `analysis.agentExports`; step 19 persists JSON. Steps 5 and 6 still have placeholder handlers.
+Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14 (when `--ai` + API key), 15, 16, 17, 18, 19 (when `--export-agents`), and 20 are implemented. Step 8 assembles the PKM in memory; steps 9–13 execute built-in analyzer plugins via `PluginManager` (wrapping `src/analyzers/`); step 14 optionally enriches `analysis.aiInsights` from a compact PKM summary (no source code); step 15 compares against the previous persisted PKM and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 computes the deterministic AI Readiness Score from the final current-run PKM and validation result; step 19 optionally runs agent exporters and records `analysis.agentExports`; step 20 persists JSON. Steps 5 and 6 still have placeholder handlers.
 
 ---
 
@@ -364,7 +365,7 @@ The result is stored in `analysis.changeSummary` and persisted to `change-summar
 
 ## Project Knowledge persistence
 
-`src/knowledge/knowledge-writer.ts` implements step 19 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
+`src/knowledge/knowledge-writer.ts` implements step 20 (Persist Project Knowledge). It writes the in-memory `ProjectKnowledge` to `.ai-docs/knowledge/` inside the target repository:
 
 | File | Contents |
 |---|---|
@@ -381,15 +382,31 @@ The result is stored in `analysis.changeSummary` and persisted to `change-summar
 | `navigation-map.json` | AI navigation map only (when the navigation map was built) |
 | `change-summary.json` | Change summary vs previous PKM (when Detect Changes ran) |
 | `document-impact.json` | Selective regeneration decisions (when Detect Changes ran) |
+| `ai-readiness.json` | Deterministic AI Readiness Score (when Calculate AI Readiness ran) |
 | `agent-exports.json` | Agent export results (when `--export-agents` ran) |
 
 Path resolution uses `resolvePathWithinRoot()` via `knowledge-paths.ts` — writes never escape the target project root. JSON files are tool-managed machine state and are always overwritten on each persist run (no Markdown marker policy).
 
 **Why persist?** The PKM becomes a reusable artifact for debugging, external integrations, incremental change detection, and agent-specific exporters. The on-disk snapshot is what step 15 compares against on the next run. Markdown and agent packs are human/agent-readable *derivatives*; JSON knowledge is the canonical persisted form.
 
+## AI Readiness Score
+
+`src/readiness/` implements step 18 (Calculate AI Readiness) — a deterministic, versioned 0–100 assessment of how prepared the repository is for safe and effective work by AI coding agents. It behaves like a lightweight quality gate for Context Engineering, not for code quality.
+
+| Component | Role |
+|---|---|
+| `ai-readiness-model.ts` | Pure types (`AIReadinessKnowledge`, categories, findings, gaps, recommendations), level boundaries, clamp/round helpers. Leaf module referenced by `src/knowledge`. |
+| `ai-readiness-rules.ts` | Versioned deterministic scoring rules (`AI_READINESS_SCORING_VERSION`): repository signals, six weighted categories, finding builders, grounded recommendation actions |
+| `ai-readiness-calculator.ts` | Scores categories from findings, computes the weighted overall score, derives strengths/gaps/recommendations, enriches `analysis.aiReadiness` |
+| `ai-readiness-renderer.ts` | Presentation only: `ai-readiness.md` template (registered in the template registry) and the pipeline console report |
+
+Categories and weights (totaling 100%): Repository Structure 20%, Architecture Knowledge 20%, Documentation Coverage 20%, Agent Navigation 15%, Project Conventions 15%, Context Maintainability 10%. Findings earn full points when `passed`, half when `partial`, none when `failed`; `not-applicable` findings are excluded from the denominator so tiny repositories and initial runs are not unfairly penalized. The overall score maps to a level: `critical` (0–29), `low` (30–49), `moderate` (50–69), `good` (70–84), `excellent` (85–100).
+
+Hard rules: the calculator consumes the final current-run PKM and the validation result **only** — no repository rescan, no AI provider calls, no source mutation, no direct Markdown writes (the renderer presents the result). AI insights are deliberately excluded from scoring so identical PKM input always produces the identical score. Future plugins may contribute findings but must never set the final score directly. A low score is an assessment outcome, not a runtime failure — the CLI still exits `0`; only structurally invalid readiness results (impossible scores, broken weights, ungrounded recommendations, missing persisted files) become validation errors.
+
 ## Agent exporters
 
-`src/exporters/` implements step 18 (Export Agent Context). Exporters are generators: they consume `ProjectKnowledge` and write derived agent context files. They do not scan the repository, re-detect technologies, or call OpenRouter.
+`src/exporters/` implements step 19 (Export Agent Context). Exporters are generators: they consume `ProjectKnowledge` and write derived agent context files. They do not scan the repository, re-detect technologies, or call OpenRouter.
 
 | Component | Role |
 |---|---|

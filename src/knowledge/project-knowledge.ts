@@ -1,5 +1,6 @@
 import { RepositoryNode, TechnologyConfidence } from '../domain';
 import { DocumentationPlan } from '../domain/documentation-plan';
+import type { AIReadinessKnowledge } from '../readiness/ai-readiness-model';
 export type AnalysisKnowledgeStatus = 'pending' | 'partial' | 'complete';
 
 export interface KnowledgeMetadata {
@@ -237,6 +238,7 @@ export interface AnalysisKnowledge {
   status: AnalysisKnowledgeStatus;
   architecture?: string;
   aiInsights?: AiInsightsKnowledge;
+  aiReadiness?: AIReadinessKnowledge;
   agentExports?: AgentExportsKnowledge;
   changeSummary?: ChangeSummaryKnowledge;
   documentImpact?: DocumentImpactSummaryKnowledge;

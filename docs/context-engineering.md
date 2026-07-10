@@ -53,6 +53,7 @@ The output of `ai-project-docs` is a `.ai-docs/` folder inside the target reposi
 | `navigation-map.json` | AI navigation map only (when the navigation map was built) |
 | `change-summary.json` | PKM diff vs the previous run (when change detection ran) |
 | `document-impact.json` | Selective regeneration decisions (when change detection ran) |
+| `ai-readiness.json` | Deterministic AI Readiness Score result |
 | `agent-exports.json` | Agent export results (when `--export-agents` ran) |
 
 Future generators and external tools should prefer loading persisted JSON over re-analyzing the repository. **Change detection** compares `project-knowledge.json` across runs and records results in `change-summary.json`. Selective Markdown regeneration uses `document-impact.json`. Agent export results are recorded in `agent-exports.json` when `--export-agents` runs.
@@ -68,6 +69,7 @@ Markdown is an **output derived from the PKM** — presentation, not analysis. E
 - **What are the key dependencies?** → `dependency-map.md` (graph nodes, edges, import evidence)
 - **What should I load first?** → `ai-context.md` (PKM summary, key modules, key conventions, limitations)
 - **How do I change things safely?** → `implementation-guide.md`
+- **How agent-ready is this context?** → `ai-readiness.md` (deterministic AI Readiness Score with category table, strengths, gaps, and recommendations)
 
 Each file is written so that an agent loading it gains enough context to make correct decisions without reading the source code first. Templates and renderers never perform repository analysis of their own — the PKM remains the source of truth, and documents state honestly when a PKM section has not been populated yet. Documents without a registered template use a generic deterministic fallback until they get one; richer AI analysis is layered into the PKM later and flows through the same templates.
 
@@ -185,11 +187,19 @@ The generic exporter (`--export-agents --target generic`) produces a portable ag
 
 Agent-specific files are presentation layers. They must never replace the PKM as the source of truth — when outputs disagree, trust `.ai-docs/knowledge/project-knowledge.json`.
 
-### 12. Documentation must be kept current
+### 12. Readiness is measured deterministically, never guessed
+
+The **AI Readiness Score** (`src/readiness/`) quantifies how prepared the generated context is for AI agents: six weighted categories (Repository Structure, Architecture Knowledge, Documentation Coverage, Agent Navigation, Project Conventions, Context Maintainability) scored 0–100 from findings derived exclusively from the PKM and the validation result.
+
+The score is deterministic by design. It never rescans the repository, never calls an AI provider, and never includes AI-generated insights in scoring — non-deterministic input would make scores unreproducible and uncomparable between runs, which is exactly what a quality assessment must avoid. Scoring rules are versioned (`scoringVersion`), checks adapt to repository size (tiny repositories and initial runs are not penalized for what cannot exist yet), and every recommendation is grounded in a specific partial or failed finding. Future plugins may contribute findings, but they cannot set the final score directly.
+
+The score measures Context Engineering quality only. It does not guarantee implementation quality and does not replace human review; a low score is an assessment result, not a runtime failure.
+
+### 13. Documentation must be kept current
 
 Stale documentation is worse than no documentation. It misleads agents into making decisions based on outdated information. The tool persists a PKM snapshot on every run. **Detect Changes** (step 15) compares the current PKM against the previous snapshot, recording `analysis.changeSummary` and `change-summary.json`. **Write Documentation** (step 16) then regenerates only impacted generated Markdown based on `analysis.documentImpact` — not every file on every run. User-created docs without the generated marker remain protected. This is not file watching or background sync.
 
-### 13. Safe ownership matters
+### 14. Safe ownership matters
 
 Generated files in `.ai-docs/` are owned by the tool, but user-created files must still be protected. Every tool-managed file starts with a marker comment:
 

@@ -201,7 +201,25 @@ Templates consume **PKM only**. They are presentation-only, deterministic, and n
 
 **When to modify:** When adding a new key document template, registering a new built-in template, or extending the template contract.
 
-**Status:** ✅ Done — template engine, registry, seven key Markdown templates, generic fallback, documentation writer integration.
+**Status:** ✅ Done — template engine, registry, eight key Markdown templates (including `ai-readiness.md`), generic fallback, documentation writer integration.
+
+---
+
+### `src/readiness/`
+
+Deterministic **AI Readiness Score** — a versioned 0–100 Context Engineering assessment computed from the PKM and the validation result only.
+
+Contains:
+- `ai-readiness-model.ts` — pure types (`AIReadinessKnowledge`, categories, findings, gaps, recommendations), level boundaries, clamp/round helpers. Leaf module safely referenced by `src/knowledge`.
+- `ai-readiness-rules.ts` — versioned scoring rules: repository signals, six weighted categories (weights total 100%), finding builders, grounded recommendation actions.
+- `ai-readiness-calculator.ts` — category and overall score calculation, strengths/gaps/recommendations derivation, `analysis.aiReadiness` enrichment.
+- `ai-readiness-renderer.ts` — presentation only: the `ai-readiness.md` template and the pipeline console report.
+
+Never rescans the repository, never calls AI providers, never mutates source code, never writes files itself (the documentation writer and knowledge writer own disk output). Deterministic: identical PKM input produces identical output.
+
+**When to modify:** When adding or tuning readiness findings, weights, or thresholds (bump `AI_READINESS_SCORING_VERSION`), or extending the readiness report.
+
+**Status:** ✅ Done — model, versioned rules, calculator, renderer, pipeline step, persistence, validation, tests.
 
 ---
 

@@ -18,6 +18,7 @@ export const KNOWLEDGE_FILE_NAMES = {
   changeSummary: 'change-summary.json',
   documentImpact: 'document-impact.json',
   agentExports: 'agent-exports.json',
+  aiReadiness: 'ai-readiness.json',
 } as const;
 
 export type KnowledgeFileName =
@@ -77,6 +78,7 @@ export function listPersistedKnowledgeRelativeFilePaths(
   includeChangeSummary = true,
   includeDocumentImpact = true,
   includeAgentExports = true,
+  includeAiReadiness = true,
 ): string[] {
   const fileNames = Object.values(KNOWLEDGE_FILE_NAMES).filter((fileName) => {
     if (fileName === KNOWLEDGE_FILE_NAMES.repositoryTree) {
@@ -105,6 +107,9 @@ export function listPersistedKnowledgeRelativeFilePaths(
     }
     if (fileName === KNOWLEDGE_FILE_NAMES.agentExports) {
       return includeAgentExports;
+    }
+    if (fileName === KNOWLEDGE_FILE_NAMES.aiReadiness) {
+      return includeAiReadiness;
     }
     return true;
   });

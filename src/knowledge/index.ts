@@ -64,6 +64,7 @@ export {
   type KnowledgeFileName,
 } from './knowledge-paths';
 export {
+  persistAiReadinessKnowledge,
   persistProjectKnowledge,
   type KnowledgePersistenceResult,
 } from './knowledge-writer';
