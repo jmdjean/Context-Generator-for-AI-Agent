@@ -221,6 +221,7 @@ function formatAiAnalysisSection(
   return [
     '',
     'AI Analysis:',
+    `- Provider: ${config.aiProvider}`,
     `- Model: ${resolveAiAnalysisModel(config, knowledge, metrics.aiInsightsGenerated)}`,
     `- Insights generated: ${formatInsightsGenerated(metrics)}`,
   ];

@@ -272,6 +272,7 @@ export async function handleAnalyzeAiInsights(
   const analysisResult = await runAiAnalysis(context.projectKnowledge, {
     apiKey: context.config.openRouterApiKey,
     model: context.config.aiModel,
+    providerId: context.config.aiProvider,
   });
 
   context.projectKnowledge = analysisResult.knowledge;

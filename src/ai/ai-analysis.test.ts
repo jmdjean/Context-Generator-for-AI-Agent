@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { OpenRouterClient } from './openrouter-client';
+import { AIProvider } from './providers/ai-provider';
 import { buildPkmSummaryPayload } from './prompt-builder';
 import {
   enrichProjectKnowledgeWithAiInsights,
@@ -201,20 +201,33 @@ describe('parseAiInsightsResponse', () => {
   });
 });
 
+function buildFakeProvider(content: string): AIProvider & { prompts: string[] } {
+  const prompts: string[] = [];
+  return {
+    id: 'fake',
+    name: 'Fake Provider',
+    prompts,
+    supports: (providerId: string) => providerId === 'fake',
+    analyze: async (prompt: string, options) => {
+      prompts.push(prompt);
+      return { content, model: options.model, provider: 'fake' };
+    },
+  };
+}
+
 describe('runAiAnalysis', () => {
-  it('enriches PKM when the client returns valid JSON', async () => {
-    const client = {
-      complete: async () =>
-        JSON.stringify({
-          architectureSummary: 'CLI pipeline with PKM enrichment.',
-          agentGuidance: ['Start from agent-navigation.md'],
-        }),
-    };
+  it('enriches PKM when the provider returns valid JSON', async () => {
+    const provider = buildFakeProvider(
+      JSON.stringify({
+        architectureSummary: 'CLI pipeline with PKM enrichment.',
+        agentGuidance: ['Start from agent-navigation.md'],
+      }),
+    );
 
     const result = await runAiAnalysis(buildMinimalKnowledge(), {
       apiKey: 'test-key',
       model: 'openai/gpt-4.1-mini',
-      client: client as unknown as OpenRouterClient,
+      provider,
     });
 
     assert.equal(result.insightsGenerated, true);
@@ -223,24 +236,64 @@ describe('runAiAnalysis', () => {
       result.knowledge.analysis.aiInsights?.architectureSummary,
       'CLI pipeline with PKM enrichment.',
     );
+    assert.equal(result.knowledge.analysis.aiInsights?.model, 'openai/gpt-4.1-mini');
+    assert.match(result.message, /via fake/);
+    assert.equal(provider.prompts.length, 1);
+    assert.match(provider.prompts[0] ?? '', /PKM summary \(JSON\):/);
   });
 
-  it('returns the original PKM when the client response is invalid', async () => {
-    const client = {
-      complete: async () => 'not-json',
-    };
+  it('returns the original PKM when the provider response is invalid', async () => {
+    const provider = buildFakeProvider('not-json');
     const knowledge = buildMinimalKnowledge();
 
     const result = await runAiAnalysis(knowledge, {
       apiKey: 'test-key',
       model: 'openai/gpt-4.1-mini',
-      client: client as unknown as OpenRouterClient,
+      provider,
     });
 
     assert.equal(result.insightsGenerated, false);
     assert.equal(result.attempted, true);
     assert.equal(result.knowledge, knowledge);
     assert.equal(result.warnings.length, 1);
+  });
+
+  it('continues gracefully when the provider throws', async () => {
+    const provider: AIProvider = {
+      id: 'fake',
+      name: 'Fake Provider',
+      supports: () => true,
+      analyze: async () => {
+        throw new Error('provider exploded');
+      },
+    };
+    const knowledge = buildMinimalKnowledge();
+
+    const result = await runAiAnalysis(knowledge, {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      provider,
+    });
+
+    assert.equal(result.insightsGenerated, false);
+    assert.equal(result.attempted, true);
+    assert.equal(result.knowledge, knowledge);
+    assert.match(result.warnings[0] ?? '', /provider exploded/);
+  });
+
+  it('fails gracefully when an unsupported provider id is configured', async () => {
+    const knowledge = buildMinimalKnowledge();
+
+    const result = await runAiAnalysis(knowledge, {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      providerId: 'does-not-exist',
+    });
+
+    assert.equal(result.insightsGenerated, false);
+    assert.equal(result.attempted, true);
+    assert.equal(result.knowledge, knowledge);
+    assert.match(result.warnings[0] ?? '', /Unsupported AI provider: does-not-exist/);
   });
 });
 

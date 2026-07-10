@@ -46,13 +46,43 @@ describe('OpenRouterClient', () => {
       },
     });
 
-    const content = await client.complete({
+    const result = await client.complete({
       model: 'openai/gpt-4.1-mini',
       messages: [{ role: 'user', content: 'test' }],
     });
 
-    assert.equal(content, '{"architectureSummary":"ok"}');
+    assert.equal(result.content, '{"architectureSummary":"ok"}');
+    assert.equal(result.model, 'openai/gpt-4.1-mini');
     assert.equal(attempts, 3);
+  });
+
+  it('returns reported model and token usage when present in the payload', async () => {
+    const client = new OpenRouterClient({
+      apiKey: 'test-key',
+      maxRetries: 0,
+      timeoutMs: 5_000,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            model: 'openai/gpt-4.1-mini-2025',
+            choices: [{ message: { content: '{"architectureSummary":"ok"}' } }],
+            usage: { prompt_tokens: 120, completion_tokens: 40, total_tokens: 160 },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+    });
+
+    const result = await client.complete({
+      model: 'openai/gpt-4.1-mini',
+      messages: [{ role: 'user', content: 'test' }],
+    });
+
+    assert.equal(result.model, 'openai/gpt-4.1-mini-2025');
+    assert.deepEqual(result.usage, {
+      promptTokens: 120,
+      completionTokens: 40,
+      totalTokens: 160,
+    });
   });
 
   it('aborts hung requests after the configured timeout', async () => {

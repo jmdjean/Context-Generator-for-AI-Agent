@@ -10,6 +10,7 @@ function buildConfig(): RuntimeConfig {
     targetProjectPath: '/tmp/sample-project',
     docsDir: '.ai-docs',
     enableAiAnalysis: false,
+    aiProvider: 'openrouter',
     enableAgentExports: false,
     exportTargets: ['generic'],
     aiModel: 'openai/gpt-4.1-mini',

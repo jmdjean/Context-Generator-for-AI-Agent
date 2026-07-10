@@ -12,9 +12,34 @@ export {
   OpenRouterClient,
   type OpenRouterChatMessage,
   type OpenRouterCompletionRequest,
+  type OpenRouterCompletionResult,
   type OpenRouterClientOptions,
+  type OpenRouterUsage,
 } from './openrouter-client';
 export {
+  normalizeAiProviderId,
+  type AIProvider,
+  type AIProviderOptions,
+  type AIProviderResponse,
+  type AIProviderUsage,
+} from './providers/ai-provider';
+export {
+  OpenRouterProvider,
+  OPENROUTER_PROVIDER_ID,
+  type OpenRouterProviderDependencies,
+} from './providers/openrouter-provider';
+export {
+  AIProviderRegistry,
+  createDefaultAiProviderRegistry,
+} from './providers/provider-registry';
+export {
+  createAiProvider,
+  DEFAULT_AI_PROVIDER_ID,
+  isSupportedAiProviderId,
+  listSupportedAiProviderIds,
+} from './providers/provider-factory';
+export {
+  AI_ANALYSIS_SYSTEM_INSTRUCTION,
   buildAiAnalysisPrompt,
   buildPkmSummaryPayload,
   type PkmSummaryPayload,

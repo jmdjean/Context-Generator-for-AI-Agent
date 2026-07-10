@@ -6,6 +6,14 @@ import {
   PKM_SUMMARY_LIMITS,
 } from './constants';
 
+/**
+ * System-level instruction sent alongside the analysis prompt. Lives here so
+ * the prompt builder owns every string sent to AI providers; providers only
+ * translate these strings into their transport format.
+ */
+export const AI_ANALYSIS_SYSTEM_INSTRUCTION =
+  'You enrich a deterministic project knowledge model. Output a single JSON object. Never request secrets or source code.';
+
 type ConfidenceRank = 'high' | 'medium' | 'low';
 
 type SummaryLimits = {

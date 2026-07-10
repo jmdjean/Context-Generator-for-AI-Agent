@@ -7,6 +7,12 @@ import {
   parseExportTargetSelector,
   resolveEnabledExportTargets,
 } from '../exporters/export-target-resolver';
+import { normalizeAiProviderId } from '../ai/providers/ai-provider';
+import {
+  DEFAULT_AI_PROVIDER_ID,
+  isSupportedAiProviderId,
+  listSupportedAiProviderIds,
+} from '../ai/providers/provider-factory';
 import { DEFAULT_AI_MODEL, DEFAULT_DOCS_DIR } from './constants';
 import { assertReadableDirectory } from '../utils/fs';
 
@@ -17,6 +23,7 @@ export interface RuntimeConfig {
   docsDir: string;
   openRouterApiKey?: string;
   enableAiAnalysis: boolean;
+  aiProvider: string;
   aiModel: string;
   enableAgentExports: boolean;
   exportTargets: AgentExportTarget[];
@@ -27,6 +34,7 @@ interface ParsedArgs {
   openRouterKey: string | undefined;
   docsDir: string | undefined;
   enableAiAnalysis: boolean;
+  aiProvider: string | undefined;
   aiModel: string | undefined;
   enableAgentExports: boolean;
   exportTarget?: string;
@@ -46,6 +54,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     openRouterKey: undefined,
     docsDir: undefined,
     enableAiAnalysis: false,
+    aiProvider: undefined,
     aiModel: undefined,
     enableAgentExports: false,
     exportTarget: undefined,
@@ -68,6 +77,9 @@ function parseArgs(argv: string[]): ParsedArgs {
       i++;
     } else if (arg === '--openrouter-key') {
       result.openRouterKey = readFlagValue(argv, i, '--openrouter-key');
+      i++;
+    } else if (arg === '--ai-provider') {
+      result.aiProvider = readFlagValue(argv, i, '--ai-provider');
       i++;
     } else if (arg === '--model') {
       result.aiModel = readFlagValue(argv, i, '--model');
@@ -140,13 +152,15 @@ export function printHelp(): void {
   console.log('  <target-path>              Path to the project directory to analyze (required)');
   console.log('');
   console.log('Options:');
-  console.log('  --ai                       Run optional OpenRouter AI analysis (requires API key)');
+  console.log('  --ai                       Run optional AI analysis (requires API key)');
+  console.log(`  --ai-provider <name>       AI provider to use (default: ${DEFAULT_AI_PROVIDER_ID})`);
+  console.log(`                             Supported providers: ${listSupportedAiProviderIds().join(', ')}`);
   console.log('  --export-agents            Export agent-specific context files from the PKM');
   console.log('  --target <name>            Agent export target: generic, cursor, or all');
   console.log('                             (default with --export-agents: generic)');
   console.log('  --openrouter-key <key>     OpenRouter API key for AI analysis (optional)');
   console.log('                             (also accepted via OPENROUTER_API_KEY env variable)');
-  console.log(`  --model <id>               OpenRouter model id (default: ${DEFAULT_AI_MODEL})`);
+  console.log(`  --model <id>               Model id passed to the provider (default: ${DEFAULT_AI_MODEL})`);
   console.log(`  --docs-dir <name>          Output docs folder name (default: ${DEFAULT_DOCS_DIR})`);
   console.log('                             Must be a single relative folder name (not "." or absolute)');
   console.log('  --help, -h                 Show this help message');
@@ -161,6 +175,7 @@ export function printHelp(): void {
   console.log('  ai-project-docs ./my-project');
   console.log('  ai-project-docs ./my-project --docs-dir .project-docs');
   console.log('  ai-project-docs ./my-project --ai --openrouter-key "$OPENROUTER_API_KEY"');
+  console.log('  ai-project-docs ./my-project --ai --ai-provider openrouter');
   console.log('  ai-project-docs ./my-project --export-agents');
   console.log('  ai-project-docs ./my-project --export-agents --target cursor');
   console.log('  ai-project-docs ./my-project --export-agents --target all');
@@ -192,7 +207,19 @@ export function resolveConfig(argv: string[]): RuntimeConfig {
   const aiModel = (args.aiModel ?? DEFAULT_AI_MODEL).trim();
   if (aiModel === '') {
     throw new Error(
-      'Model id must not be empty. Use --model <id> with a non-empty OpenRouter model identifier.',
+      'Model id must not be empty. Use --model <id> with a non-empty model identifier.',
+    );
+  }
+
+  const aiProvider = normalizeAiProviderId(args.aiProvider ?? DEFAULT_AI_PROVIDER_ID);
+  if (aiProvider === '') {
+    throw new Error(
+      'AI provider must not be empty. Use --ai-provider <name> with a supported provider name.',
+    );
+  }
+  if (!isSupportedAiProviderId(aiProvider)) {
+    throw new Error(
+      `Unsupported AI provider: ${args.aiProvider}. Supported providers: ${listSupportedAiProviderIds().join(', ')}.`,
     );
   }
 
@@ -218,6 +245,7 @@ export function resolveConfig(argv: string[]): RuntimeConfig {
     docsDir,
     openRouterApiKey: resolveApiKey(args.openRouterKey),
     enableAiAnalysis: args.enableAiAnalysis,
+    aiProvider,
     aiModel,
     enableAgentExports: args.enableAgentExports,
     exportTargets,

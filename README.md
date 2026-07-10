@@ -107,7 +107,7 @@ Built-in analyzer plugins wrap the existing deterministic analyzers and return `
 - File watching or git-based incremental sync
 - Any modification of project source files
 
-Optional OpenRouter AI analysis is available with `--ai` (see CLI reference). When enabled, insights are persisted in the PKM under `analysis.aiInsights` and rendered into selected Markdown documents as **non-authoritative enrichment**. Deterministic PKM sections remain the source of truth; renderers read already-persisted PKM data and never call OpenRouter directly.
+Optional AI analysis is available with `--ai` (see CLI reference). It runs through a **provider-based architecture**: the analysis service depends on an `AIProvider` contract, and concrete backends are resolved by id (`--ai-provider`, default `openrouter`). OpenRouter is the only built-in provider today; OpenAI, Anthropic, Gemini, Azure OpenAI, Ollama, and local models can be added by registering new providers without touching the analysis service. When enabled, insights are persisted in the PKM under `analysis.aiInsights` and rendered into selected Markdown documents as **non-authoritative enrichment**. Deterministic PKM sections remain the source of truth; providers receive only a compact PKM summary prompt (never source code), and renderers read already-persisted PKM data without calling any AI backend.
 
 ---
 
@@ -149,12 +149,15 @@ ai-project-docs <target-path> [options]
 |---|---|---|
 | `<target-path>` | Project directory to analyze (required) | — |
 | `--docs-dir <name>` | Output folder inside the target repo | `.ai-docs` |
-| `--ai` | Run optional OpenRouter AI analysis (requires API key) | off |
+| `--ai` | Run optional AI analysis (requires API key) | off |
+| `--ai-provider <name>` | AI provider to use (`openrouter` today; more planned) | `openrouter` |
 | `--export-agents` | Export agent-specific context files from the PKM | off |
 | `--target <name>` | Export target: `generic`, `cursor`, or `all` (requires `--export-agents`) | `generic` |
 | `--openrouter-key <key>` | OpenRouter API key | `OPENROUTER_API_KEY` |
-| `--model <id>` | OpenRouter model identifier | `openai/gpt-4.1-mini` |
+| `--model <id>` | Model identifier passed to the provider | `openai/gpt-4.1-mini` |
 | `--help`, `-h` | Show usage | — |
+
+Passing an unsupported `--ai-provider` value fails immediately with the list of supported providers (exit code `1`).
 
 ### Examples
 
@@ -162,6 +165,7 @@ ai-project-docs <target-path> [options]
 ai-project-docs ./my-project
 ai-project-docs ./my-project --docs-dir .project-docs
 ai-project-docs ./my-project --ai --openrouter-key "$OPENROUTER_API_KEY"
+ai-project-docs ./my-project --ai --ai-provider openrouter
 ai-project-docs ./my-project --export-agents
 ai-project-docs ./my-project --export-agents --target cursor
 ai-project-docs ./my-project --export-agents --target all
@@ -177,7 +181,7 @@ ai-project-docs --help
 | `2` | Validation failed — generated docs missing or malformed |
 | `3` | Runtime error — pipeline step failed, permission error during write |
 
-When `--ai` is passed, the summary includes an **AI Analysis** section (`Model`, `Insights generated`) — including `no (see warnings)` when the run failed to produce validated insights.
+When `--ai` is passed, the summary includes an **AI Analysis** section (`Provider`, `Model`, `Insights generated`) — including `no (see warnings)` when the run failed to produce validated insights.
 
 When `--export-agents` is passed, the summary includes an **Agent exporters** section (`Targets`, `Files written`, `Files skipped`). Neither section appears when its flag is off.
 
@@ -263,6 +267,8 @@ node dist/cli.js .   # analyze this repository
 | Plugin architecture (built-in + technology placeholders) | Done |
 | PKM-powered Markdown + template engine + validation | Done |
 | OpenRouter integration (optional `--ai`) | Done |
+| Provider-based AI architecture (`--ai-provider`, OpenRouter default) | Done |
+| Additional AI providers (OpenAI, Anthropic, Gemini, Azure OpenAI, Ollama, local) | Planned |
 | Change detection (PKM diff) | Done |
 | Selective regeneration from change summary | Done |
 | Generic agent exporter (`--export-agents`) | Done |
