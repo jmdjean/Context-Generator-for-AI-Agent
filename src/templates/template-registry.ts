@@ -1,5 +1,11 @@
+import { AI_READINESS_TEMPLATE } from '../readiness/ai-readiness-renderer';
 import { MARKDOWN_TEMPLATES } from './markdown-template';
 import { TemplateDefinition } from './template-context';
+
+const REGISTERED_TEMPLATES: ReadonlyArray<TemplateDefinition> = [
+  ...MARKDOWN_TEMPLATES,
+  AI_READINESS_TEMPLATE,
+];
 
 function assertUniqueTemplateRegistry(templates: ReadonlyArray<TemplateDefinition>): void {
   const outputPaths = new Set<string>();
@@ -19,10 +25,10 @@ function assertUniqueTemplateRegistry(templates: ReadonlyArray<TemplateDefinitio
   }
 }
 
-assertUniqueTemplateRegistry(MARKDOWN_TEMPLATES);
+assertUniqueTemplateRegistry(REGISTERED_TEMPLATES);
 
 const templatesByOutputPath = new Map<string, TemplateDefinition>(
-  MARKDOWN_TEMPLATES.map((template) => [template.outputPath, template]),
+  REGISTERED_TEMPLATES.map((template) => [template.outputPath, template]),
 );
 
 export const REGISTERED_TEMPLATE_OUTPUT_PATHS: ReadonlyArray<string> = [
@@ -38,5 +44,5 @@ export function hasRegisteredTemplate(outputPath: string): boolean {
 }
 
 export function listRegisteredTemplates(): ReadonlyArray<TemplateDefinition> {
-  return MARKDOWN_TEMPLATES;
+  return REGISTERED_TEMPLATES;
 }

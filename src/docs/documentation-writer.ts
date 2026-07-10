@@ -93,6 +93,33 @@ function writePlannedDocument(
   return { outcome: 'written', renderKind: rendered.renderKind };
 }
 
+export interface SingleDocumentWriteResult {
+  relativePath: string;
+  outcome: 'written' | 'skipped-protected';
+}
+
+/**
+ * Renders and writes one planned document through its registered template,
+ * outside the main documentation pass. Used by the AI readiness step, which
+ * runs after documents are written and must refresh ai-readiness.md with the
+ * freshly calculated result. Protection markers are respected: user-managed
+ * files are never overwritten.
+ */
+export function writeSinglePlannedDocument(
+  document: PlannedDocument,
+  knowledge: ProjectKnowledge,
+): SingleDocumentWriteResult {
+  const docsRootPath = resolvePathWithinRoot(getProjectRoot(knowledge), getDocsDir(knowledge));
+  ensureDirectory(docsRootPath);
+
+  const result = writePlannedDocument(document, docsRootPath, knowledge);
+
+  return {
+    relativePath: document.relativePath,
+    outcome: result.outcome === 'skipped-protected' ? 'skipped-protected' : 'written',
+  };
+}
+
 export function writeDocumentation(
   knowledge: ProjectKnowledge,
   impactSummary?: DocumentImpactSummaryKnowledge,

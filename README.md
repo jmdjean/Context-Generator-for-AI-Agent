@@ -60,6 +60,12 @@ Documentation:
 - Skipped unchanged: 0
 - Skipped protected: 0
 
+AI Readiness:
+- Score: 82/100
+- Level: good
+- Critical gaps: 0
+- Recommendations: 3
+
 Validation:
 - Errors: 0
 - Warnings: 2
@@ -90,6 +96,7 @@ Sections for optional features appear only when you enable them: `AI Analysis` w
 | Validation + summary | Exit code, counts, and next steps in the terminal |
 | Change detection | Compares current PKM to previous snapshot; persists `change-summary.json` |
 | Selective regeneration | Rewrites only impacted generated Markdown based on PKM section changes |
+| AI Readiness Score | Deterministic 0–100 Context Engineering assessment persisted as `ai-readiness.json` and rendered as `ai-readiness.md` |
 
 The authoritative output is `.ai-docs/knowledge/project-knowledge.json`. Markdown files are derived presentations.
 
@@ -98,6 +105,23 @@ The authoritative output is `.ai-docs/knowledge/project-knowledge.json`. Markdow
 Analysis is **plugin-driven**. The core loads the repository, builds the PKM, and executes registered plugins through `PluginManager`. Framework-specific logic (Angular, React, NestJS, and future stacks) lives in technology plugins — not in the core.
 
 Built-in analyzer plugins wrap the existing deterministic analyzers and return `PluginContributions` merged by `PluginManager`. Observable CLI behavior and generated outputs are unchanged. See [`docs/plugins.md`](docs/plugins.md).
+
+### AI Readiness Score
+
+Every run computes an **AI Readiness Score** — a deterministic 0–100 assessment of how prepared the repository is for safe and effective work by AI coding agents. It measures Context Engineering quality across six weighted categories:
+
+| Category | Weight |
+|---|---|
+| Repository Structure | 20% |
+| Architecture Knowledge | 20% |
+| Documentation Coverage | 20% |
+| Agent Navigation | 15% |
+| Project Conventions | 15% |
+| Context Maintainability | 10% |
+
+The score is calculated **from the PKM and the validation result only** — no repository rescan and no AI provider calls, so identical PKM input always yields the identical score (scoring rules are versioned, currently `1.0.0`). Checks adapt to repository size: tiny or empty repositories are not penalized for having few modules or dependency edges, and the initial run is not penalized for lacking incremental state. Results land in `analysis.aiReadiness` in the PKM, `.ai-docs/knowledge/ai-readiness.json`, and `.ai-docs/ai-readiness.md`.
+
+**What it does not guarantee:** the score assesses generated context quality only. It does not measure implementation quality, and it does not replace human review. A low score is an assessment result, never a runtime failure — the CLI still exits `0`. Optional AI-generated insights (`--ai`) never affect the score: allowing non-deterministic input would make scores unreproducible and uncomparable between runs. Future plugins may contribute findings, but they cannot set the final score directly.
 
 ---
 
@@ -199,6 +223,7 @@ When `--export-agents` is passed, the summary includes an **Agent exporters** se
   dependency-map.md           # PKM-powered
   conventions.md              # PKM-powered
   ai-context.md               # PKM-powered; includes optional AI insights when present
+  ai-readiness.md             # PKM-powered; deterministic AI Readiness Score report
   implementation-guide.md     # PKM-powered; includes optional AI insights when present
   technology-overview.md
   change-log.md
@@ -216,6 +241,7 @@ When `--export-agents` is passed, the summary includes an **Agent exporters** se
     conventions.json
     navigation-map.json
     change-summary.json       # PKM diff vs previous run (when a prior snapshot exists)
+    ai-readiness.json         # Deterministic AI Readiness Score result
     agent-exports.json        # Agent export results (when --export-agents ran)
 
 .cursor/                      # Cursor exporter output (--export-agents --target cursor)
@@ -273,7 +299,9 @@ node dist/cli.js .   # analyze this repository
 | Selective regeneration from change summary | Done |
 | Generic agent exporter (`--export-agents`) | Done |
 | Cursor exporter (`--export-agents --target cursor`) | Done |
+| AI Readiness Score (deterministic Context Engineering assessment) | Done |
 | Agent exporters (Claude Code, Codex, Copilot) | Planned |
+| Readiness history tracking and badges | Planned |
 
 ---
 

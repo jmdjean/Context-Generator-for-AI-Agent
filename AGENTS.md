@@ -41,6 +41,7 @@ These rules protect target repositories and keep the pipeline predictable for ex
 | **Generators** | Must consume `ProjectKnowledge` only. Markdown renderers and agent exporters are presentation-only — no repository analysis, no filesystem access, no AI calls. |
 | **Exporters** | Must consume `ProjectKnowledge` only. Agent exporters write derived context files under the docs folder or agent-specific paths (for example `.cursor/rules/`); they do not analyze repositories or call AI providers. |
 | **Validators** | Must not mutate files. `documentation-validator.ts` reads outputs and reports issues; it never repairs or rewrites documentation. |
+| **Readiness** | The AI Readiness calculator (`src/readiness/`) consumes the PKM and the validation result only. It must not rescan the repository, call AI providers, mutate source code, or write Markdown directly — the renderer/template presents the calculated result. Scoring rules stay versioned and deterministic. |
 | **Pipeline** | Core behavior must flow through `ANALYSIS_PIPELINE` and `executePipeline`. Do not bypass the pipeline from `cli.ts`, generators, exporters, or analyzers for scan, detect, analyze, write, validate, export, or persist steps. |
 | **Writable boundary** | Markdown and PKM JSON write to the configured docs folder (default `.ai-docs/`). Registered agent exporters may also write tool-managed files to declared export paths (for example `.cursor/rules/`). Use `resolvePathWithinRoot()` — never write outside the target repo. User-managed files without the generated marker are preserved. |
 | **Source code** | Project source files are never modified. User-managed docs without the generated marker are preserved on re-run. |
@@ -78,6 +79,7 @@ Analysis-stage types live in `src/domain/`. The application contract for generat
 - **Implementing a generator (docs writer, future formats)?** Read `src/knowledge/`. Consume `ProjectKnowledge` in memory or load from `.ai-docs/knowledge/project-knowledge.json`.
 - **Implementing an agent exporter?** Read `src/exporters/README.md`. Consume `ProjectKnowledge` only; register in `exporter-registry.ts`. Exporters write derived agent context files (generic pack and Cursor rules today; Claude Code, Codex, and Copilot later). Preserve the generated-file marker policy.
 - **Implementing deterministic document rendering or writing?** Read `src/templates/README.md`, `src/docs/documentation-plan.ts`, `src/docs/document-template.ts`, `src/docs/markdown-renderers/`, and `src/docs/documentation-writer.ts`. The template engine (`src/templates/`) renders Markdown from the PKM; renderers behind templates are presentation-only — no repository analysis, no filesystem access, no AI. The documentation writer writes rendered output to disk. Preserve the generated-file marker policy and do not overwrite unmarked files.
+- **Extending the AI Readiness Score?** Read `src/readiness/README.md`. Rules live in `ai-readiness-rules.ts` (versioned — bump `AI_READINESS_SCORING_VERSION` on any rule/weight/threshold change), calculation in `ai-readiness-calculator.ts`, presentation in `ai-readiness-renderer.ts`. The calculator consumes PKM + validation result only; recommendations must be grounded in partial/failed findings. Plugins may contribute findings in the future but must never set the final score directly. AI-generated insights must never affect the score — determinism is the contract.
 - **Implementing incremental change detection?** Read `src/incremental/README.md`. Load the previous PKM from `.ai-docs/knowledge/project-knowledge.json`, compare against the current in-memory PKM, store `analysis.changeSummary`, and derive `analysis.documentImpact` for selective Markdown regeneration. Do not add file watching or git integration in this layer.
 - **Adding a PKM-powered template for a document?** Create `src/docs/markdown-renderers/<name>-renderer.ts` (reads only from `ProjectKnowledge`), register a `TemplateDefinition` in `src/templates/markdown-template.ts`, and add tests in `src/templates/template-engine.test.ts`. Documents without a registered template fall back to the generic template in `document-template.ts`. User-custom templates are not supported yet.
 - **Understanding the full pipeline?** Read `src/domain/pipeline.ts`. The `ANALYSIS_PIPELINE` constant is the authoritative description of every step, its input, and its output.
@@ -129,6 +131,7 @@ Never put scanner logic, detection logic, AI calls, or file writes directly insi
 - `src/knowledge/` — Project Knowledge Model. Builder assembles `ProjectKnowledge`; writer persists it to `.ai-docs/knowledge/`.
 - `src/docs/` — documentation planning and writing (generators). `documentation-writer.ts` writes rendered template output from `ProjectKnowledge` only.
 - `src/templates/` — lightweight template engine. Renders Markdown from the PKM; does not write files, scan repositories, or call AI.
+- `src/readiness/` — deterministic AI Readiness Score. Consumes the PKM and validation result only; never rescans the repository, never calls AI providers, never writes files itself.
 - `src/ai/` — optional AI enrichment behind the `AIProvider` contract (`src/ai/providers/`). The analysis service builds a compact PKM summary prompt and calls the selected provider (OpenRouter by default). Providers are pure transports.
 - `src/utils/` — pure utility functions with no side effects and no domain knowledge.
 
@@ -163,7 +166,7 @@ The project has:
 - A working CLI with full argument parsing and runtime configuration resolution.
 - A complete domain model (`src/domain/`) defining analysis-stage types and the declarative pipeline.
 - A Project Knowledge Model (`src/knowledge/`) with types and `buildProjectKnowledge()`.
-- A pipeline orchestrator (`src/core/`) that runs all 19 steps and returns `PipelineExecutionResult`.
+- A pipeline orchestrator (`src/core/`) that runs all 20 steps and returns `PipelineExecutionResult`.
 - Step 2 (Load Repository Metadata) implemented in `src/scanner/repository-loader.ts`.
 - Step 3 (Scan Repository Structure) implemented in `src/scanner/repository-scanner.ts` — produces `RepositoryNode` tree with ignore rules and safety limits.
 - Step 4 (Detect Technologies) implemented in `src/detectors/technology-detector.ts` and `src/detectors/package-manager-detector.ts`.
@@ -180,8 +183,9 @@ The project has:
 - Step 15 (Detect Changes) implemented in `src/incremental/` — compares the current PKM against the previously persisted snapshot, records `analysis.changeSummary`, and derives `analysis.documentImpact` for selective regeneration.
 - Step 16 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — renders planned documents through `src/templates/template-engine.ts`, then writes Markdown from `ProjectKnowledge`, regenerating only impacted tool-managed files when `documentImpact` is present (all planned docs on initial run).
 - Step 17 (Validate Documentation) implemented in `src/docs/documentation-validator.ts` — verifies written docs exist, carry the generated-file marker, and reports errors/warnings.
-- Step 18 (Export Agent Context) implemented in `src/exporters/` — optional agent export when `--export-agents` is set. Runs generic and/or Cursor exporters based on `--target` (default: `generic`) and stores results in `analysis.agentExports`.
-- Step 19 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/` including `change-summary.json`, `document-impact.json`, and `agent-exports.json` when exports ran.
+- Step 18 (Calculate AI Readiness) implemented in `src/readiness/` — computes the deterministic AI Readiness Score from the final current-run PKM and validation result, stores `analysis.aiReadiness`, refreshes `ai-readiness.md`, persists `ai-readiness.json`, and extends validation with structural readiness checks.
+- Step 19 (Export Agent Context) implemented in `src/exporters/` — optional agent export when `--export-agents` is set. Runs generic and/or Cursor exporters based on `--target` (default: `generic`) and stores results in `analysis.agentExports`.
+- Step 20 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/` including `change-summary.json`, `document-impact.json`, `ai-readiness.json`, and `agent-exports.json` when exports ran.
 - A final CLI run summary in `src/core/run-summary.ts` — printed by `run()` after the pipeline completes.
 
 The scanner full tree walk (step 3) is implemented. Legacy pipeline steps 5–6 (`Build Repository Model`, `Analyze Architecture`) remain skipped placeholders. Optional AI enrichment runs at step 14 after deterministic analyzers.
@@ -214,6 +218,7 @@ The summary headline is the run verdict: `AI Project Docs completed` (success), 
 | `Change detection` | always on completed runs | `Initial run: yes (baseline created)` on the first run. On incremental runs: `Changed sections` plus counts for added/removed modules, folders, or dependency edges when those sections changed. |
 | `Document impact` | incremental runs only | Counts of impacted vs unchanged documents from selective regeneration. Omitted on initial runs (everything is impacted by definition). |
 | `Documentation` | always | `Planned` = documents in the plan. `Written` = tool-managed files created or updated. `Skipped unchanged` = generated files left intact because their PKM sections did not change. `Skipped protected` = user-managed files preserved (no overwrite). |
+| `AI Readiness` | completed runs | Deterministic Context Engineering assessment: `Score` (0–100), `Level` (`critical`/`low`/`moderate`/`good`/`excellent`), `Critical gaps` (failed findings among top gaps), `Recommendations` (grounded next steps). A low score is an assessment result, not a runtime failure — the exit code stays `0`. Details in `.ai-docs/ai-readiness.md` and `.ai-docs/knowledge/ai-readiness.json`. |
 | `Validation` | always | `Status: passed` means no blocking documentation errors. Non-zero warnings/errors list details underneath — often preserved user files or empty sections. `Status: not run` means the pipeline failed before validation. |
 | `Errors` | failed runs only | One line per failed pipeline step. Presence of this section means outputs are unreliable. |
 | `Next steps` | successful runs only | Human and agent entry points: `README.md`, `agent-navigation.md`, and `project-knowledge.json`; on incremental runs also `change-summary.json` and `document-impact.json`. |

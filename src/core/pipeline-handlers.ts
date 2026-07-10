@@ -5,10 +5,22 @@ import { loadRepositoryMetadata } from '../scanner/repository-loader';
 import { scanRepository } from '../scanner/repository-scanner';
 import { detectTechnologies } from '../detectors/technology-detector';
 import { createDocumentationPlan } from '../docs/documentation-planner';
-import { writeDocumentation } from '../docs/documentation-writer';
-import { validateDocumentation } from '../docs/documentation-validator';
+import { writeDocumentation, writeSinglePlannedDocument } from '../docs/documentation-writer';
+import {
+  mergeValidationIssues,
+  validateAiReadiness,
+  validateDocumentation,
+} from '../docs/documentation-validator';
 import { runAiAnalysis } from '../ai';
-import { buildProjectKnowledge, persistProjectKnowledge, ProjectKnowledge } from '../knowledge';
+import {
+  buildProjectKnowledge,
+  persistAiReadinessKnowledge,
+  persistProjectKnowledge,
+  ProjectKnowledge,
+} from '../knowledge';
+import { AI_READINESS_DOCUMENT_PATH } from '../readiness/ai-readiness-model';
+import { enrichProjectKnowledgeWithAiReadiness } from '../readiness/ai-readiness-calculator';
+import { formatAiReadinessConsoleReport } from '../readiness/ai-readiness-renderer';
 import { enrichProjectKnowledgeWithIncrementalAnalysis, describeIncrementalAnalysis } from '../incremental';
 import { runAgentExports, summarizeAgentExportResults } from '../exporters';
 import { ANALYZER_PLUGIN_IDS, executeAnalyzerPluginStep } from '../plugins/pipeline-integration';
@@ -361,6 +373,57 @@ export async function handleDetectChanges(
   };
 }
 
+export async function handleCalculateAiReadiness(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  const { knowledge, readiness } = enrichProjectKnowledgeWithAiReadiness(
+    context.projectKnowledge,
+    context.metrics.validation,
+  );
+  context.projectKnowledge = knowledge;
+
+  const plannedDocument = knowledge.documentation.plan.documents.find(
+    (document) => document.relativePath === AI_READINESS_DOCUMENT_PATH,
+  );
+  if (plannedDocument !== undefined) {
+    // Re-render ai-readiness.md now that the score exists; the earlier
+    // documentation pass only wrote the pre-calculation placeholder.
+    writeSinglePlannedDocument(plannedDocument, knowledge);
+  }
+
+  persistAiReadinessKnowledge(knowledge);
+
+  const readinessIssues = validateAiReadiness(knowledge);
+  if (readinessIssues.length > 0) {
+    context.metrics.validation = mergeValidationIssues(
+      context.metrics.validation,
+      readinessIssues,
+    );
+  }
+
+  for (const line of formatAiReadinessConsoleReport(readiness)) {
+    console.log(line);
+  }
+
+  const errorCount = readinessIssues.filter((issue) => issue.severity === 'error').length;
+  if (errorCount > 0) {
+    return {
+      status: 'failed',
+      message: `invalid AI readiness result (${errorCount} validation error(s))`,
+    };
+  }
+
+  return {
+    status: 'completed',
+    message: `score ${readiness.overallScore}/100 (${readiness.level})`,
+  };
+}
+
 export async function handleExportAgentContext(
   context: PipelineContext,
   step: AnalysisPipelineStep,
@@ -432,6 +495,7 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Detect Changes': handleDetectChanges,
   'Write Documentation': handleWriteDocumentation,
   'Validate Documentation': handleValidateDocumentation,
+  'Calculate AI Readiness': handleCalculateAiReadiness,
   'Export Agent Context': handleExportAgentContext,
   'Persist Project Knowledge': handlePersistProjectKnowledge,
 };

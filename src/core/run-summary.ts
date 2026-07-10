@@ -312,6 +312,25 @@ function formatDocumentationSection(
   ];
 }
 
+function formatAiReadinessSection(knowledge: ProjectKnowledge | undefined): string[] {
+  const readiness = knowledge?.analysis.aiReadiness;
+
+  if (!readiness) {
+    return [];
+  }
+
+  const criticalGaps = readiness.gaps.filter((gap) => gap.severity === 'critical').length;
+
+  return [
+    '',
+    'AI Readiness:',
+    `- Score: ${readiness.overallScore}/100`,
+    `- Level: ${readiness.level}`,
+    `- Critical gaps: ${criticalGaps}`,
+    `- Recommendations: ${readiness.recommendations.length}`,
+  ];
+}
+
 function formatChangeDetectionSection(knowledge: ProjectKnowledge | undefined): string[] {
   const summary = knowledge?.analysis.changeSummary;
 
@@ -364,6 +383,7 @@ export function formatRunSummary(input: RunSummaryInput): string[] {
   lines.push(...formatChangeDetectionSection(knowledge));
   lines.push(...formatDocumentImpactSection(knowledge));
   lines.push(...formatDocumentationSection(metrics, knowledge));
+  lines.push(...formatAiReadinessSection(knowledge));
 
   lines.push(
     '',
@@ -397,6 +417,10 @@ export function formatRunSummary(input: RunSummaryInput): string[] {
       `- Share ${config.docsDir}/agent-navigation.md with your AI coding agent`,
       `- Load ${config.docsDir}/knowledge/project-knowledge.json for machine-readable context`,
     );
+
+    if (knowledge?.analysis.aiReadiness) {
+      lines.push(`- Review ${config.docsDir}/ai-readiness.md for the Context Engineering readiness assessment`);
+    }
 
     if (changeSummary && !changeSummary.isInitialRun) {
       lines.push(`- Inspect ${config.docsDir}/knowledge/change-summary.json for PKM diffs since the last run`);

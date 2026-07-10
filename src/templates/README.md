@@ -76,11 +76,14 @@ Templates receive PKM data through `TemplateContext` and planned-document metada
 | `markdown.agent-navigation` | `agent-navigation.md` | `agent-navigation-renderer.ts` |
 | `markdown.ai-context` | `ai-context.md` | `ai-context-renderer.ts` |
 | `markdown.implementation-guide` | `implementation-guide.md` | `implementation-guide-renderer.ts` |
+| `markdown.ai-readiness` | `ai-readiness.md` | `src/readiness/ai-readiness-renderer.ts` |
 | `markdown.generic` | *(fallback)* | `document-template.ts` |
 
 Documents without a registered template use `markdown.generic`. Technology-specific and agent docs (`README.md`, `AGENTS.md`, etc.) continue to use the generic fallback until they get dedicated templates.
 
-Renderers live in `src/docs/markdown-renderers/` as small, deterministic functions. Templates wrap those renderers today; future user-customizable templates can replace or extend the registry without changing the writer.
+Renderers live in `src/docs/markdown-renderers/` as small, deterministic functions (the AI readiness renderer lives with its feature in `src/readiness/` and is registered here). Templates wrap those renderers today; future user-customizable templates can replace or extend the registry without changing the writer.
+
+The `markdown.ai-readiness` template is presentation-only like every other template: it renders the deterministic AI Readiness Score already stored in `analysis.aiReadiness` and never calculates, rescans, or calls AI. During the main documentation pass (before the readiness step has run) it renders an honest placeholder; the `Calculate AI Readiness` pipeline step re-renders the document through this same template once the score exists.
 
 ---
 

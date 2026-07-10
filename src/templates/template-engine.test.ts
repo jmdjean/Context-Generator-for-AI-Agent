@@ -81,6 +81,7 @@ describe('template engine', () => {
       'agent-navigation.md',
       'ai-context.md',
       'implementation-guide.md',
+      'ai-readiness.md',
     ];
 
     assert.deepEqual([...REGISTERED_TEMPLATE_OUTPUT_PATHS].sort(), [...expectedPaths].sort());
