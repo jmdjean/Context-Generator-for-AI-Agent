@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 import { RuntimeConfig } from '../config';
 import { formatRunSummaryChangeDetectionLines, formatRunSummaryDocumentImpactLines } from '../incremental';
-import { getDocumentationPlan, ProjectKnowledge, TechnologyKnowledge } from '../knowledge';
+import { ProjectKnowledge, TechnologyKnowledge } from '../knowledge';
 import { PipelineRunMetrics } from './pipeline-metrics';
 import { PipelineExecutionResult } from './pipeline-orchestrator';
 
@@ -166,7 +166,7 @@ function buildHeadline(result: PipelineExecutionResult): string {
     return 'AI Project Docs completed with errors';
   }
 
-  return 'AI Project Docs completed successfully';
+  return 'AI Project Docs completed';
 }
 
 function appendValidationDetails(lines: string[], metrics: PipelineRunMetrics): void {
@@ -202,10 +202,6 @@ function resolveAiAnalysisModel(
   knowledge: ProjectKnowledge | undefined,
   insightsGenerated: boolean,
 ): string {
-  if (!config.enableAiAnalysis) {
-    return 'none';
-  }
-
   if (insightsGenerated) {
     return knowledge?.analysis.aiInsights?.model ?? config.aiModel;
   }
@@ -218,12 +214,15 @@ function formatAiAnalysisSection(
   metrics: PipelineRunMetrics,
   knowledge: ProjectKnowledge | undefined,
 ): string[] {
+  if (!config.enableAiAnalysis) {
+    return [];
+  }
+
   return [
     '',
     'AI Analysis:',
-    `* Enabled: ${config.enableAiAnalysis ? 'yes' : 'no'}`,
-    `* Model: ${resolveAiAnalysisModel(config, knowledge, metrics.aiInsightsGenerated)}`,
-    `* Insights generated: ${formatInsightsGenerated(metrics)}`,
+    `- Model: ${resolveAiAnalysisModel(config, knowledge, metrics.aiInsightsGenerated)}`,
+    `- Insights generated: ${formatInsightsGenerated(metrics)}`,
   ];
 }
 
@@ -231,29 +230,30 @@ function formatAgentExportsSection(
   config: RuntimeConfig,
   metrics: PipelineRunMetrics,
 ): string[] {
-  const lines = [
-    '',
-    'Agent exporters:',
-    `* Enabled: ${config.enableAgentExports ? 'yes' : 'no'}`,
-  ];
+  if (!config.enableAgentExports) {
+    return [];
+  }
 
-  if (!config.enableAgentExports || !metrics.agentExports) {
+  const lines = ['', 'Agent exporters:'];
+
+  if (!metrics.agentExports) {
+    lines.push('- Status: not run');
     return lines;
   }
 
   lines.push(
-    `* Targets: ${metrics.agentExports.enabledTargets.join(', ')}`,
-    `* Files written: ${metrics.agentExports.filesWritten}`,
-    `* Files skipped: ${metrics.agentExports.filesSkipped}`,
+    `- Targets: ${metrics.agentExports.enabledTargets.join(', ')}`,
+    `- Files written: ${metrics.agentExports.filesWritten}`,
+    `- Files skipped: ${metrics.agentExports.filesSkipped}`,
   );
 
   for (const warning of metrics.agentExports.warnings.slice(0, 3)) {
-    lines.push(`* Warning: ${warning}`);
+    lines.push(`- Warning: ${warning}`);
   }
 
   const remainingWarnings = metrics.agentExports.warnings.length - 3;
   if (remainingWarnings > 0) {
-    lines.push(`* ...and ${remainingWarnings} more export warning(s)`);
+    lines.push(`- ...and ${remainingWarnings} more export warning(s)`);
   }
 
   return lines;
@@ -262,7 +262,9 @@ function formatAgentExportsSection(
 function formatDocumentImpactSection(knowledge: ProjectKnowledge | undefined): string[] {
   const impactSummary = knowledge?.analysis.documentImpact;
 
-  if (!impactSummary) {
+  // On an initial run every planned document is impacted by definition,
+  // so the section adds no information.
+  if (!impactSummary || knowledge?.analysis.changeSummary?.isInitialRun) {
     return [];
   }
 
@@ -280,9 +282,9 @@ function formatDocumentationSection(
     return [
       '',
       'Documentation:',
-      '* Planned: 0',
-      '* Written: 0',
-      '* Skipped: 0',
+      '- Planned: 0',
+      '- Written: 0',
+      '- Skipped: 0',
     ];
   }
 
@@ -293,19 +295,19 @@ function formatDocumentationSection(
     return [
       '',
       'Documentation:',
-      `* Planned: ${plannedDocuments}`,
-      `* Written: ${writeResult.writtenCount}`,
-      `* Skipped unchanged: ${writeResult.skippedUnchangedCount}`,
-      `* Skipped protected: ${writeResult.skippedProtectedCount}`,
+      `- Planned: ${plannedDocuments}`,
+      `- Written: ${writeResult.writtenCount}`,
+      `- Skipped unchanged: ${writeResult.skippedUnchangedCount}`,
+      `- Skipped protected: ${writeResult.skippedProtectedCount}`,
     ];
   }
 
   return [
     '',
     'Documentation:',
-    `* Planned: ${plannedDocuments}`,
-    `* Written: ${writeResult.writtenCount}`,
-    `* Skipped: ${writeResult.skippedCount}`,
+    `- Planned: ${plannedDocuments}`,
+    `- Written: ${writeResult.writtenCount}`,
+    `- Skipped: ${writeResult.skippedCount}`,
   ];
 }
 
@@ -313,7 +315,7 @@ function formatChangeDetectionSection(knowledge: ProjectKnowledge | undefined): 
   const summary = knowledge?.analysis.changeSummary;
 
   if (!summary) {
-    return ['', 'Change detection:', '* Status: not run'];
+    return [];
   }
 
   return formatRunSummaryChangeDetectionLines(summary);
@@ -346,14 +348,14 @@ export function formatRunSummary(input: RunSummaryInput): string[] {
   lines.push(
     '',
     'Knowledge:',
-    `* Repository tree: ${metrics.repositoryTreeGenerated ? 'generated' : 'not generated'}`,
-    `* Files scanned: ${metrics.filesScanned}`,
-    `* Folders analyzed: ${metrics.foldersAnalyzed}`,
-    `* Modules discovered: ${metrics.modulesDiscovered}`,
-    `* Dependency edges: ${metrics.dependencyEdges}`,
-    `* Conventions detected: ${metrics.conventionsDetected}`,
-    `* Navigation entries: ${metrics.navigationEntries}`,
-    `* Knowledge files persisted: ${metrics.knowledgeFilesPersisted}`,
+    `- Repository tree: ${metrics.repositoryTreeGenerated ? 'generated' : 'not generated'}`,
+    `- Files scanned: ${metrics.filesScanned}`,
+    `- Folders analyzed: ${metrics.foldersAnalyzed}`,
+    `- Modules discovered: ${metrics.modulesDiscovered}`,
+    `- Dependency edges: ${metrics.dependencyEdges}`,
+    `- Conventions detected: ${metrics.conventionsDetected}`,
+    `- Navigation entries: ${metrics.navigationEntries}`,
+    `- Knowledge files persisted: ${metrics.knowledgeFilesPersisted}`,
   );
 
   lines.push(...formatAiAnalysisSection(config, metrics, knowledge));
@@ -369,19 +371,19 @@ export function formatRunSummary(input: RunSummaryInput): string[] {
 
   if (metrics.validation) {
     lines.push(
-      `* Errors: ${metrics.validation.errorCount}`,
-      `* Warnings: ${metrics.validation.warningCount}`,
-      `* Status: ${metrics.validation.status}`,
+      `- Errors: ${metrics.validation.errorCount}`,
+      `- Warnings: ${metrics.validation.warningCount}`,
+      `- Status: ${metrics.validation.status}`,
     );
     appendValidationDetails(lines, metrics);
   } else {
-    lines.push('* Status: not run');
+    lines.push('- Status: not run');
   }
 
   if (result.errors.length > 0) {
     lines.push('', 'Errors:');
     for (const error of result.errors) {
-      lines.push(`* ${error.stepName}: ${error.message}`);
+      lines.push(`- ${error.stepName}: ${error.message}`);
     }
   }
 
@@ -390,14 +392,14 @@ export function formatRunSummary(input: RunSummaryInput): string[] {
     lines.push(
       '',
       'Next steps:',
-      `* Review ${config.docsDir}/README.md`,
-      `* Share ${config.docsDir}/agent-navigation.md with your AI coding agent`,
-      `* Load ${config.docsDir}/knowledge/project-knowledge.json for machine-readable context`,
+      `- Review ${config.docsDir}/README.md`,
+      `- Share ${config.docsDir}/agent-navigation.md with your AI coding agent`,
+      `- Load ${config.docsDir}/knowledge/project-knowledge.json for machine-readable context`,
     );
 
     if (changeSummary && !changeSummary.isInitialRun) {
-      lines.push(`* Inspect ${config.docsDir}/knowledge/change-summary.json for PKM diffs since the last run`);
-      lines.push(`* Inspect ${config.docsDir}/knowledge/document-impact.json for selective regeneration decisions`);
+      lines.push(`- Inspect ${config.docsDir}/knowledge/change-summary.json for PKM diffs since the last run`);
+      lines.push(`- Inspect ${config.docsDir}/knowledge/document-impact.json for selective regeneration decisions`);
     }
   }
 

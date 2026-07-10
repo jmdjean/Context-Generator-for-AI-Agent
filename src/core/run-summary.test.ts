@@ -142,28 +142,59 @@ describe('formatRunSummary', () => {
       result: buildResult(),
     }).join('\n');
 
-    assert.match(output, /AI Project Docs completed successfully/);
+    assert.match(output, /AI Project Docs completed\n/);
     assert.match(output, /Project: sample-project/);
     assert.match(output, /Target: \/tmp\/sample-project/);
     assert.match(output, /Technologies: TypeScript, Node.js, npm/);
-    assert.match(output, /\* Files scanned: 42/);
-    assert.match(output, /\* Knowledge files persisted: 6/);
-    assert.match(output, /AI Analysis:/);
-    assert.match(output, /\* Enabled: no/);
-    assert.match(output, /\* Model: none/);
-    assert.match(output, /\* Insights generated: no/);
+    assert.match(output, /- Files scanned: 42/);
+    assert.match(output, /- Knowledge files persisted: 6/);
     assert.match(output, /Change detection:/);
-    assert.match(output, /\* Changed sections: modules/);
+    assert.match(output, /- Changed sections: modules/);
     assert.match(output, /Document impact:/);
-    assert.match(output, /\* Impacted documents: 1/);
-    assert.match(output, /\* Skipped protected: 1/);
+    assert.match(output, /- Impacted documents: 1/);
+    assert.match(output, /- Skipped protected: 1/);
     assert.match(output, /change-summary\.json for PKM diffs/);
     assert.match(output, /document-impact\.json for selective regeneration decisions/);
-    assert.match(output, /\* Planned: 11/);
-    assert.match(output, /\* Status: passed/);
+    assert.match(output, /- Planned: 11/);
+    assert.match(output, /- Status: passed/);
     assert.match(output, /warning: 1 user-managed document preserved/);
     assert.match(output, /Review \.ai-docs\/README\.md/);
     assert.match(output, /project-knowledge\.json/);
+  });
+
+  it('omits AI Analysis and Agent exporters sections when those features are disabled', () => {
+    const output = formatRunSummary({
+      config: buildConfig(),
+      result: buildResult(),
+    }).join('\n');
+
+    assert.doesNotMatch(output, /AI Analysis:/);
+    assert.doesNotMatch(output, /Agent exporters:/);
+  });
+
+  it('collapses change detection and hides document impact on the initial run', () => {
+    const base = buildResult();
+    const result = buildResult({
+      projectKnowledge: {
+        ...base.projectKnowledge!,
+        analysis: {
+          ...base.projectKnowledge!.analysis,
+          changeSummary: {
+            ...base.projectKnowledge!.analysis.changeSummary!,
+            isInitialRun: true,
+            baselineStatus: 'none',
+            changedSections: [],
+            addedModules: [],
+          },
+        },
+      },
+    });
+
+    const output = formatRunSummary({ config: buildConfig(), result }).join('\n');
+
+    assert.match(output, /- Initial run: yes \(baseline created\)/);
+    assert.doesNotMatch(output, /Changed sections/);
+    assert.doesNotMatch(output, /Document impact:/);
   });
 
   it('reports validation failures in the headline', () => {
@@ -222,9 +253,8 @@ describe('formatRunSummary', () => {
     }).join('\n');
 
     assert.match(output, /AI Analysis:/);
-    assert.match(output, /\* Enabled: yes/);
-    assert.match(output, /\* Model: openai\/gpt-4.1-mini/);
-    assert.match(output, /\* Insights generated: yes/);
+    assert.match(output, /- Model: openai\/gpt-4.1-mini/);
+    assert.match(output, /- Insights generated: yes/);
   });
 
   it('reports failed AI analysis with warning hint', () => {
@@ -239,9 +269,9 @@ describe('formatRunSummary', () => {
       }),
     }).join('\n');
 
-    assert.match(output, /\* Enabled: yes/);
-    assert.match(output, /\* Model: openai\/gpt-4.1-mini/);
-    assert.match(output, /\* Insights generated: no \(see warnings\)/);
+    assert.match(output, /AI Analysis:/);
+    assert.match(output, /- Model: openai\/gpt-4.1-mini/);
+    assert.match(output, /- Insights generated: no \(see warnings\)/);
   });
 
   it('reports agent export details when --export-agents is enabled', () => {
@@ -268,10 +298,9 @@ describe('formatRunSummary', () => {
     }).join('\n');
 
     assert.match(output, /Agent exporters:/);
-    assert.match(output, /\* Enabled: yes/);
-    assert.match(output, /\* Targets: generic/);
-    assert.match(output, /\* Files written: 1/);
-    assert.match(output, /\* Files skipped: 0/);
+    assert.match(output, /- Targets: generic/);
+    assert.match(output, /- Files written: 1/);
+    assert.match(output, /- Files skipped: 0/);
   });
 
   it('reports agent export warnings in the run summary', () => {
@@ -293,9 +322,9 @@ describe('formatRunSummary', () => {
       result,
     }).join('\n');
 
-    assert.match(output, /\* Files written: 0/);
-    assert.match(output, /\* Files skipped: 1/);
-    assert.match(output, /\* Warning: skipped agent-pack/);
+    assert.match(output, /- Files written: 0/);
+    assert.match(output, /- Files skipped: 1/);
+    assert.match(output, /- Warning: skipped agent-pack/);
   });
 
   it('prefers the persisted PKM model when insights were generated', () => {
@@ -327,7 +356,7 @@ describe('formatRunSummary', () => {
       result,
     }).join('\n');
 
-    assert.match(output, /\* Model: anthropic\/claude-3.5-sonnet/);
+    assert.match(output, /- Model: anthropic\/claude-3.5-sonnet/);
   });
 
   it('uses configured model when insights were not generated even if PKM has stale aiInsights', () => {
@@ -350,8 +379,8 @@ describe('formatRunSummary', () => {
       result,
     }).join('\n');
 
-    assert.match(output, /\* Model: openai\/gpt-4.1-mini/);
-    assert.match(output, /\* Insights generated: no/);
+    assert.match(output, /- Model: openai\/gpt-4.1-mini/);
+    assert.match(output, /- Insights generated: no/);
   });
 });
 

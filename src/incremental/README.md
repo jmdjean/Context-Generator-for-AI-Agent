@@ -44,10 +44,10 @@ The persisted PKM at `.ai-docs/knowledge/project-knowledge.json` is the baseline
 
 | `change-detector.ts` | Deterministic PKM section comparison |
 
-| `change-summary-formatter.ts` | CLI and summary formatting for change detection output |
+| `change-summary-formatter.ts` | Run-summary formatting for change detection output |
 
 | `document-impact-analyzer.ts` | Maps `changedSections` to impacted Markdown documents |
-| `document-impact-formatter.ts` | CLI and summary formatting for document impact output |
+| `document-impact-formatter.ts` | Run-summary formatting for document impact output |
 
 | `index.ts` | Enrichment helpers and public exports |
 

@@ -64,7 +64,6 @@ export async function executePipeline(
     metrics: createEmptyPipelineMetrics(),
   };
 
-  console.log('');
   console.log('Pipeline:');
 
   for (let i = 0; i < ANALYSIS_PIPELINE.length; i++) {

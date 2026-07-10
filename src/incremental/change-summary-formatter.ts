@@ -38,46 +38,6 @@ export function appendChangeSummaryDetailLines(
   }
 }
 
-export function formatChangeDetectionLines(summary: ChangeSummaryKnowledge): string[] {
-  const lines: string[] = [
-    '',
-    'Change detection:',
-    `Initial run: ${summary.isInitialRun ? 'yes' : 'no'}`,
-  ];
-
-  if (summary.baselineStatus === 'unreadable') {
-    lines.push('Baseline: unreadable snapshot');
-  } else if (summary.baselineStatus === 'repository-mismatch') {
-    lines.push('Baseline: ignored (repository root mismatch)');
-  }
-
-  if (summary.isInitialRun) {
-    appendChangeSummaryDetailLines(lines, summary, '  ');
-    return lines;
-  }
-
-  lines.push('Changed sections:');
-
-  if (summary.changedSections.length === 0) {
-    lines.push('* none');
-    appendChangeSummaryDetailLines(lines, summary, '  ');
-    return lines;
-  }
-
-  for (const section of summary.changedSections) {
-    lines.push(`* ${section}`);
-  }
-
-  appendChangeSummaryDetailLines(lines, summary, '  ');
-  return lines;
-}
-
-export function printChangeDetectionSummary(summary: ChangeSummaryKnowledge): void {
-  for (const line of formatChangeDetectionLines(summary)) {
-    console.log(line);
-  }
-}
-
 export function formatChangeDetectionSummaryLine(summary: ChangeSummaryKnowledge): string {
   if (summary.baselineStatus === 'unreadable') {
     return 'unreadable previous snapshot';
@@ -101,24 +61,24 @@ export function formatRunSummaryChangeDetectionLines(summary: ChangeSummaryKnowl
   const lines: string[] = ['', 'Change detection:'];
 
   if (summary.baselineStatus === 'unreadable') {
-    lines.push('* Initial run: no');
-    lines.push('* Baseline: unreadable snapshot');
+    lines.push('- Initial run: no');
+    lines.push('- Baseline: unreadable snapshot');
   } else if (summary.isInitialRun) {
-    lines.push('* Initial run: yes');
     if (summary.baselineStatus === 'repository-mismatch') {
-      lines.push('* Baseline: ignored (repository root mismatch)');
+      lines.push('- Initial run: yes');
+      lines.push('- Baseline: ignored (repository root mismatch)');
     } else {
-      lines.push('* Changed sections: n/a');
+      lines.push('- Initial run: yes (baseline created)');
     }
   } else {
-    lines.push('* Initial run: no');
+    lines.push('- Initial run: no');
     lines.push(
-      `* Changed sections: ${summary.changedSections.length > 0 ? summary.changedSections.join(', ') : 'none'}`,
+      `- Changed sections: ${summary.changedSections.length > 0 ? summary.changedSections.join(', ') : 'none'}`,
     );
   }
 
   const detailLines: string[] = [];
-  appendChangeSummaryDetailLines(detailLines, summary, '* ');
+  appendChangeSummaryDetailLines(detailLines, summary, '- ');
   lines.push(...detailLines);
 
   return lines;

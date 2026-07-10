@@ -25,6 +25,59 @@ Open `.ai-docs/agent-navigation.md` with your AI coding agent, or load `.ai-docs
 
 ---
 
+## MVP usage flow
+
+1. **Run the CLI** against any project directory: `ai-project-docs ./my-project`.
+2. **Watch the pipeline checklist** — each step prints `✓` (completed), `○` (skipped by design), or `✗` (failed).
+3. **Read the final run summary** — it tells you exactly what happened:
+
+```
+AI Project Docs completed
+
+Project: my-project
+Target: /path/to/my-project
+Docs: .ai-docs
+Duration: 29ms
+Pipeline: 15 completed, 4 skipped
+Technologies: TypeScript, React
+
+Knowledge:
+- Repository tree: generated
+- Files scanned: 42
+- Folders analyzed: 24
+- Modules discovered: 12
+- Dependency edges: 18
+- Conventions detected: 9
+- Navigation entries: 8
+- Knowledge files persisted: 13
+
+Change detection:
+- Initial run: yes (baseline created)
+
+Documentation:
+- Planned: 13
+- Written: 13
+- Skipped unchanged: 0
+- Skipped protected: 0
+
+Validation:
+- Errors: 0
+- Warnings: 2
+- Status: passed
+
+Next steps:
+- Review .ai-docs/README.md
+- Share .ai-docs/agent-navigation.md with your AI coding agent
+- Load .ai-docs/knowledge/project-knowledge.json for machine-readable context
+```
+
+4. **Follow the next steps** — open `.ai-docs/README.md` yourself and hand `.ai-docs/agent-navigation.md` to your AI coding agent.
+5. **Re-run after changes** — the summary switches to incremental mode: `Change detection` lists changed PKM sections, `Document impact` shows how many documents were affected, and only impacted Markdown is rewritten (`Skipped unchanged` counts the rest).
+
+Sections for optional features appear only when you enable them: `AI Analysis` with `--ai`, `Agent exporters` with `--export-agents`. A non-zero exit code plus an `Errors:` section means the run needs attention (see exit codes below).
+
+---
+
 ## What it does
 
 | Stage | Output |
@@ -124,9 +177,9 @@ ai-project-docs --help
 | `2` | Validation failed — generated docs missing or malformed |
 | `3` | Runtime error — pipeline step failed, permission error during write |
 
-When the run completes, the summary includes an **AI Analysis** section (`Enabled`, `Model`, `Insights generated`) — including `no (see warnings)` when `--ai` ran but insights could not be validated.
+When `--ai` is passed, the summary includes an **AI Analysis** section (`Model`, `Insights generated`) — including `no (see warnings)` when the run failed to produce validated insights.
 
-When `--export-agents` is passed, the summary also includes **Agent exporters** (`Enabled`, `Targets`, `Files written`, `Files skipped`).
+When `--export-agents` is passed, the summary includes an **Agent exporters** section (`Targets`, `Files written`, `Files skipped`). Neither section appears when its flag is off.
 
 ---
 

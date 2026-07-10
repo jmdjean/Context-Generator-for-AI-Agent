@@ -198,24 +198,28 @@ The scanner full tree walk (step 3) is implemented. Legacy pipeline steps 5–6 
 
 ## Interpreting CLI output
 
-When `ai-project-docs` finishes, read the final **run summary** — not the per-step `✓` / `○` lines alone.
+CLI output has two parts: a **pipeline checklist** printed while steps run (`✓` completed, `○` skipped, `✗` failed), followed by the final **run summary**. Parse the run summary — the checklist is progress feedback only.
 
-| Summary section | Meaning for agents |
-|---|---|
-| `Project` / `Target` / `Docs` | Which repository was analyzed, the resolved path, and where generated outputs live (default `.ai-docs/`). |
-| `Duration` / `Pipeline` | How long the run took and how many steps completed vs skipped. `Analyze AI Insights` shows `○` unless `--ai` and an API key are provided. `Export Agent Context` shows `○` unless `--export-agents` is provided. |
-| `Technologies` | Detected stack from deterministic detection — use to confirm language/framework context. |
-| `Knowledge` counts | How much structural analysis was produced (repository tree, folders, modules, edges, conventions, navigation). |
-| `AI Analysis` | Whether `--ai` was enabled, which model was used (from PKM when insights were generated), and whether insights were generated (`yes`, `no`, or `no (see warnings)` when `--ai` ran but failed). |
-| `Agent exporters` | Whether `--export-agents` was enabled, which targets ran, and how many export files were written or skipped. |
-| `Documentation` | `Planned` = documents in the plan. `Written` = tool-managed files created or updated. `Skipped unchanged` = generated files left intact because their PKM sections did not change. `Skipped protected` = user-managed files preserved (no overwrite). |
-| `Document impact` | Counts of impacted vs unchanged documents when selective regeneration ran. |
-| `Validation` | `Status: passed` means no blocking documentation errors. Non-zero warnings/errors list details underneath — often preserved user files or empty sections. |
-| `Next steps` | Human and agent entry points after a successful run: `README.md`, `agent-navigation.md`, and `project-knowledge.json`. |
+The summary headline is the run verdict: `AI Project Docs completed` (success), `completed with validation errors`, or `completed with errors`. Sections use `Section:` headers with `- Key: value` bullet lines.
 
-After step **Detect Changes**, the CLI prints a **Change detection** block: `Initial run`, `Changed sections`, and counts for modules, folders, or dependency edges when those sections changed. The run summary also includes **Document impact** (impacted vs unchanged documents) and documentation counts split into `Written`, `Skipped unchanged`, and `Skipped protected`. On incremental runs, only impacted generated Markdown is rewritten; user-created docs without the marker are always preserved. This is PKM snapshot comparison — not file watching or background sync.
+| Summary section | Present | Meaning for agents |
+|---|---|---|
+| `Project` / `Target` / `Docs` | always | Which repository was analyzed, the resolved path, and where generated outputs live (default `.ai-docs/`). |
+| `Duration` / `Pipeline` | always | How long the run took and how many steps completed / skipped / failed. `Analyze AI Insights` shows `○` unless `--ai` and an API key are provided. `Export Agent Context` shows `○` unless `--export-agents` is provided. |
+| `Technologies` | always | Detected stack from deterministic detection — use to confirm language/framework context. |
+| `Knowledge` counts | always | How much structural analysis was produced (repository tree, files scanned, folders, modules, dependency edges, conventions, navigation entries, persisted knowledge files). |
+| `AI Analysis` | only with `--ai` | Which model was used (from PKM when insights were generated) and whether insights were generated (`yes`, `no`, or `no (see warnings)` when the AI run failed). Absent section = AI analysis was off. |
+| `Agent exporters` | only with `--export-agents` | Which targets ran and how many export files were written or skipped. Absent section = exports were off. |
+| `Change detection` | always on completed runs | `Initial run: yes (baseline created)` on the first run. On incremental runs: `Changed sections` plus counts for added/removed modules, folders, or dependency edges when those sections changed. |
+| `Document impact` | incremental runs only | Counts of impacted vs unchanged documents from selective regeneration. Omitted on initial runs (everything is impacted by definition). |
+| `Documentation` | always | `Planned` = documents in the plan. `Written` = tool-managed files created or updated. `Skipped unchanged` = generated files left intact because their PKM sections did not change. `Skipped protected` = user-managed files preserved (no overwrite). |
+| `Validation` | always | `Status: passed` means no blocking documentation errors. Non-zero warnings/errors list details underneath — often preserved user files or empty sections. `Status: not run` means the pipeline failed before validation. |
+| `Errors` | failed runs only | One line per failed pipeline step. Presence of this section means outputs are unreliable. |
+| `Next steps` | successful runs only | Human and agent entry points: `README.md`, `agent-navigation.md`, and `project-knowledge.json`; on incremental runs also `change-summary.json` and `document-impact.json`. |
 
-If the summary ends with `completed with errors` or `completed with validation errors`, treat outputs as unreliable until the `Errors` section is resolved. The CLI uses these exit codes:
+Change detection is PKM snapshot comparison — not file watching or background sync. On incremental runs, only impacted generated Markdown is rewritten; user-created docs without the marker are always preserved.
+
+If the headline says `completed with errors` or `completed with validation errors`, treat outputs as unreliable until the `Errors` section is resolved. The CLI uses these exit codes:
 
 | Code | Meaning |
 |---|---|
