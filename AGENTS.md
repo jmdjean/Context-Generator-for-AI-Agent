@@ -22,7 +22,8 @@ The PKM (`ProjectKnowledge`) is assembled at pipeline step **Build Project Knowl
 |---|---|---|
 | Scanner / detector / planner | `src/domain/` types | Stage output types (mapped into PKM by knowledge builder) |
 | Knowledge enrichment | `src/knowledge/project-knowledge.ts` | Updated `ProjectKnowledge` sections |
-| Deterministic analyzer | `src/analyzers/` | Enrich `ProjectKnowledge` (e.g. `analysis.folderContexts`, `analysis.conventions`, `analysis.navigationMap`) |
+| Deterministic analyzer | `src/analyzers/` (logic) + `src/plugins/` (execution) | Enrich `ProjectKnowledge` via `AnalyzerPlugin`; return `PluginContributions` through `PluginResult` |
+| Technology plugin | `src/plugins/technology/` | Framework-specific `supports()` and `analyze()`; consume PKM only |
 | Any generator (docs, rules, skills…) | `src/knowledge/` | Consume `ProjectKnowledge` |
 
 Upstream analysis stages may still emit their own types. The knowledge builder (`src/knowledge/knowledge-builder.ts`) maps them into the PKM. Do not bypass this step.
@@ -68,15 +69,16 @@ Analysis-stage types live in `src/domain/`. The application contract for generat
 - **Implementing the scanner?** Read `src/domain/repository.ts`. Your code must produce `RepositoryInfo` and `RepositoryNode`.
 - **Adding a new detector?** Read `src/domain/technology.ts`. Your code must contribute to `TechnologyProfile`.
 - **Adding a new document type or framework plan?** Read `src/docs/documentation-plan.ts` and `src/docs/documentation-planner.ts`. Add a new function returning `PlannedDocument[]` and call it from `buildTechnologyDocuments`.
-- **Implementing a deterministic analyzer?** Read `src/analyzers/README.md`. Consume `ProjectKnowledge`; enrich `analysis.folderContexts`, `analysis.modules`, `analysis.dependencyGraph`, `analysis.conventions`, `analysis.navigationMap`, or future analysis sections. Do not scan the filesystem or call OpenRouter. Selective safe reads of well-known config files (`tsconfig.json`, `package.json`) through `RepositoryBoundary` are the only permitted file access.
+- **Implementing a deterministic analyzer?** Read `src/analyzers/README.md` for analysis logic. Pipeline execution goes through `src/plugins/` — implement or wrap logic as an `AnalyzerPlugin`, register it in `PluginRegistry`, and wire it via `PluginManager`. Consume `ProjectKnowledge` through `PluginContext`; use `context.boundary` for safe config reads. Return `PluginContributions` in `PluginResult` — do not mutate PKM directly. Enrich `analysis.folderContexts`, `analysis.modules`, `analysis.dependencyGraph`, `analysis.conventions`, `analysis.navigationMap`, or future analysis sections. Do not scan the filesystem or call OpenRouter.
+- **Creating a technology plugin?** Read `docs/plugins.md` and `src/plugins/README.md`. Implement `TechnologyPlugin` with accurate `supports()` detection. Return `PluginResult` contributions — do not mutate PKM directly. Register in `PluginRegistry`. Do not add framework logic to `src/core/` or `src/analyzers/` unless it is shared structural baseline.
 - **Building or extending the PKM?** Read `src/knowledge/project-knowledge.ts` and `src/knowledge/knowledge-builder.ts`. Map new analysis outputs into `ProjectKnowledge` sections.
 - **Implementing the AI integration?** Read `src/ai/README.md` and `src/ai/ai-analysis-service.ts`. Optional enrichment writes `knowledge.analysis.aiInsights` from a compact PKM summary — never from raw source files.
 - **Implementing PKM persistence?** Read `src/knowledge/knowledge-paths.ts` and `src/knowledge/knowledge-writer.ts`. Use `resolvePathWithinRoot()` — never write outside the target repo.
 - **Implementing a generator (docs writer, future formats)?** Read `src/knowledge/`. Consume `ProjectKnowledge` in memory or load from `.ai-docs/knowledge/project-knowledge.json`.
 - **Implementing an agent exporter?** Read `src/exporters/README.md`. Consume `ProjectKnowledge` only; register in `exporter-registry.ts`. Exporters write derived agent context files (generic pack and Cursor rules today; Claude Code, Codex, and Copilot later). Preserve the generated-file marker policy.
-- **Implementing deterministic document rendering or writing?** Read `src/docs/documentation-plan.ts`, `src/docs/document-template.ts`, `src/docs/markdown-renderers/`, and `src/docs/documentation-writer.ts`. Renderers consume the PKM and are presentation-only — no repository analysis, no filesystem access, no AI. Keep them small and deterministic. Preserve the generated-file marker policy and do not overwrite unmarked files.
+- **Implementing deterministic document rendering or writing?** Read `src/templates/README.md`, `src/docs/documentation-plan.ts`, `src/docs/document-template.ts`, `src/docs/markdown-renderers/`, and `src/docs/documentation-writer.ts`. The template engine (`src/templates/`) renders Markdown from the PKM; renderers behind templates are presentation-only — no repository analysis, no filesystem access, no AI. The documentation writer writes rendered output to disk. Preserve the generated-file marker policy and do not overwrite unmarked files.
 - **Implementing incremental change detection?** Read `src/incremental/README.md`. Load the previous PKM from `.ai-docs/knowledge/project-knowledge.json`, compare against the current in-memory PKM, store `analysis.changeSummary`, and derive `analysis.documentImpact` for selective Markdown regeneration. Do not add file watching or git integration in this layer.
-- **Adding a PKM-powered renderer for a document?** Create `src/docs/markdown-renderers/<name>-renderer.ts`, read only from `ProjectKnowledge`, and register it in `PKM_RENDERERS` in `src/docs/markdown-renderers/index.ts`. Documents without a renderer fall back to the generic template in `document-template.ts`.
+- **Adding a PKM-powered template for a document?** Create `src/docs/markdown-renderers/<name>-renderer.ts` (reads only from `ProjectKnowledge`), register a `TemplateDefinition` in `src/templates/markdown-template.ts`, and add tests in `src/templates/template-engine.test.ts`. Documents without a registered template fall back to the generic template in `document-template.ts`. User-custom templates are not supported yet.
 - **Understanding the full pipeline?** Read `src/domain/pipeline.ts`. The `ANALYSIS_PIPELINE` constant is the authoritative description of every step, its input, and its output.
 - **Wiring a real handler into execution?** Read `src/core/pipeline-orchestrator.ts`. Replace the placeholder call for the relevant step and import the handler from the appropriate module.
 
@@ -124,7 +126,8 @@ Never put scanner logic, detection logic, AI calls, or file writes directly insi
 - `src/scanner/` — reads the target repository from disk, produces `RepositoryInfo` and `RepositoryNode`.
 - `src/detectors/` — detects technology stack from `RepositoryInfo`, produces `TechnologyProfile`. No directory walking.
 - `src/knowledge/` — Project Knowledge Model. Builder assembles `ProjectKnowledge`; writer persists it to `.ai-docs/knowledge/`.
-- `src/docs/` — documentation planning and writing (generators). `documentation-writer.ts` writes from `ProjectKnowledge` only.
+- `src/docs/` — documentation planning and writing (generators). `documentation-writer.ts` writes rendered template output from `ProjectKnowledge` only.
+- `src/templates/` — lightweight template engine. Renders Markdown from the PKM; does not write files, scan repositories, or call AI.
 - `src/ai/` — calls OpenRouter, consumes `ProjectContext`, produces `AnalysisResult`.
 - `src/utils/` — pure utility functions with no side effects and no domain knowledge.
 
@@ -145,6 +148,7 @@ All runtime configuration flows through `src/config/index.ts`. It is the single 
 
 ### Documentation
 - Every folder must have a `README.md` explaining its responsibility.
+- All project documentation must be written in English.
 - If you add a new folder, you must add a `README.md` to it.
 - If you change the architecture, update `docs/architecture.md`.
 - If you change the folder structure, update `docs/folder-structure.md`.
@@ -164,20 +168,31 @@ The project has:
 - Step 4 (Detect Technologies) implemented in `src/detectors/technology-detector.ts` and `src/detectors/package-manager-detector.ts`.
 - Step 7 (Generate Documentation Plan) implemented in `src/docs/documentation-planner.ts` — produces a `DocumentationPlan` with core, agent, and technology-specific documents.
 - Step 8 (Build Project Knowledge) implemented in `src/knowledge/knowledge-builder.ts` — assembles `ProjectKnowledge`.
-- Step 9 (Analyze Folder Knowledge) implemented in `src/analyzers/folder-analyzer.ts` — produces `FolderKnowledge[]` in `analysis.folderContexts`.
-- Step 10 (Analyze Modules) implemented in `src/analyzers/module-analyzer.ts` — produces `ModuleKnowledge[]` in `analysis.modules`.
-- Step 11 (Analyze Dependency Graph) implemented in `src/analyzers/dependency-graph-analyzer.ts` — produces `DependencyGraphKnowledge` in `analysis.dependencyGraph`.
-- Step 12 (Analyze Conventions) implemented in `src/analyzers/convention-analyzer.ts` — produces `ConventionKnowledge[]` in `analysis.conventions` from the PKM, technologies, module knowledge, and safe reads of `tsconfig.json`/`package.json`.
-- Step 13 (Build AI Navigation Map) implemented in `src/analyzers/navigation-map-analyzer.ts` — produces `NavigationMapKnowledge` in `analysis.navigationMap`, telling agents which knowledge sections and documents to read per task type.
+- Step 9–13 (analyzer pipeline steps) execute built-in plugins via `PluginManager` in `src/plugins/` — each wraps the corresponding `src/analyzers/` enrich function and returns `PluginContributions` merged by `plugin-merger.ts`.
+- Step 9 (Analyze Folder Knowledge) — `builtin.folder-analyzer` → `folder-analyzer.ts` → `FolderKnowledge[]` in `analysis.folderContexts`.
+- Step 10 (Analyze Modules) — `builtin.module-analyzer` → `module-analyzer.ts` → `ModuleKnowledge[]` in `analysis.modules`.
+- Step 11 (Analyze Dependency Graph) — `builtin.dependency-analyzer` → `dependency-graph-analyzer.ts` → `DependencyGraphKnowledge` in `analysis.dependencyGraph`.
+- Step 12 (Analyze Conventions) — `builtin.convention-analyzer` → `convention-analyzer.ts` → `ConventionKnowledge[]` in `analysis.conventions`.
+- Step 13 (Build AI Navigation Map) — `builtin.navigation-analyzer` → `navigation-map-analyzer.ts` → `NavigationMapKnowledge` in `analysis.navigationMap`.
+- Technology placeholder plugins registered: `technology.angular` (detection), `technology.react`, `technology.nest`, `technology.node` (supports only).
 - Step 14 (Analyze AI Insights) implemented in `src/ai/ai-analysis-service.ts` — optional OpenRouter enrichment of `analysis.aiInsights` when `--ai` is set and an API key is available. Sends a compact PKM summary only; invalid responses warn and continue.
 - Step 15 (Detect Changes) implemented in `src/incremental/` — compares the current PKM against the previously persisted snapshot, records `analysis.changeSummary`, and derives `analysis.documentImpact` for selective regeneration.
-- Step 16 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — writes Markdown from `ProjectKnowledge`, regenerating only impacted tool-managed files when `documentImpact` is present (all planned docs on initial run).
+- Step 16 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — renders planned documents through `src/templates/template-engine.ts`, then writes Markdown from `ProjectKnowledge`, regenerating only impacted tool-managed files when `documentImpact` is present (all planned docs on initial run).
 - Step 17 (Validate Documentation) implemented in `src/docs/documentation-validator.ts` — verifies written docs exist, carry the generated-file marker, and reports errors/warnings.
 - Step 18 (Export Agent Context) implemented in `src/exporters/` — optional agent export when `--export-agents` is set. Runs generic and/or Cursor exporters based on `--target` (default: `generic`) and stores results in `analysis.agentExports`.
 - Step 19 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/` including `change-summary.json`, `document-impact.json`, and `agent-exports.json` when exports ran.
 - A final CLI run summary in `src/core/run-summary.ts` — printed by `run()` after the pipeline completes.
 
 The scanner full tree walk (step 3) is implemented. Legacy pipeline steps 5–6 (`Build Repository Model`, `Analyze Architecture`) remain skipped placeholders. Optional AI enrichment runs at step 14 after deterministic analyzers.
+
+### Plugin architecture rules
+
+- **Single orchestrator:** Pipeline handlers must call analyzers through `PluginManager` (`pipeline-integration.ts`), never by importing `enrichProjectKnowledgeWith*` directly.
+- **Minimal lifecycle:** `supports()` → `analyze()` / `contribute()` / `export()`. No `initialize()` or `dispose()` in v1.
+- **Error isolation:** Plugin failures produce `failed` status and warnings; they never corrupt `ProjectKnowledge` or stop unrelated plugins.
+- **Contributions over mutation:** Return `PluginContributions` and let `PluginManager` merge. The legacy `result.knowledge` field is accepted for backward compatibility only.
+- **Boundary injection:** Use `context.boundary` from `PluginContext` for safe file reads. Do not create parallel `RepositoryBoundary` instances inside plugins when context already provides one.
+- **Parallel systems:** Markdown (`src/docs/`) and agent export (`src/exporters/`) are not plugin-wired yet. `DocumentationPlugin` and `ExporterPlugin` contracts are reserved for future unification.
 
 ---
 
@@ -242,7 +257,8 @@ The build must succeed with zero TypeScript errors before any commit.
 - Do not add abstractions for hypothetical future requirements.
 - Do not skip updating documentation when you change structure or behavior.
 - Do not add scanner logic, directory walks, or `fs` reads to `src/cli.ts` or `src/core/`. Those belong in `src/scanner/`.
-- Do not add deterministic analysis logic to `src/scanner/` or `src/core/`. Analyzers belong in `src/analyzers/`.
+- Do not add deterministic analysis logic to `src/scanner/` or `src/core/`. Analyzer logic belongs in `src/analyzers/`; pipeline execution goes through `src/plugins/`.
+- Do not add framework-specific analysis to the core. Use technology plugins in `src/plugins/technology/`.
 - Do not add technology detection logic to `src/scanner/`. Detection belongs in `src/detectors/`.
 - Do not put real handler logic directly into `executePipeline`. Import and call handler functions from their respective modules.
 - Do not write PKM JSON files from `src/docs/` — persistence belongs in `src/knowledge/knowledge-writer.ts`.

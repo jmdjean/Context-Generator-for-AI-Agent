@@ -13,7 +13,8 @@ import {
   buildRegenerationPathSet,
   hasGeneratedFileMarker,
 } from './documentation-write-policy';
-import { DocumentRendererKind, renderPlannedDocument } from './markdown-renderers';
+import { renderDocumentWithTemplate } from '../templates/template-engine';
+import { TemplateRenderKind } from '../templates/template-context';
 import { PlannedDocument } from '../domain/documentation-plan';
 
 export interface DocumentationWriteResult {
@@ -31,7 +32,7 @@ export interface DocumentationWriteResult {
 }
 
 type WriteOutcome =
-  | { outcome: 'written'; rendererKind: DocumentRendererKind }
+  | { outcome: 'written'; renderKind: TemplateRenderKind }
   | { outcome: 'skipped-unchanged' }
   | { outcome: 'skipped-protected' };
 
@@ -86,10 +87,10 @@ function writePlannedDocument(
 
   ensureDirectory(path.dirname(outputPath));
 
-  const rendered = renderPlannedDocument(document, knowledge);
+  const rendered = renderDocumentWithTemplate(document, knowledge);
 
-  fs.writeFileSync(outputPath, rendered.markdown, 'utf-8');
-  return { outcome: 'written', rendererKind: rendered.rendererKind };
+  fs.writeFileSync(outputPath, rendered.content, 'utf-8');
+  return { outcome: 'written', renderKind: rendered.renderKind };
 }
 
 export function writeDocumentation(
@@ -119,7 +120,7 @@ export function writeDocumentation(
 
     if (result.outcome === 'written') {
       writtenPaths.push(document.relativePath);
-      if (result.rendererKind === 'pkm') {
+      if (result.renderKind === 'template') {
         pkmPoweredCount += 1;
       } else {
         genericCount += 1;

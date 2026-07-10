@@ -1,0 +1,53 @@
+---
+description: "ai-project-docs: Project Knowledge Model — types, builder, persistence"
+globs: src/knowledge/**/*.ts
+alwaysApply: false
+---
+
+# Knowledge (PKM) — ai-project-docs
+
+Rule exclusive to this repo. Read `src/knowledge/README.md`. Documentation in English.
+
+## Role
+
+**Single source of truth** for the app. Like an AST: stages populate it; generators consume it.
+
+## Key files
+
+| File | Role |
+|---|---|
+| `project-knowledge.ts` | `ProjectKnowledge` types and sections |
+| `knowledge-builder.ts` | `buildProjectKnowledge()` — pure, no I/O |
+| `knowledge-writer.ts` | `persistProjectKnowledge()` — writes JSON |
+| `knowledge-paths.ts` | Safe paths via `resolvePathWithinRoot()` |
+| `accessors.ts` | Read helpers for generators |
+
+## PKM structure
+
+```
+ProjectKnowledge
+├── metadata
+├── repository      ← scanner
+├── technologies    ← detectors
+├── documentation   ← planner
+└── analysis        ← analyzers, AI, incremental, exports
+```
+
+## Extending the schema
+
+1. Add type in `project-knowledge.ts`
+2. Map in `knowledge-builder.ts` if from upstream stage
+3. Persistence via `knowledge-writer.ts` (full + split JSON)
+4. Update generators that consume the new section
+5. Bump `PROJECT_KNOWLEDGE_SCHEMA_VERSION` if breaking
+
+## Persistence
+
+Writes to `.ai-docs/knowledge/` in the **target repo**. Always use `resolvePathWithinRoot()` — never write outside root.
+
+## Hard stops
+
+- Deterministic analysis logic here — belongs in `src/analyzers/`
+- I/O in the builder — builder is pure
+- Generators importing `RepositoryInfo` directly — map to PKM first
+- Generators reaching into raw nested sections — prefer `accessors.ts`

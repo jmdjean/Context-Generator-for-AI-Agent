@@ -1,12 +1,31 @@
 # src/docs
 
-**Responsibility:** Documentation planning, rendering, and writing — deciding which files to generate, rendering their Markdown from the Project Knowledge Model (PKM), and writing them into the target repository's `.ai-docs/` folder.
+**Responsibility:** Documentation planning, rendering orchestration, and writing — deciding which files to generate, routing rendering through the template engine, and writing Markdown into the target repository's `.ai-docs/` folder.
 
-This module is split into three concerns that must stay separate:
+This module is split into four concerns that must stay separate:
 
 1. **Planning** — deciding which documents to generate and what their purpose is.
-2. **Rendering** — translating PKM data into Markdown, one small deterministic renderer per key document.
-3. **Writing** — writing files to disk safely, without overwriting user-managed files.
+2. **Rendering** — translating PKM data into Markdown via renderers (implementation detail behind templates).
+3. **Templating** — dispatching documents to registered templates (`src/templates/`).
+4. **Writing** — writing files to disk safely, without overwriting user-managed files.
+
+---
+
+## Pipeline flow
+
+```
+DocumentationPlan + ProjectKnowledge
+        ↓
+   TemplateEngine (src/templates/)
+        ↓
+   Rendered documents (content only)
+        ↓
+   DocumentationWriter (this module)
+        ↓
+   .ai-docs/*.md
+```
+
+The PKM remains the source of truth. Templates and renderers are presentation-only. The writer handles path resolution, generated-file protection, and disk I/O.
 
 ---
 
@@ -17,16 +36,16 @@ This module is split into three concerns that must stay separate:
 | `documentation-plan.ts` | Application-level types: `DocumentationPlan`, `PlannedDocument` |
 | `documentation-planner.ts` | `createDocumentationPlan()` — deterministic plan from config + metadata |
 | `document-template.ts` | `renderDeterministicDocument()` — generic fallback Markdown template with the generated-file marker |
-| `markdown-renderers/` | PKM-powered renderers for key documents (see below) |
-| `documentation-writer.ts` | `writeDocumentation()` — writes planned docs from `ProjectKnowledge`, supports selective regeneration via `DocumentImpactSummary`, preserves unmarked files, reports written/skipped counts |
+| `markdown-renderers/` | PKM-powered renderers for key documents (wrapped by templates in `src/templates/`) |
+| `documentation-writer.ts` | `writeDocumentation()` — renders via template engine, writes planned docs from `ProjectKnowledge`, supports selective regeneration via `DocumentImpactSummary`, preserves unmarked files, reports written/skipped counts |
 | `documentation-validator.ts` | `validateDocumentation()` — verifies written docs exist, carry the generated marker, and reports errors/warnings |
-| `markdown-renderers.test.ts` | Renderer dispatch and content tests |
+| `markdown-renderers.test.ts` | Renderer dispatch and content tests (delegates to template engine) |
 
 ---
 
 ## Markdown renderers
 
-`markdown-renderers/` contains one renderer per key document plus the dispatch registry:
+`markdown-renderers/` contains one renderer per key document. These are **implementation details** behind registered templates in `src/templates/markdown-template.ts`:
 
 | File | Renders | Reads from PKM |
 |---|---|---|
@@ -38,7 +57,7 @@ This module is split into three concerns that must stay separate:
 | `ai-context-renderer.ts` | `ai-context.md` | Summary across all PKM sections |
 | `implementation-guide-renderer.ts` | `implementation-guide.md` | `analysis.modules`, `analysis.navigationMap`, `metadata` |
 | `render-helpers.ts` | — | Shared header/formatting helpers and the `MarkdownRenderer` type |
-| `index.ts` | — | Registry + `renderPlannedDocument()` dispatch (PKM renderer or generic fallback) |
+| `index.ts` | — | Backward-compatible dispatch via template engine |
 
 **Renderer rules:**
 
@@ -46,14 +65,16 @@ This module is split into three concerns that must stay separate:
 - Renderers must be **small and deterministic**: the same PKM always produces the same Markdown.
 - When a PKM section a renderer needs is missing (analysis has not run), the renderer degrades gracefully with an honest "not available yet" note — it never invents content.
 - Every rendered document starts with the generated-file marker so the writer's ownership policy keeps working.
-- Documents without a dedicated renderer (e.g. `README.md`, `change-log.md`, `AGENTS.md`, technology docs) fall back to the generic template in `document-template.ts`.
+- Documents without a registered template (e.g. `README.md`, `change-log.md`, `AGENTS.md`, technology docs) fall back to the generic template in `document-template.ts`.
 
-**Adding a renderer for a new document:**
+**Adding a template for a new document:**
 
 1. Create `markdown-renderers/<name>-renderer.ts` exporting a `MarkdownRenderer` function.
 2. Read only from `ProjectKnowledge`; use the helpers in `render-helpers.ts` for the header and formatting.
-3. Register it in the `PKM_RENDERERS` map in `markdown-renderers/index.ts`.
-4. Add content assertions to `markdown-renderers.test.ts`.
+3. Register a `TemplateDefinition` in `src/templates/markdown-template.ts`.
+4. Add content assertions to `src/templates/template-engine.test.ts` and `markdown-renderers.test.ts`.
+
+See `src/templates/README.md` for the full template contract.
 
 ---
 
@@ -64,10 +85,10 @@ The documentation writer is a **generator**. It consumes only `ProjectKnowledge`
 - `writeDocumentation(knowledge, impactSummary?)` resolves paths from `knowledge.repository.rootPath` and `knowledge.documentation.plan.docsDir`.
 - When `impactSummary` is omitted, every tool-managed planned document is rewritten (legacy behavior).
 - When `impactSummary` is present, only impacted generated documents are rewritten; unchanged generated files are skipped; missing files are still created.
-- `renderPlannedDocument(document, knowledge)` dispatches to the PKM renderer for that document, or to the generic template when none exists.
+- `renderDocumentWithTemplate(document, knowledge)` in `src/templates/template-engine.ts` dispatches to the registered template for that document, or to the generic fallback when none exists.
 - Markdown is an **output derived from the PKM**. The PKM (persisted to `.ai-docs/knowledge/`) remains the source of truth; Markdown generation must never perform repository analysis of its own.
 
-When adding new rendering logic, read from the appropriate PKM section.
+When adding new rendering logic, read from the appropriate PKM section and register a template.
 
 ---
 
@@ -86,7 +107,7 @@ This decoupling provides several benefits:
 - The plan is deterministic — given the same inputs, it always produces the same list of documents.
 - AI agents reading the plan know what context files will exist before any are written.
 
-The writer stays deterministic as well. Key documents render real PKM data (folders, modules, dependency graph, conventions, navigation map) through the renderers in `markdown-renderers/`; remaining documents use the generic metadata template until they get their own renderer. No AI calls happen during writing.
+The writer stays deterministic as well. Key documents render real PKM data (folders, modules, dependency graph, conventions, navigation map) through templates and renderers; remaining documents use the generic metadata template until they get their own template. No AI calls happen during writing.
 
 ---
 
@@ -176,17 +197,17 @@ Deterministic docs are the safest first implementation of the writing stage:
 - They prove the docs directory, path resolution, and overwrite rules work correctly.
 - They give agents a stable baseline context layer immediately.
 - They avoid pretending that AI analysis exists before that stage is ready — PKM-powered documents state their deterministic origin and current limitations explicitly.
-- They make future enrichment obvious: the AI stage enriches `analysis.aiInsights` in the PKM, and the same renderers automatically surface the richer data without changing ownership semantics.
+- They make future enrichment obvious: the AI stage enriches `analysis.aiInsights` in the PKM, and the same templates automatically surface the richer data without changing ownership semantics.
 
-## AI insights in Markdown renderers
+## AI insights in Markdown templates
 
-Optional AI analysis (pipeline step 14, `--ai`) writes `analysis.aiInsights` into the PKM. Markdown renderers in `markdown-renderers/` read that section at write time (step 15) and append a labeled **AI Insights** block when insights are present.
+Optional AI analysis (pipeline step 14, `--ai`) writes `analysis.aiInsights` into the PKM. Renderers behind templates read that section at write time (step 16) and append a labeled **AI Insights** block when insights are present.
 
 | Rule | Detail |
 |---|---|
 | Source of truth | Deterministic PKM sections rendered above the AI block |
 | Renderer input | `ProjectKnowledge` only — including already-persisted `analysis.aiInsights` |
-| No AI calls | Renderers never invoke OpenRouter or perform repository analysis |
+| No AI calls | Templates and renderers never invoke OpenRouter or perform repository analysis |
 | Opt-in | Without `--ai`, or when insights are missing or empty after sanitization, no AI section is rendered |
 | Documents | `architecture.md`, `ai-context.md`, `implementation-guide.md`, `agent-navigation.md` |
 
@@ -211,13 +232,13 @@ Do not add framework-specific logic directly to `executePipeline`. The orchestra
 
 - `DocumentationPlan` and `PlannedDocument` types.
 - `createDocumentationPlan(docsDir, technologyProfile)` — receives docs directory name and detected technologies, returns a plan deterministically.
-- PKM-powered Markdown renderers (`markdown-renderers/`) — presentation only.
-- Deterministic Markdown rendering for planned documents.
+- PKM-powered Markdown renderers (`markdown-renderers/`) — presentation only, wrapped by templates.
 - Safe overwrite rules for generated files only.
 - Future: per-technology document template functions.
 
 ## What does NOT belong here
 
+- Template registry and dispatch — that belongs in `src/templates/`.
 - Technology detection — that belongs in `src/detectors/`.
 - Repository scanning — that belongs in `src/scanner/`.
 - Repository analysis of any kind — analyzers in `src/analyzers/` enrich the PKM; renderers only present it.
@@ -238,7 +259,7 @@ Do not add framework-specific logic directly to `executePipeline`. The orchestra
 | Fallback technology plan (1 file) | ✅ Done |
 | Deterministic writing to disk | ✅ Done |
 | Generated-file marker protection | ✅ Done |
-| PKM-powered renderers for 7 key documents | ✅ Done |
+| Template engine with 7 key Markdown templates | ✅ Done |
 | Generic fallback template for remaining documents | ✅ Done |
 | Incremental update logic beyond marker checks | ✅ Done (selective regeneration via `documentImpact`) |
 

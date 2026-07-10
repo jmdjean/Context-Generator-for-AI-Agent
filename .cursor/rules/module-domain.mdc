@@ -1,0 +1,31 @@
+---
+description: "ai-project-docs: pure types and declarative pipeline — zero runtime"
+globs: src/domain/**/*.ts
+alwaysApply: false
+---
+
+# Domain — ai-project-docs
+
+Rule exclusive to this repo. Read `src/domain/README.md`. Documentation in English.
+
+## Absolute rule
+
+**Pure types only.** No behavior, no Node.js imports, no dependency on other `src/` modules.
+
+## Main content
+
+- Stage types: `RepositoryInfo`, `TechnologyProfile`, `DocumentationPlan`, etc.
+- `ANALYSIS_PIPELINE` in `pipeline.ts` — declarative description of **what** the pipeline does
+
+## Adding a pipeline step
+
+1. Add entry to `ANALYSIS_PIPELINE` with name, description, input/output types
+2. Real implementation goes in runtime module + `src/core/`
+3. PKM mapping in `src/knowledge/knowledge-builder.ts`
+
+## Hard stops
+
+- `import fs`, `import path`, any Node built-in
+- Functions with side effects
+- Import from `src/knowledge/`, `src/core/`, etc.
+- Execution logic — that is `src/core/pipeline-orchestrator.ts`

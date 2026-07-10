@@ -23,6 +23,8 @@ The PKM lives in `src/knowledge/` as `ProjectKnowledge`. It contains:
 
 Generators (the Markdown writer today; Cursor rules, skills, and agent packs later) read from the PKM. They do not scan the repository or re-detect technologies themselves.
 
+**Plugins** enrich the PKM between assembly and generation. Analyzer plugins consume the PKM and return `PluginResult` contributions; `PluginManager` merges them. Technology plugins add framework-specific knowledge without the core knowing Angular, React, or NestJS internals. Plugins never rescan the repository — they read `knowledge.repository.repositoryTree` and prior `analysis.*` sections, using `RepositoryBoundary` only for whitelisted config reads.
+
 After each pipeline run, the PKM is **persisted** to `.ai-docs/knowledge/` as JSON. That folder is the machine-readable source of truth on disk. Markdown files in `.ai-docs/` are a derived, human/agent-friendly output — not the canonical stored knowledge.
 
 ---
@@ -57,7 +59,7 @@ Future generators and external tools should prefer loading persisted JSON over r
 
 ### Markdown context files
 
-Markdown is an **output derived from the PKM** — presentation, not analysis. Each key document is produced by a small deterministic renderer in `src/docs/markdown-renderers/` that reads one or more PKM sections. It answers the questions an agent asks at the start of every task:
+Markdown is an **output derived from the PKM** — presentation, not analysis. Each key document is produced by a registered template in `src/templates/` that wraps a small deterministic renderer in `src/docs/markdown-renderers/`. Templates consume PKM data only; they never scan the repository or call AI. It answers the questions an agent asks at the start of every task:
 
 - **What is this project's architecture?** → `architecture.md` (technologies, modules, dependency summary)
 - **Where do I start for my task?** → `agent-navigation.md` (per-task-type reading lists from the navigation map)
@@ -67,7 +69,7 @@ Markdown is an **output derived from the PKM** — presentation, not analysis. E
 - **What should I load first?** → `ai-context.md` (PKM summary, key modules, key conventions, limitations)
 - **How do I change things safely?** → `implementation-guide.md`
 
-Each file is written so that an agent loading it gains enough context to make correct decisions without reading the source code first. Renderers never perform repository analysis of their own — the PKM remains the source of truth, and documents state honestly when a PKM section has not been populated yet. Documents without a dedicated renderer use a generic deterministic template until they get one; richer AI analysis is layered into the PKM later and flows through the same renderers.
+Each file is written so that an agent loading it gains enough context to make correct decisions without reading the source code first. Templates and renderers never perform repository analysis of their own — the PKM remains the source of truth, and documents state honestly when a PKM section has not been populated yet. Documents without a registered template use a generic deterministic fallback until they get one; richer AI analysis is layered into the PKM later and flows through the same templates.
 
 ### Agent export files
 
@@ -129,7 +131,7 @@ Re-scanning independently would produce inconsistent results, waste I/O, and byp
 
 Folder names alone are ambiguous. The folder classifier applies deterministic rules: `src` is `source`, `__tests__` is `test`, `dist` is `build-output`. Each `FolderKnowledge` entry includes the classification, evidence signals, and a one-sentence responsibility. Agents load this instead of inventing folder purposes from naming conventions.
 
-`folderContexts` lives in `knowledge.analysis.folderContexts` and is persisted to `analysis.json` and `folders.json`. `folder-structure.md` renders from this data via `src/docs/markdown-renderers/folder-structure-renderer.ts` — it does not re-derive structure from the tree.
+`folderContexts` lives in `knowledge.analysis.folderContexts` and is persisted to `analysis.json` and `folders.json`. `folder-structure.md` renders from this data via the `markdown.folder-structure` template and `folder-structure-renderer.ts` — it does not re-derive structure from the tree.
 
 ### 7. Module discovery gives agents an architectural map
 
@@ -159,7 +161,7 @@ The convention analyzer makes patterns explicit as `ConventionKnowledge` entries
 
 Detection is fully deterministic and runs **before** any AI analysis: the same repository always yields the same convention baseline, at zero token cost, with no model variance. The future AI stage adds interpretation on top of this baseline instead of inventing conventions from scratch — evidence-backed deterministic facts anchor the AI's output.
 
-`conventions` lives in `knowledge.analysis.conventions` and is persisted to `analysis.json` and `conventions.json`. `conventions.md` renders from this PKM section via `src/docs/markdown-renderers/conventions-renderer.ts` — grouping by category and surfacing evidence — it does not re-derive conventions from the repository.
+`conventions` lives in `knowledge.analysis.conventions` and is persisted to `analysis.json` and `conventions.json`. `conventions.md` renders from this PKM section via the `markdown.conventions` template and `conventions-renderer.ts` — grouping by category and surfacing evidence — it does not re-derive conventions from the repository.
 
 ### 10. The navigation map tells agents what to read, per task
 
@@ -315,6 +317,26 @@ Generating documentation for a large repository is expensive. Doing it on every 
 **Why persisted PKM enables this.** Without a machine-readable baseline on disk, each run has no memory of the previous analysis. The PKM snapshot makes cross-run comparison deterministic, testable, and independent of git history or file watchers.
 
 This model also makes the tool composable: a CI system can run it on every commit, inspect `change-summary.json`, and eventually update only the documentation sections affected by that commit's changes.
+
+---
+
+## Why plugins consume PKM instead of rescanning
+
+The repository is scanned once at pipeline step 3. That tree is stored in `knowledge.repository.repositoryTree` and never re-walked during analysis.
+
+Plugins follow the same rule as generators:
+
+1. **Read PKM sections** — `repository`, `technologies`, and prior `analysis.*` contributions from earlier plugins in the execution order.
+2. **Return contributions** — `PluginResult` with folder, module, convention, dependency, or navigation knowledge.
+3. **Use bounded file access only** — `RepositoryBoundary` permits reads of whitelisted config files (`tsconfig.json`, `package.json`) and module-scoped import parsing. No arbitrary directory walks.
+
+Rescanning would break three guarantees:
+
+- **Consistency** — folder, module, and dependency analysis would see different ignore rules or depth limits.
+- **Performance** — large repositories would be walked multiple times per run.
+- **Safety** — `RepositoryBoundary` enforcement would need to be duplicated in every plugin.
+
+The core owns scanning. Plugins own interpretation. Generators own presentation. See [`docs/plugins.md`](plugins.md) for the full plugin contract.
 
 ---
 

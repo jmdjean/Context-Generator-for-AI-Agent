@@ -1,51 +1,35 @@
 import { PlannedDocument } from '../../domain/documentation-plan';
 import { ProjectKnowledge } from '../../knowledge';
-import { renderDeterministicDocument } from '../document-template';
-import { renderAgentNavigationDocument } from './agent-navigation-renderer';
-import { renderAiContextDocument } from './ai-context-renderer';
-import { renderArchitectureDocument } from './architecture-renderer';
-import { renderConventionsDocument } from './conventions-renderer';
-import { renderDependencyMapDocument } from './dependency-map-renderer';
-import { renderFolderStructureDocument } from './folder-structure-renderer';
-import { renderImplementationGuideDocument } from './implementation-guide-renderer';
-import { MarkdownRenderer } from './render-helpers';
+import {
+  hasRegisteredTemplate,
+  REGISTERED_TEMPLATE_OUTPUT_PATHS,
+  renderDocumentWithTemplate,
+} from '../../templates/template-engine';
+import { TemplateRenderKind } from '../../templates/template-context';
 
-export type DocumentRendererKind = 'pkm' | 'generic';
+/** @deprecated Use TemplateRenderKind from src/templates/template-context.ts. Maps `template` to legacy `pkm`. */
+export type DocumentRendererKind = TemplateRenderKind | 'pkm';
 
 export interface RenderedDocument {
   markdown: string;
   rendererKind: DocumentRendererKind;
 }
 
-const PKM_RENDERERS: Readonly<Record<string, MarkdownRenderer>> = {
-  'architecture.md': renderArchitectureDocument,
-  'folder-structure.md': renderFolderStructureDocument,
-  'dependency-map.md': renderDependencyMapDocument,
-  'conventions.md': renderConventionsDocument,
-  'agent-navigation.md': renderAgentNavigationDocument,
-  'ai-context.md': renderAiContextDocument,
-  'implementation-guide.md': renderImplementationGuideDocument,
-};
-
-export const PKM_RENDERED_DOCUMENT_PATHS: ReadonlyArray<string> = Object.keys(PKM_RENDERERS);
+export const PKM_RENDERED_DOCUMENT_PATHS: ReadonlyArray<string> = REGISTERED_TEMPLATE_OUTPUT_PATHS;
 
 export function hasPkmRenderer(relativePath: string): boolean {
-  return relativePath in PKM_RENDERERS;
+  return hasRegisteredTemplate(relativePath);
 }
 
 export function renderPlannedDocument(
   document: PlannedDocument,
   knowledge: ProjectKnowledge,
 ): RenderedDocument {
-  const renderer = PKM_RENDERERS[document.relativePath];
-
-  if (renderer) {
-    return { markdown: renderer(document, knowledge), rendererKind: 'pkm' };
-  }
+  const rendered = renderDocumentWithTemplate(document, knowledge);
 
   return {
-    markdown: renderDeterministicDocument(document, knowledge),
-    rendererKind: 'generic',
+    markdown: rendered.content,
+    rendererKind: rendered.renderKind === 'template' ? 'pkm' : 'generic',
   };
 }
 

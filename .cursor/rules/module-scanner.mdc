@@ -1,0 +1,29 @@
+---
+description: "ai-project-docs: read-only scan of the target repository"
+globs: src/scanner/**/*.ts
+alwaysApply: false
+---
+
+# Scanner — ai-project-docs
+
+Rule exclusive to this repo. Read `src/scanner/README.md`. Documentation in English.
+
+## Responsibility
+
+Read the **target repository** from disk and produce `RepositoryInfo` + `RepositoryNode` tree. Read-only.
+
+## Outputs
+
+- `repository-loader.ts` → metadata (step 2)
+- `repository-scanner.ts` → tree with ignore rules and safety limits (step 3)
+
+## Boundary
+
+Always `RepositoryBoundary` — never read/write outside resolved root. Denied paths: skip, do not force-read.
+
+## Hard stops
+
+- Architectural analysis or module classification — belongs in `src/analyzers/`
+- Technology detection — belongs in `src/detectors/`
+- Write files in the target repo
+- Duplicate directory walks in other modules

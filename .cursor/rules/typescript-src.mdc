@@ -1,0 +1,69 @@
+---
+description: TypeScript patterns when editing src/ (ai-project-docs)
+globs: src/**/*.ts
+alwaysApply: false
+---
+
+# TypeScript — src/ (ai-project-docs)
+
+Rule **exclusive to this repository**. Applies when editing `src/`. Read the folder README before implementing.
+
+Documentation and explanatory comments in source must be **English**.
+
+## Style
+
+- TypeScript **strict** — `tsc` with zero errors
+- `interface` for shapes; `type` for unions/aliases
+- Prefer `const`; explicit types when intent is not obvious
+- No `any` unless genuinely unavoidable and documented inline
+- Comments only for *why*, never *what*
+
+## Ownership (summary)
+
+| Folder | May | Must not |
+|---|---|---|
+| `domain/` | Pure types, `ANALYSIS_PIPELINE` | Node imports, runtime, I/O |
+| `config/` | `RuntimeConfig`, CLI, env | Pipeline logic |
+| `core/` | `executePipeline`, handler dispatch | Scan, detect, AI, file writes |
+| `scanner/` | `RepositoryInfo`, `RepositoryNode` | Architectural analysis |
+| `detectors/` | `TechnologyProfile` | Directory walking |
+| `knowledge/` | PKM types, builder, writer | Deterministic analysis |
+| `analyzers/` | PKM enrichment logic | Pipeline execution (→ plugins) |
+| `plugins/` | `AnalyzerPlugin`, merge contributions | Duplicated analyzer logic |
+| `docs/` + `templates/` | Plan, render, write Markdown | Scan, AI, hardcoded facts |
+| `exporters/` | Agent context from PKM | Scan, AI |
+| `ai/` | OpenRouter, `aiInsights` | Raw source reads |
+| `utils/` | Pure functions, no domain | PKM/pipeline knowledge |
+
+## Plugins vs analyzers
+
+```typescript
+// ✅ Analyzer returns contributions via plugin
+async analyze(context: PluginContext): Promise<PluginResult> {
+  const enriched = enrichFolderKnowledge(context.knowledge);
+  return { contributions: { folderContexts: enriched } };
+}
+
+// ❌ Handler importing enrich directly
+import { enrichProjectKnowledgeWithFolders } from '../analyzers/folder-analyzer';
+```
+
+Register plugins in `PluginRegistry`. Handlers in `pipeline-handlers.ts` use `PluginManager`.
+
+## New pipeline step
+
+1. `src/domain/pipeline.ts` — add step to `ANALYSIS_PIPELINE`
+2. Responsible module — implement handler
+3. `src/core/pipeline-orchestrator.ts` — wire dispatch
+4. Tests colocated with module (`*.test.ts`, run from `dist/` after build)
+
+## Tests
+
+- Pattern: `node --test` (see `package.json` scripts)
+- Tests beside source (`foo.test.ts`)
+- Do not weaken assertions or remove tests without explicit request
+
+## Dependencies
+
+- Prefer Node.js stdlib
+- New dependency needs clear justification — no speculative packages

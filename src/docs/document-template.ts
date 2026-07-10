@@ -58,7 +58,7 @@ ${document.purpose}
 - Source: ${document.source}
 - Priority: ${document.priority}
 
-This document uses the generic deterministic template. Key documents (architecture, folder structure, dependency map, conventions, agent navigation, AI context, implementation guide) have dedicated PKM-powered renderers; this one does not yet, so it captures known repository metadata and planning context only.
+This document uses the generic deterministic template. Key documents (architecture, folder structure, dependency map, conventions, agent navigation, AI context, implementation guide) have dedicated PKM-powered templates; this one does not yet, so it captures known repository metadata and planning context only.
 
 ## How AI agents should use this document
 

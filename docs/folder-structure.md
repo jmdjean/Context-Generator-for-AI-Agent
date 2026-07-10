@@ -139,7 +139,30 @@ Contains:
 
 **When to modify:** When adding a new deterministic analyzer (framework-specific module detection, AST-based import parsing) or extending classification/convention/navigation rules.
 
-**Status:** ✅ Folder knowledge analyzer (step 9), module discovery analyzer (step 10), dependency graph analyzer (step 11), convention analyzer (step 12), and AI navigation map (step 13) implemented.
+**Status:** ✅ Folder knowledge analyzer (step 9), module discovery analyzer (step 10), dependency graph analyzer (step 11), convention analyzer (step 12), and AI navigation map (step 13) implemented. Pipeline steps 9–13 execute these through built-in plugins in `src/plugins/builtin/`.
+
+---
+
+### `src/plugins/`
+
+Plugin contracts, registry, manager, and built-in/technology plugin implementations. The pipeline invokes analyzer plugins through `PluginManager` instead of calling `src/analyzers/` directly.
+
+Contains:
+- `plugin-contract.ts`, `analyzer-plugin.ts`, `technology-plugin.ts` — plugin interfaces
+- `plugin-context.ts` — safe runtime surface (`ProjectKnowledge`, `RuntimeConfig`, `RepositoryBoundary`, `PluginLogger`)
+- `plugin-result.ts`, `plugin-merger.ts` — contribution types and PKM merge logic
+- `plugin-registry.ts`, `plugin-manager.ts` — static registration and execution
+- `pipeline-integration.ts` — bridge used by `pipeline-handlers.ts`
+- `builtin/` — built-in analyzer plugins wrapping `src/analyzers/`
+- `technology/` — placeholder technology plugins (Angular, React, NestJS, Node.js)
+
+**Integration rule:** Plugins consume `ProjectKnowledge` through `PluginContext` and return `PluginResult`. They must not access pipeline internals, rescan the repository, or write output files. Framework-specific logic belongs in technology plugins — not in the core.
+
+**When to modify:** When adding a new analyzer or technology plugin, extending plugin contracts, or enabling future dynamic plugin loading.
+
+**Status:** ✅ Plugin infrastructure, built-in analyzer plugins, and technology placeholders implemented. Dynamic loading not yet implemented.
+
+See also: [`docs/plugins.md`](plugins.md).
 
 ---
 
@@ -163,23 +186,42 @@ Contains:
 
 ---
 
+### `src/templates/`
+
+Lightweight template engine for generated documentation. Separates PKM data, document renderers, Markdown templates, and file writing.
+
+Contains:
+- `template-context.ts` — `TemplateContext`, `TemplateDefinition`, `TemplateRenderResult` contracts.
+- `template-registry.ts` — lookup for registered templates by output path.
+- `markdown-template.ts` — built-in Markdown template definitions wrapping PKM renderers.
+- `template-engine.ts` — `buildTemplateContext()`, `renderDocumentWithTemplate()`, `renderDocumentationPlan()`.
+- `template-engine.test.ts` — registry and rendering tests.
+
+Templates consume **PKM only**. They are presentation-only, deterministic, and never write files — `src/docs/documentation-writer.ts` owns disk output. User-custom templates are not supported yet; the registry is built-in only for v1.
+
+**When to modify:** When adding a new key document template, registering a new built-in template, or extending the template contract.
+
+**Status:** ✅ Done — template engine, registry, seven key Markdown templates, generic fallback, documentation writer integration.
+
+---
+
 ### `src/docs/`
 
-Documentation planning, PKM-powered Markdown rendering, and writing. Decides which files to generate, renders their content from `ProjectKnowledge`, and writes them into the target repository's `.ai-docs/` folder.
+Documentation planning, PKM-powered Markdown rendering, and writing. Decides which files to generate, renders their content through the template engine from `ProjectKnowledge`, and writes them into the target repository's `.ai-docs/` folder.
 
 Contains:
 - `documentation-plan.ts` — application-level types: `DocumentationPlan`, `PlannedDocument`, `DocumentPriority`, `DocumentSource`.
 - `documentation-planner.ts` — `createDocumentationPlan(docsDir, technologyProfile)` returns a deterministic `DocumentationPlan` based on the detected technology stack.
-- `document-template.ts` — generic fallback Markdown template for documents without a dedicated renderer.
-- `markdown-renderers/` — one small deterministic renderer per key document (`architecture.md`, `folder-structure.md`, `dependency-map.md`, `conventions.md`, `agent-navigation.md`, `ai-context.md`, `implementation-guide.md`) plus the dispatch registry (`index.ts`) and shared helpers (`render-helpers.ts`).
-- `documentation-writer.ts` — `writeDocumentation(knowledge)` writes planned docs from `ProjectKnowledge` into the target project's docs directory, reporting PKM-powered vs generic counts.
-- `markdown-renderers.test.ts` — renderer dispatch and content tests.
+- `document-template.ts` — generic fallback Markdown template for documents without a registered template.
+- `markdown-renderers/` — one small deterministic renderer per key document (implementation detail behind templates) plus shared helpers (`render-helpers.ts`).
+- `documentation-writer.ts` — `writeDocumentation(knowledge)` renders via `src/templates/template-engine.ts`, then writes planned docs into the target project's docs directory.
+- `markdown-renderers.test.ts` — renderer dispatch and content tests (delegates to template engine).
 
-The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). Renderers are **presentation-only**: they translate PKM data into Markdown and never analyze the repository. The generated-file marker distinguishes tool-managed files from user-managed files.
+The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). Renderers behind templates are **presentation-only**: they translate PKM data into Markdown and never analyze the repository. The generated-file marker distinguishes tool-managed files from user-managed files.
 
-**When to modify:** When new document types are added, new framework document sets are supported, or a document gets its own PKM-powered renderer.
+**When to modify:** When new document types are added, new framework document sets are supported, or a document gets its own PKM-powered template.
 
-**Status:** Planning implemented (step 7). PKM-powered Markdown rendering and writing implemented (step 14). PKM JSON persistence is in `src/knowledge/` (step 16), not here.
+**Status:** Planning implemented (step 7). Template engine and PKM-powered Markdown writing implemented (step 16). PKM JSON persistence is in `src/knowledge/` (step 19), not here.
 
 ---
 

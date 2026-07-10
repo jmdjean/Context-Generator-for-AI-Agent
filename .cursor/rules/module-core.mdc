@@ -1,0 +1,51 @@
+---
+description: "ai-project-docs: pipeline orchestration — no domain logic"
+globs: src/core/**/*.ts
+alwaysApply: false
+---
+
+# Core (orchestration) — ai-project-docs
+
+Rule exclusive to this repo. Read `src/core/README.md`. Documentation in English.
+
+## Responsibility
+
+Coordinate `ANALYSIS_PIPELINE` via `executePipeline()`. **No** domain logic, scan, detect, AI, or file I/O of its own.
+
+## Files
+
+| File | Role |
+|---|---|
+| `pipeline-orchestrator.ts` | Step loop, dispatch, progress |
+| `pipeline-handlers.ts` | Handlers + `PipelineContext` state |
+| `run-summary.ts` | Final CLI summary |
+| `exit-codes.ts` | Exit codes 0–3 |
+| `index.ts` | `run()` — entry from `cli.ts` |
+
+## Adding a pipeline step
+
+1. Declare in `src/domain/pipeline.ts` (`ANALYSIS_PIPELINE`)
+2. Implement handler in responsible module (scanner, detectors, knowledge, ai, docs…)
+3. Wire in `pipeline-orchestrator.ts` / `pipeline-handlers.ts`
+4. Analyzers: call via `pipeline-integration.ts`, never direct import from `src/analyzers/`
+
+## PipelineContext
+
+Accumulates outputs between steps. Handlers read/write context — no globals.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Success |
+| 1 | User or configuration error |
+| 2 | Documentation validation failed |
+| 3 | Runtime / pipeline error |
+
+## Hard stops
+
+- Scanner logic, directory walks
+- Technology detection
+- OpenRouter calls
+- Doc or PKM file writes
+- Business logic — delegate to the correct module

@@ -79,10 +79,12 @@ function readSafeConfigFile(
   }
 }
 
-function buildDetectionInput(knowledge: ProjectKnowledge): ConventionDetectionInput {
+function buildDetectionInput(
+  knowledge: ProjectKnowledge,
+  boundary: RepositoryBoundary,
+): ConventionDetectionInput {
   const index = indexRepositoryTree(knowledge.repository.repositoryTree);
   const detectedFiles = knowledge.repository.detectedFiles;
-  const boundary = createRepositoryBoundary(knowledge.repository.rootPath);
 
   return {
     docsDir: toPosixPath(knowledge.metadata.docsDir),
@@ -104,8 +106,17 @@ function countByConfidence(
   return conventions.filter((convention) => convention.confidence === confidence).length;
 }
 
-export function analyzeConventions(knowledge: ProjectKnowledge): ConventionAnalysisResult {
-  const input = buildDetectionInput(knowledge);
+export interface ConventionAnalysisOptions {
+  boundary?: RepositoryBoundary;
+}
+
+export function analyzeConventions(
+  knowledge: ProjectKnowledge,
+  options?: ConventionAnalysisOptions,
+): ConventionAnalysisResult {
+  const boundary =
+    options?.boundary ?? createRepositoryBoundary(knowledge.repository.rootPath);
+  const input = buildDetectionInput(knowledge, boundary);
 
   const conventions = sortConventions([
     ...detectTypeScriptConventions(input),
@@ -128,8 +139,9 @@ export function analyzeConventions(knowledge: ProjectKnowledge): ConventionAnaly
 
 export function enrichProjectKnowledgeWithConventions(
   knowledge: ProjectKnowledge,
+  options?: ConventionAnalysisOptions,
 ): { knowledge: ProjectKnowledge; result: ConventionAnalysisResult } {
-  const result = analyzeConventions(knowledge);
+  const result = analyzeConventions(knowledge, options);
   const hasConventions = result.conventions.length > 0;
 
   return {

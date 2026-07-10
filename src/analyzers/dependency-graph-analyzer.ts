@@ -7,7 +7,7 @@ import {
   ModuleKnowledge,
   ProjectKnowledge,
 } from '../knowledge/project-knowledge';
-import { createRepositoryBoundary } from '../scanner/repository-boundary';
+import { createRepositoryBoundary, RepositoryBoundary } from '../scanner/repository-boundary';
 import { toPosixPath } from './folder-constants';
 import { ParsedImport, parseImportsFromRepository } from './import-parser';
 
@@ -232,12 +232,18 @@ function countRelativeImports(parsedImports: readonly ParsedImport[]): number {
   return parsedImports.filter((parsedImport) => parsedImport.importPath.startsWith('.')).length;
 }
 
+export interface DependencyGraphAnalysisOptions {
+  boundary?: RepositoryBoundary;
+}
+
 export function analyzeDependencyGraph(
   knowledge: ProjectKnowledge,
+  options?: DependencyGraphAnalysisOptions,
 ): DependencyGraphAnalysisResult {
   const modules = knowledge.analysis.modules ?? [];
   const moduleIndex = buildModuleIndex(modules);
-  const boundary = createRepositoryBoundary(knowledge.repository.rootPath);
+  const boundary =
+    options?.boundary ?? createRepositoryBoundary(knowledge.repository.rootPath);
   const modulePaths = modules.map((module) => toPosixPath(module.relativePath));
   const parseResult = parseImportsFromRepository(knowledge.repository.repositoryTree, {
     docsDir: knowledge.metadata.docsDir,
@@ -264,8 +270,9 @@ export function analyzeDependencyGraph(
 
 export function enrichProjectKnowledgeWithDependencyGraph(
   knowledge: ProjectKnowledge,
+  options?: DependencyGraphAnalysisOptions,
 ): { knowledge: ProjectKnowledge; result: DependencyGraphAnalysisResult } {
-  const result = analyzeDependencyGraph(knowledge);
+  const result = analyzeDependencyGraph(knowledge, options);
   const hasModules = (knowledge.analysis.modules?.length ?? 0) > 0;
   const hasGraph =
     result.dependencyGraph.nodes.length > 0 || result.dependencyGraph.edges.length > 0;

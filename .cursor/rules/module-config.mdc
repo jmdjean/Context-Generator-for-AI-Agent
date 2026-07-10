@@ -1,0 +1,27 @@
+---
+description: "ai-project-docs: RuntimeConfig — sole place for CLI and env"
+globs: src/config/**/*.ts
+alwaysApply: false
+---
+
+# Config — ai-project-docs
+
+Rule exclusive to this repo. Read `src/config/README.md`. Documentation in English.
+
+## Absolute rule
+
+**Only module** that reads `process.argv` and `process.env`. Produces `RuntimeConfig` for the whole app.
+
+## Adding an option
+
+1. Field on `RuntimeConfig` (`index.ts`)
+2. CLI flag in parser
+3. Env var fallback if applicable
+4. Update `printHelp()` (English)
+5. Update `src/config/README.md` + `docs/architecture.md`
+
+## Hard stops
+
+- Read argv/env in `cli.ts`, `core/`, or any other module
+- Pipeline logic or I/O here
+- Scattered defaults — centralize in `RuntimeConfig`

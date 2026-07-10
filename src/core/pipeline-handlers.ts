@@ -7,11 +7,11 @@ import { detectTechnologies } from '../detectors/technology-detector';
 import { createDocumentationPlan } from '../docs/documentation-planner';
 import { writeDocumentation } from '../docs/documentation-writer';
 import { validateDocumentation } from '../docs/documentation-validator';
-import { enrichProjectKnowledgeWithFolderAnalysis, enrichProjectKnowledgeWithModuleAnalysis, enrichProjectKnowledgeWithDependencyGraph, enrichProjectKnowledgeWithConventions, enrichProjectKnowledgeWithNavigationMap } from '../analyzers';
 import { runAiAnalysis } from '../ai';
 import { buildProjectKnowledge, persistProjectKnowledge, ProjectKnowledge } from '../knowledge';
 import { enrichProjectKnowledgeWithIncrementalAnalysis, describeIncrementalAnalysis, printChangeDetectionSummary, printDocumentImpactSummary } from '../incremental';
 import { runAgentExports, summarizeAgentExportResults } from '../exporters';
+import { ANALYZER_PLUGIN_IDS, executeAnalyzerPluginStep } from '../plugins/pipeline-integration';
 import { createEmptyPipelineMetrics, PipelineRunMetrics } from './pipeline-metrics';
 
 export interface PipelineContext {
@@ -141,13 +141,17 @@ export async function handleAnalyzeFolderKnowledge(
     return placeholderResult(step);
   }
 
-  const { knowledge, result } = enrichProjectKnowledgeWithFolderAnalysis(context.projectKnowledge);
+  const { knowledge, stepStatus, message, metrics } = executeAnalyzerPluginStep(
+    ANALYZER_PLUGIN_IDS.folder,
+    context.projectKnowledge,
+    context.config,
+  );
   context.projectKnowledge = knowledge;
-  context.metrics.foldersAnalyzed = result.totalFolders;
+  context.metrics.foldersAnalyzed = metrics.foldersAnalyzed ?? 0;
 
   return {
-    status: 'completed',
-    message: `analyzed ${result.totalFolders} folder(s), ${result.documentableFolders} documentable`,
+    status: stepStatus,
+    message,
   };
 }
 
@@ -159,13 +163,17 @@ export async function handleAnalyzeModules(
     return placeholderResult(step);
   }
 
-  const { knowledge, result } = enrichProjectKnowledgeWithModuleAnalysis(context.projectKnowledge);
+  const { knowledge, stepStatus, message, metrics } = executeAnalyzerPluginStep(
+    ANALYZER_PLUGIN_IDS.module,
+    context.projectKnowledge,
+    context.config,
+  );
   context.projectKnowledge = knowledge;
-  context.metrics.modulesDiscovered = result.totalModules;
+  context.metrics.modulesDiscovered = metrics.modulesDiscovered ?? 0;
 
   return {
-    status: 'completed',
-    message: `discovered ${result.totalModules} module(s), ${result.highConfidenceModules} high confidence`,
+    status: stepStatus,
+    message,
   };
 }
 
@@ -177,13 +185,17 @@ export async function handleAnalyzeDependencyGraph(
     return placeholderResult(step);
   }
 
-  const { knowledge, result } = enrichProjectKnowledgeWithDependencyGraph(context.projectKnowledge);
+  const { knowledge, stepStatus, message, metrics } = executeAnalyzerPluginStep(
+    ANALYZER_PLUGIN_IDS.dependency,
+    context.projectKnowledge,
+    context.config,
+  );
   context.projectKnowledge = knowledge;
-  context.metrics.dependencyEdges = result.totalEdges;
+  context.metrics.dependencyEdges = metrics.dependencyEdges ?? 0;
 
   return {
-    status: 'completed',
-    message: `built dependency graph with ${result.totalNodes} node(s) and ${result.totalEdges} edge(s)`,
+    status: stepStatus,
+    message,
   };
 }
 
@@ -195,13 +207,17 @@ export async function handleAnalyzeConventions(
     return placeholderResult(step);
   }
 
-  const { knowledge, result } = enrichProjectKnowledgeWithConventions(context.projectKnowledge);
+  const { knowledge, stepStatus, message, metrics } = executeAnalyzerPluginStep(
+    ANALYZER_PLUGIN_IDS.convention,
+    context.projectKnowledge,
+    context.config,
+  );
   context.projectKnowledge = knowledge;
-  context.metrics.conventionsDetected = result.totalConventions;
+  context.metrics.conventionsDetected = metrics.conventionsDetected ?? 0;
 
   return {
-    status: 'completed',
-    message: `detected ${result.totalConventions} convention(s), ${result.highConfidenceConventions} high confidence`,
+    status: stepStatus,
+    message,
   };
 }
 
@@ -213,13 +229,17 @@ export async function handleBuildNavigationMap(
     return placeholderResult(step);
   }
 
-  const { knowledge, result } = enrichProjectKnowledgeWithNavigationMap(context.projectKnowledge);
+  const { knowledge, stepStatus, message, metrics } = executeAnalyzerPluginStep(
+    ANALYZER_PLUGIN_IDS.navigation,
+    context.projectKnowledge,
+    context.config,
+  );
   context.projectKnowledge = knowledge;
-  context.metrics.navigationEntries = result.totalEntries;
+  context.metrics.navigationEntries = metrics.navigationEntries ?? 0;
 
   return {
-    status: 'completed',
-    message: `built navigation map with ${result.totalEntries} entr(ies), ${result.highConfidenceEntries} high confidence`,
+    status: stepStatus,
+    message,
   };
 }
 

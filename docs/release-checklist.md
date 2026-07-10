@@ -15,6 +15,7 @@ Use this checklist before tagging and publishing an MVP release of `ai-project-d
 
 ## Documentation
 
+- [ ] Confirm all user-facing project documentation is written in English
 - [ ] `README.md` — quick start, CLI reference, exit codes, output structure, limitations
 - [ ] `AGENTS.md` — safety constraints, PKM rules, exit code table
 - [ ] `docs/architecture.md` accurate if pipeline or layers changed

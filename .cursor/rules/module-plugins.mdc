@@ -1,0 +1,51 @@
+---
+description: "ai-project-docs: plugin system — analyzer execution in the pipeline"
+globs: src/plugins/**/*.ts
+alwaysApply: false
+---
+
+# Plugins — ai-project-docs
+
+Rule exclusive to this repo. Read `src/plugins/README.md` and `docs/plugins.md`. Documentation in English.
+
+## Role
+
+**Execution and extension** layer. Wraps analyzers (`src/analyzers/`) and technology plugins. Pipeline steps 9–13 go through here.
+
+## Lifecycle v1
+
+1. `supports(knowledge)` → skip if false
+2. `analyze(context)` → returns `PluginResult` with `contributions`
+3. `PluginManager` merges via `plugin-merger.ts`
+
+No `initialize()` / `dispose()`. Plugins are stateless.
+
+## Contracts
+
+| Type | Use today |
+|---|---|
+| `AnalyzerPlugin` | Steps 9–13 (builtin wrappers) |
+| `TechnologyPlugin` | Placeholders in `technology/` |
+| `DocumentationPlugin` | Reserved — docs not plugin-wired yet |
+| `ExporterPlugin` | Reserved — exporters not plugin-wired yet |
+
+## Create an analyzer plugin
+
+1. Implement `AnalyzerPlugin` (new file or under `builtin/`)
+2. `analyze(context)`: read `context.knowledge`; use `context.boundary` for safe reads
+3. Delegate logic to `src/analyzers/enrich*`
+4. Return `{ status: 'completed', contributions: { ... } }`
+5. Static import register in `plugin-registry.ts`
+
+## Internal vs external API
+
+- Pipeline handlers: import **only** `pipeline-integration.ts` (`executeAnalyzerPluginStep`)
+- Plugin authors: import from `src/plugins/index.ts`
+- Do not import `PipelineContext` inside plugins
+
+## Hard stops
+
+- Mutate PKM directly — use `contributions`
+- Re-scan the repository
+- Write generated outputs
+- Plugin failure corrupting PKM — failures isolate with warnings

@@ -10,6 +10,8 @@ AI agents need folder-level context before they read source code: what each dire
 
 The scanner produces a raw `RepositoryNode` tree; analyzers translate that tree and selective file reads into structured knowledge agents can trust.
 
+Pipeline steps 9–13 execute these analyzers through built-in plugins in `src/plugins/builtin/`. The analysis logic remains here; plugins are the execution and extension layer.
+
 Analyzers consume `ProjectKnowledge` — especially `knowledge.repository.repositoryTree` and prior analysis sections — and write results back into PKM sections (`knowledge.analysis.folderContexts`, `knowledge.analysis.modules`, `knowledge.analysis.dependencyGraph`, `knowledge.analysis.conventions`, `knowledge.analysis.navigationMap`).
 
 ---

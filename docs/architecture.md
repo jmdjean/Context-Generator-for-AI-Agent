@@ -44,11 +44,13 @@ This separation means a new output format only needs a new generator. It does no
 ├─────────────────────────────────────────────────┤
 │  src/scanner/        File system reading        │  ✅ metadata + recursive tree scan
 │  src/detectors/      Technology detection       │  ✅ done — top-level detection
-│  src/analyzers/      PKM enrichment analyzers   │  ✅ folder, module, dependency, conventions
+│  src/analyzers/      PKM enrichment logic (wrapped by plugins) │  ✅ folder, module, dependency, conventions
+│  src/plugins/        Plugin contracts, registry, manager        │  ✅ built-in + technology placeholders
 │  src/knowledge/      Project Knowledge Model    │  ✅ done — PKM types + builder
 │  src/ai/             OpenRouter integration     │  ✅ optional --ai enrichment
-│  src/docs/           Generators (Markdown…)     │  ✅ planning + PKM-powered rendering + writing
-│  src/exporters/      Agent context exporters    │  ✅ generic pack + Cursor rules (--export-agents)
+│  src/docs/           Generators (Markdown…)     │  ✅ planning + writing
+│  src/templates/      Markdown template engine     │  ✅ PKM → rendered content
+│  src/exporters/      Agent context exporters      │  ✅ generic pack + Cursor rules (--export-agents)
 ├─────────────────────────────────────────────────┤
 │  src/domain/         Pipeline + legacy types    │  ✅ done
 │  src/utils/          Pure shared helpers        │  ✅ done
@@ -85,7 +87,83 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 19. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
 ```
 
-Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14 (when `--ai` + API key), 15, 16, 17, 18 (when `--export-agents`), and 19 are implemented. Step 8 assembles the PKM in memory; steps 9–13 enrich deterministic `analysis.*` sections; step 14 optionally enriches `analysis.aiInsights` from a compact PKM summary (no source code); step 15 compares against the previous persisted PKM and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 optionally runs agent exporters and records `analysis.agentExports`; step 19 persists JSON. Steps 5 and 6 still have placeholder handlers.
+Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14 (when `--ai` + API key), 15, 16, 17, 18 (when `--export-agents`), and 19 are implemented. Step 8 assembles the PKM in memory; steps 9–13 execute built-in analyzer plugins via `PluginManager` (wrapping `src/analyzers/`); step 14 optionally enriches `analysis.aiInsights` from a compact PKM summary (no source code); step 15 compares against the previous persisted PKM and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 optionally runs agent exporters and records `analysis.agentExports`; step 19 persists JSON. Steps 5 and 6 still have placeholder handlers.
+
+---
+
+## Plugin architecture
+
+The core application is **plugin-driven**. It does not embed framework-specific analysis. Technology behavior (Angular, React, NestJS, Java, .NET, and future stacks) is implemented as plugins registered in `src/plugins/`.
+
+### Core responsibilities
+
+| Responsibility | Module |
+|---|---|
+| Load repository | `src/scanner/` |
+| Detect base technologies | `src/detectors/` |
+| Build PKM | `src/knowledge/` |
+| Execute plugins | `src/plugins/plugin-manager.ts` |
+| Merge plugin results | `src/plugins/plugin-merger.ts` |
+| Export outputs | `src/docs/`, `src/exporters/` |
+
+### Plugin execution flow
+
+```mermaid
+flowchart TD
+  A[Pipeline step handler] --> B[pipeline-integration.ts]
+  B --> C[PluginManager]
+  C --> D[PluginRegistry]
+  D --> E[Built-in analyzer plugin]
+  E --> F["plugin.analyze(context)"]
+  F --> G[PluginResult]
+  G --> H{status completed?}
+  H -->|no| I[PKM unchanged]
+  H -->|yes| J{contributions or knowledge?}
+  J -->|contributions| K[mergePluginContributions]
+  J -->|knowledge| L[Use result.knowledge]
+  K --> M[Updated ProjectKnowledge]
+  L --> M
+  I --> N[Continue pipeline]
+  M --> N
+```
+
+Steps 9–13 each invoke one built-in analyzer plugin through `executeAnalyzerPluginStep()` in `src/plugins/pipeline-integration.ts`. Built-in plugins return `PluginContributions` that `PluginManager` merges with the same semantics as the underlying `enrichProjectKnowledgeWith*` functions in `src/analyzers/`.
+
+### Dependency boundaries
+
+| Layer | Must not depend on |
+|---|---|
+| `src/core/` | Technology plugins, framework-specific logic |
+| `src/plugins/technology/` | CLI, `PipelineContext` |
+| `src/exporters/` | Scanner |
+| `src/docs/` | Repository scanner |
+| `src/analyzers/` | `src/plugins/` (logic only; execution goes through plugins) |
+
+Analyzers consume PKM data. Safe config reads use `RepositoryBoundary` — either from `PluginContext.boundary` (preferred) or created from `knowledge.repository.rootPath` when called directly in tests.
+
+### Parallel generator systems (not yet plugin-wired)
+
+| Concern | Current module | Future contract |
+|---|---|---|
+| Markdown docs | `src/docs/documentation-writer.ts` | `DocumentationPlugin` |
+| Agent exports | `src/exporters/` (`AgentExporter`) | `ExporterPlugin` |
+
+Both consume `ProjectKnowledge` only. They do not rescan repositories or call OpenRouter.
+
+Technology plugins (`technology.angular`, `technology.react`, `technology.nest`, `technology.node`) are registered but not yet executed during the default pipeline. `AngularPlugin` implements `supports()` with framework and `angular.json` detection; others are placeholders.
+
+### Plugin context boundary
+
+Plugins receive `PluginContext` only:
+
+- `ProjectKnowledge` — current PKM snapshot
+- `RuntimeConfig` — resolved configuration
+- `RepositoryBoundary` — safe relative file access
+- `PluginLogger` — structured logging
+
+Plugins must not access `PipelineContext`, raw `process.argv`, or internal pipeline state.
+
+Full plugin documentation: [`docs/plugins.md`](plugins.md).
 
 ---
 
@@ -197,7 +275,7 @@ Results are stored in `knowledge.analysis.modules` and persisted to `analysis.js
 
 Structural folder names (`apps/`, `packages/`, `src/features/`) are reliable signals that do not require reading file contents or calling an AI provider. Deterministic module discovery gives agents a baseline navigation map on every pipeline run — fast, reproducible, and free of model variance.
 
-AI architecture analysis (step 6, future) will enrich deeper fields like conventions and navigation graphs. Framework-specific module analyzers (Angular NgModules, NestJS modules, Nx projects) can be added later as specialized classifiers that extend the same PKM section without replacing the structural baseline.
+AI architecture analysis (step 6, future) will enrich deeper fields like conventions and navigation graphs. Framework-specific module analyzers (Angular NgModules, NestJS modules, Nx projects) are added as **technology plugins** in `src/plugins/technology/` — not as core pipeline logic. Built-in analyzer plugins in `src/plugins/builtin/` wrap the structural baseline in `src/analyzers/`.
 
 ### Dependency graph analyzer
 
@@ -336,23 +414,43 @@ Exported files use the same generated-file marker policy as Markdown docs and ar
 
 The writer is a **generator**: it reads only from the PKM. It does not receive `RuntimeConfig` and does not call the scanner or detectors directly.
 
-### PKM-powered Markdown renderers
+### Template engine
 
-Rendering is split from writing. `src/docs/markdown-renderers/` contains one small deterministic renderer per key document, plus a dispatch registry:
+Rendering is split from writing. `src/templates/` provides a lightweight template engine that sits between PKM data and file output:
 
-| Document | Renderer | PKM sections rendered |
-|---|---|---|
-| `architecture.md` | `architecture-renderer.ts` | technologies, modules, architectural conventions, dependency graph summary, architecture-change guidance |
-| `folder-structure.md` | `folder-structure-renderer.ts` | folder contexts grouped by classification, responsibilities, important files, ignored folders |
-| `dependency-map.md` | `dependency-map-renderer.ts` | graph nodes, edges, per-edge import evidence, lightweight-graph warning |
-| `conventions.md` | `conventions-renderer.ts` | conventions grouped by category with description, confidence, and evidence |
-| `agent-navigation.md` | `agent-navigation-renderer.ts` | per-task-type reading lists, related modules/folders, warnings |
-| `ai-context.md` | `ai-context-renderer.ts` | PKM summary, read-first list, key modules, key conventions, current limitations |
-| `implementation-guide.md` | `implementation-guide-renderer.ts` | safe-change steps seasoned with actual module and navigation data |
+```
+DocumentationPlan + ProjectKnowledge
+        ↓
+   TemplateEngine (src/templates/)
+        ↓
+   Rendered documents (content only)
+        ↓
+   DocumentationWriter (src/docs/)
+        ↓
+   .ai-docs/*.md
+```
 
-Documents without a dedicated renderer (`README.md`, `change-log.md`, `AGENTS.md`, technology docs) fall back to the generic deterministic template in `document-template.ts`. The writer reports both counts (`PKM-powered documents` / `Generic documents`).
+`TemplateDefinition` objects register built-in Markdown templates by output path. Each template's `render(context)` receives `TemplateContext` (`knowledge`, `generatedAt`, `docsDir`) and returns a Markdown string. The engine never writes files, scans the repository, or calls AI.
 
-**Renderer rules:** renderers are presentation-only. They must not analyze the repository, read the filesystem, or call AI — facts come exclusively from the PKM, which remains the source of truth. Markdown is a derived output. Renderers stay small and deterministic: the same PKM always yields the same Markdown, and missing PKM sections render as honest "not available yet" notes.
+User-custom templates are not supported yet. The registry is internal and built-in only for v1.
+
+### PKM-powered Markdown templates
+
+Key documents are rendered through registered templates that wrap small deterministic renderers in `src/docs/markdown-renderers/`:
+
+| Document | Template ID | Renderer | PKM sections rendered |
+|---|---|---|---|
+| `architecture.md` | `markdown.architecture` | `architecture-renderer.ts` | technologies, modules, architectural conventions, dependency graph summary, architecture-change guidance |
+| `folder-structure.md` | `markdown.folder-structure` | `folder-structure-renderer.ts` | folder contexts grouped by classification, responsibilities, important files, ignored folders |
+| `dependency-map.md` | `markdown.dependency-map` | `dependency-map-renderer.ts` | graph nodes, edges, per-edge import evidence, lightweight-graph warning |
+| `conventions.md` | `markdown.conventions` | `conventions-renderer.ts` | conventions grouped by category with description, confidence, and evidence |
+| `agent-navigation.md` | `markdown.agent-navigation` | `agent-navigation-renderer.ts` | per-task-type reading lists, related modules/folders, warnings |
+| `ai-context.md` | `markdown.ai-context` | `ai-context-renderer.ts` | PKM summary, read-first list, key modules, key conventions, current limitations |
+| `implementation-guide.md` | `markdown.implementation-guide` | `implementation-guide-renderer.ts` | safe-change steps seasoned with actual module and navigation data |
+
+Documents without a registered template (`README.md`, `change-log.md`, `AGENTS.md`, technology docs) fall back to `markdown.generic` via the generic deterministic template in `document-template.ts`. The writer reports both counts (`PKM-powered documents` / `Generic documents`).
+
+**Template and renderer rules:** templates and renderers are presentation-only. They must not analyze the repository, read the filesystem, or call AI — facts come exclusively from the PKM, which remains the source of truth. Templates are deterministic: the same PKM always yields the same Markdown, and missing PKM sections render as honest "not available yet" notes. Future users can customize templates later without changing the writer or PKM schema.
 
 ### Write safety
 

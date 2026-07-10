@@ -32,13 +32,19 @@ Open `.ai-docs/agent-navigation.md` with your AI coding agent, or load `.ai-docs
 | Repository scan | Folder tree with ignore rules and safety limits |
 | Technology detection | Languages, frameworks, package managers |
 | PKM assembly | Single machine-readable knowledge model |
-| Deterministic analyzers | Folders, modules, dependencies, conventions, navigation map |
-| Markdown generation | Docs rendered **from the PKM** (not by re-scanning the repo) |
+| Deterministic analyzers | Folders, modules, dependencies, conventions, navigation map (via plugins) |
+| Markdown generation | Docs rendered **from the PKM** via the template engine (not by re-scanning the repo) |
 | Validation + summary | Exit code, counts, and next steps in the terminal |
 | Change detection | Compares current PKM to previous snapshot; persists `change-summary.json` |
 | Selective regeneration | Rewrites only impacted generated Markdown based on PKM section changes |
 
 The authoritative output is `.ai-docs/knowledge/project-knowledge.json`. Markdown files are derived presentations.
+
+### Plugin architecture
+
+Analysis is **plugin-driven**. The core loads the repository, builds the PKM, and executes registered plugins through `PluginManager`. Framework-specific logic (Angular, React, NestJS, and future stacks) lives in technology plugins — not in the core.
+
+Built-in analyzer plugins wrap the existing deterministic analyzers and return `PluginContributions` merged by `PluginManager`. Observable CLI behavior and generated outputs are unchanged. See [`docs/plugins.md`](docs/plugins.md).
 
 ---
 
@@ -201,7 +207,8 @@ node dist/cli.js .   # analyze this repository
 |---|---|
 | CLI, scanner, detectors | Done |
 | PKM + deterministic analyzers | Done |
-| PKM-powered Markdown + validation | Done |
+| Plugin architecture (built-in + technology placeholders) | Done |
+| PKM-powered Markdown + template engine + validation | Done |
 | OpenRouter integration (optional `--ai`) | Done |
 | Change detection (PKM diff) | Done |
 | Selective regeneration from change summary | Done |
@@ -214,15 +221,20 @@ node dist/cli.js .   # analyze this repository
 ## Architecture
 
 ```
-Repository → Scanner → Detection → PKM → Generators → .ai-docs/
+Repository → Scanner → Detection → PKM → Plugins → Template Engine → Generators → .ai-docs/
 ```
 
-Details: [`docs/architecture.md`](docs/architecture.md)
+PKM data flows through a lightweight template engine (`src/templates/`) before Markdown is written. Templates are presentation-only and deterministic; the PKM remains the source of truth.
+
+The core no longer embeds framework-specific analysis. Technology behavior is implemented as plugins.
+
+Details: [`docs/architecture.md`](docs/architecture.md) · [`docs/plugins.md`](docs/plugins.md)
 
 ---
 
 ## Contributing
 
+- Project documentation should be kept in English across `README.md`, `docs/`, `AGENTS.md`, and folder-level `README.md` files.
 - [`AGENTS.md`](AGENTS.md) — conventions, PKM rules, safety constraints
 - [`docs/release-checklist.md`](docs/release-checklist.md) — pre-release verification
 

@@ -1,0 +1,52 @@
+---
+description: "ai-project-docs: deterministic analyzers that enrich the PKM"
+globs: src/analyzers/**/*.ts
+alwaysApply: false
+---
+
+# Analyzers — ai-project-docs
+
+Rule exclusive to this repo. Read `src/analyzers/README.md` before editing. Documentation in English.
+
+## Responsibility
+
+Translate data already in the PKM (`repositoryTree`, prior sections) into structured knowledge. **Do not** re-scan the filesystem or call AI.
+
+## PKM sections this module feeds
+
+| Analyzer | PKM field |
+|---|---|
+| `folder-analyzer.ts` | `analysis.folderContexts` |
+| `module-analyzer.ts` | `analysis.modules` |
+| `dependency-graph-analyzer.ts` | `analysis.dependencyGraph` |
+| `convention-analyzer.ts` | `analysis.conventions` |
+| `navigation-map-analyzer.ts` | `analysis.navigationMap` |
+
+## Pipeline execution
+
+Logic lives here; **execution** goes through plugins in `src/plugins/builtin/`. Handlers call `PluginManager`, not `enrichProjectKnowledgeWith*` directly.
+
+```
+pipeline-handlers → pipeline-integration → PluginManager → builtin plugin → src/analyzers/
+```
+
+## File reads
+
+- Use `RepositoryBoundary` via `PluginContext.boundary`
+- Allowed: known configs (`tsconfig.json`, `package.json`)
+- `import-parser.ts`: regex only, no AST; limitations documented in README
+
+## Adding an analyzer
+
+1. Implement `enrich*` function (pure or boundary-controlled)
+2. Create plugin wrapper in `src/plugins/builtin/`
+3. Register in `PluginRegistry` / `BUILTIN_ANALYZER_PLUGINS`
+4. Return `PluginContributions` — do not mutate PKM in place
+5. Tests: `src/analyzers/*.test.ts`
+
+## Hard stops
+
+- Directory walk independent of PKM tree
+- OpenRouter or any external API
+- Write files or modify target repo source
+- Framework-specific logic — belongs in `src/plugins/technology/`
