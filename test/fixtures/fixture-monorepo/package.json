@@ -1,0 +1,10 @@
+{
+  "name": "my-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A monorepo-like fixture for testing multi-module discovery",
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@myorg/web",
+  "version": "1.0.0",
+  "description": "Web application",
+  "main": "dist/main.js",
+  "dependencies": {
+    "@myorg/shared": "workspace:*"
+  }
+}

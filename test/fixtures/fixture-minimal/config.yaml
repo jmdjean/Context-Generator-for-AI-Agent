@@ -1,0 +1,5 @@
+name: minimal-project
+version: "1.0"
+settings:
+  debug: false
+  timeout: 30

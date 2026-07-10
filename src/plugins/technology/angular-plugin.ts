@@ -19,7 +19,7 @@ export const angularPlugin: TechnologyPlugin = {
   id: 'technology.angular',
   name: 'Angular',
   description: 'Technology plugin for Angular projects. Detection only in v1.',
-  version: '0.1.0',
+  version: '1.0.0',
   kind: 'technology',
   framework: 'Angular',
 

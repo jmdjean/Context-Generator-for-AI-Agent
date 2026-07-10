@@ -38,7 +38,7 @@ Project: my-project
 Target: /path/to/my-project
 Docs: .ai-docs
 Duration: 29ms
-Pipeline: 15 completed, 4 skipped
+Pipeline: 16 completed, 2 skipped
 Technologies: TypeScript, React
 
 Knowledge:
@@ -127,7 +127,7 @@ The score is calculated **from the PKM and the validation result only** — no r
 
 ## What it does not do yet
 
-- Cursor rules, skills, or other agent-specific exporters
+- Additional agent exporters (Claude Code, Codex, Copilot) — planned
 - File watching or git-based incremental sync
 - Any modification of project source files
 
