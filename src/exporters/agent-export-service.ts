@@ -108,12 +108,6 @@ export function summarizeAgentExportResults(
   return {
     filesWritten,
     filesSkipped,
-    warnings: summary.warnings ?? resultsWarnings(summary.results),
+    warnings: summary.warnings,
   };
-}
-
-function resultsWarnings(
-  results: ReadonlyArray<AgentExportResultKnowledge>,
-): string[] {
-  return results.flatMap((result) => result.warnings);
 }

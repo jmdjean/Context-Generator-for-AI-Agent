@@ -5,7 +5,7 @@
 System design, layer diagram, and key architectural decisions
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-08T23:17:35.065Z
+- Generated: 2026-07-11T00:34:27.223Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -77,9 +77,9 @@ High-confidence relationships:
 - `src/analyzers` → `src/knowledge` (imports)
 - `src/analyzers` → `src/scanner` (imports)
 - `src/analyzers` → `src/utils` (imports)
+- `src/config` → `src/ai` (imports)
 - `src/config` → `src/knowledge` (imports)
 - `src/config` → `src/utils` (imports)
-- `src/core` → `src/ai` (imports)
 - …and 17 more
 
 See `dependency-map.md` for the full node and edge list with evidence.

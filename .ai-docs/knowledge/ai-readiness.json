@@ -1,0 +1,375 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
+  "aiReadiness": {
+    "overallScore": 100,
+    "level": "excellent",
+    "categories": [
+      {
+        "id": "repository-structure",
+        "name": "Repository Structure",
+        "score": 100,
+        "weight": 20,
+        "findings": [
+          {
+            "id": "repository-tree-generated",
+            "status": "passed",
+            "description": "The repository tree was generated and persisted in the PKM.",
+            "evidence": [
+              "repository tree contains 220 file(s) and 38 folder(s)"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          },
+          {
+            "id": "source-folders-identified",
+            "status": "passed",
+            "description": "Source folders were identified by the folder analyzer.",
+            "evidence": [
+              "26 folder(s) classified as source out of 39 analyzed"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          },
+          {
+            "id": "generated-folders-excluded",
+            "status": "passed",
+            "description": "Ignored and generated folders were excluded from the scan.",
+            "evidence": [
+              "24 path(s) excluded, e.g. dist, build, out"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "folder-responsibilities-inferred",
+            "status": "passed",
+            "description": "Important folders have inferred responsibilities.",
+            "evidence": [
+              "37 of 39 analyzed folder(s) have a known classification and responsibility"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          },
+          {
+            "id": "modules-discovered",
+            "status": "passed",
+            "description": "Modules were discovered from the repository structure.",
+            "evidence": [
+              "12 module(s) in analysis.modules"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "architecture-knowledge",
+        "name": "Architecture Knowledge",
+        "score": 100,
+        "weight": 20,
+        "findings": [
+          {
+            "id": "modules-defined",
+            "status": "passed",
+            "description": "The PKM contains discovered modules.",
+            "evidence": [
+              "12 module(s) in analysis.modules"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "module-responsibilities-documented",
+            "status": "passed",
+            "description": "Discovered modules carry responsibilities and types.",
+            "evidence": [
+              "12 of 12 module(s) have a responsibility and a known type"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          },
+          {
+            "id": "dependency-graph-generated",
+            "status": "passed",
+            "description": "A module dependency graph was generated.",
+            "evidence": [
+              "10 node(s) and 27 edge(s) in analysis.dependencyGraph"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          },
+          {
+            "id": "dependency-edges-evidence-backed",
+            "status": "passed",
+            "description": "Dependency edges are backed by import evidence.",
+            "evidence": [
+              "27 of 27 dependency edge(s) carry import evidence"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          },
+          {
+            "id": "architecture-boundaries-detected",
+            "status": "passed",
+            "description": "Architecture boundaries or structural conventions were detected.",
+            "evidence": [
+              "15 architecture/repository-structure convention(s) out of 31 total"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "documentation-coverage",
+        "name": "Documentation Coverage",
+        "score": 100,
+        "weight": 20,
+        "findings": [
+          {
+            "id": "documentation-plan-defined",
+            "status": "passed",
+            "description": "A documentation plan with required documents exists.",
+            "evidence": [
+              "12 planned document(s), 11 required"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "required-context-documents-present",
+            "status": "passed",
+            "description": "All required context documents are planned and generated.",
+            "evidence": [
+              "7 of 7 required context document(s) present"
+            ],
+            "points": 10,
+            "maxPoints": 10
+          },
+          {
+            "id": "documentation-validation-passed",
+            "status": "passed",
+            "description": "Documentation validation passed.",
+            "evidence": [
+              "0 error(s), 0 warning(s)"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "agent-navigation",
+        "name": "Agent Navigation",
+        "score": 100,
+        "weight": 15,
+        "findings": [
+          {
+            "id": "navigation-map-generated",
+            "status": "passed",
+            "description": "A task navigation map for AI agents exists.",
+            "evidence": [
+              "8 navigation entr(ies) in analysis.navigationMap"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "common-tasks-covered",
+            "status": "passed",
+            "description": "All common task types have navigation guidance.",
+            "evidence": [
+              "6 of 6 common task type(s) covered"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "navigation-recommends-documents",
+            "status": "passed",
+            "description": "Navigation entries recommend documents to read first.",
+            "evidence": [
+              "8 of 8 entr(ies) recommend at least one document"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "navigation-includes-warnings",
+            "status": "passed",
+            "description": "Navigation entries include cautionary warnings for agents.",
+            "evidence": [
+              "8 of 8 entr(ies) include warnings"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "navigation-grounded-in-pkm",
+            "status": "passed",
+            "description": "Navigation references resolve to known documents, modules, and folders.",
+            "evidence": [
+              "8 of 8 entr(ies) fully grounded in the PKM"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "project-conventions",
+        "name": "Project Conventions",
+        "score": 100,
+        "weight": 15,
+        "findings": [
+          {
+            "id": "structured-conventions-detected",
+            "status": "passed",
+            "description": "Structured project conventions were detected.",
+            "evidence": [
+              "31 convention(s) in analysis.conventions"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "conventions-evidence-backed",
+            "status": "passed",
+            "description": "Detected conventions are backed by evidence.",
+            "evidence": [
+              "31 of 31 convention(s) carry evidence"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "testing-convention-detected",
+            "status": "passed",
+            "description": "A testing convention was detected.",
+            "evidence": [
+              "45 test file signal(s); testing convention present"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "package-manager-convention-detected",
+            "status": "passed",
+            "description": "A package manager convention was detected.",
+            "evidence": [
+              "package managers: npm; convention present"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "typescript-strict-mode-detected",
+            "status": "passed",
+            "description": "TypeScript strict mode is enabled and documented as a convention.",
+            "evidence": [
+              "strict mode convention present in analysis.conventions"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "generated-context-rules-documented",
+            "status": "passed",
+            "description": "Rules for the generated context are documented as conventions.",
+            "evidence": [
+              "generated-context convention present in analysis.conventions"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "context-maintainability",
+        "name": "Context Maintainability",
+        "score": 100,
+        "weight": 10,
+        "findings": [
+          {
+            "id": "pkm-schema-version-present",
+            "status": "passed",
+            "description": "The PKM declares a schema version.",
+            "evidence": [
+              "metadata.schemaVersion: 1.0.0"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "pkm-persisted",
+            "status": "passed",
+            "description": "A previously persisted PKM snapshot was loaded successfully.",
+            "evidence": [
+              "baseline status: loaded; initial run: false"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "validation-integrated",
+            "status": "passed",
+            "description": "Documentation validation runs and passes for the generated context.",
+            "evidence": [
+              "0 validation error(s), 0 warning(s)"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "incremental-change-detection",
+            "status": "passed",
+            "description": "Incremental change detection compared this run against the previous snapshot.",
+            "evidence": [
+              "0 changed section(s) recorded"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "selective-regeneration",
+            "status": "passed",
+            "description": "Document impact analysis enables selective regeneration.",
+            "evidence": [
+              "0 impacted document(s) recorded"
+            ],
+            "points": 1,
+            "maxPoints": 1
+          },
+          {
+            "id": "generated-files-protected",
+            "status": "passed",
+            "description": "Generated files carry protection markers so user edits are preserved.",
+            "evidence": [
+              "0 document(s) reported without the generated-file marker"
+            ],
+            "points": 1,
+            "maxPoints": 1
+          }
+        ],
+        "recommendations": []
+      }
+    ],
+    "strengths": [
+      "All required context documents are planned and generated.",
+      "Dependency edges are backed by import evidence.",
+      "Documentation validation passed.",
+      "Important folders have inferred responsibilities.",
+      "The repository tree was generated and persisted in the PKM."
+    ],
+    "gaps": [],
+    "recommendations": [],
+    "calculatedAt": "2026-07-11T00:40:24.740Z",
+    "scoringVersion": "1.0.0"
+  }
+}

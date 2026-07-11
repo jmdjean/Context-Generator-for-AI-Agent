@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
   "documentImpact": {
     "impactedDocuments": [],
     "unchangedDocuments": [
@@ -8,6 +8,7 @@
       "README.md",
       "agent-navigation.md",
       "ai-context.md",
+      "ai-readiness.md",
       "architecture.md",
       "change-log.md",
       "conventions.md",
@@ -16,6 +17,6 @@
       "implementation-guide.md",
       "technology-overview.md"
     ],
-    "generatedAt": "2026-07-08T23:18:43.675Z"
+    "generatedAt": "2026-07-11T00:40:24.771Z"
   }
 }

@@ -12,7 +12,11 @@ export function resolveExitCode(result: PipelineExecutionResult): number {
 
   const validationFailed =
     result.metrics.validation?.status === 'failed' ||
-    result.errors.some((error) => error.stepName === 'Validate Documentation');
+    result.errors.some(
+      (error) =>
+        error.stepName === 'Validate Documentation' ||
+        error.stepName === 'Calculate AI Readiness',
+    );
 
   if (validationFailed) {
     return EXIT_VALIDATION_ERROR;

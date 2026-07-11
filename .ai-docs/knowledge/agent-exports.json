@@ -1,18 +1,32 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
   "agentExports": {
     "enabled": true,
     "enabledTargets": [
+      "generic",
       "cursor"
     ],
     "results": [
+      {
+        "target": "generic",
+        "filesWritten": 1,
+        "filesSkipped": 0,
+        "warnings": [],
+        "generatedAt": "2026-07-11T00:40:24.778Z",
+        "files": [
+          {
+            "relativePath": "agent-pack/AGENTS.generated.md",
+            "status": "written"
+          }
+        ]
+      },
       {
         "target": "cursor",
         "filesWritten": 1,
         "filesSkipped": 0,
         "warnings": [],
-        "generatedAt": "2026-07-08T23:18:43.691Z",
+        "generatedAt": "2026-07-11T00:40:24.779Z",
         "files": [
           {
             "relativePath": ".cursor/rules/ai-project-docs.mdc",
@@ -21,7 +35,7 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-08T23:18:43.691Z",
+    "generatedAt": "2026-07-11T00:40:24.777Z",
     "warnings": []
   }
 }

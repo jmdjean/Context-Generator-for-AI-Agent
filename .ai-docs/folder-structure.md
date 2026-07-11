@@ -5,20 +5,23 @@
 Maps every folder to its single responsibility
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-08T23:17:35.065Z
+- Generated: 2026-07-11T00:34:27.223Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
 ## Folder contexts
 
-The folder analyzer documented 17 folder(s). Each entry below carries a deterministic classification and an inferred responsibility.
+The folder analyzer documented 39 folder(s). Each entry below carries a deterministic classification and an inferred responsibility.
 
 ### Source folders
 
 - `src` — Contains the main source code of the project. (confidence: high)
-  - Child folders: `ai`, `analyzers`, `config`, `core`, `detectors`, `docs`, `domain`, `exporters`, `incremental`, `knowledge`, `scanner`, `utils`
+  - Child folders: `ai`, `analyzers`, `config`, `core`, `detectors`, `docs`, `domain`, `exporters`, `incremental`, `knowledge`, `plugins`, `readiness`, `scanner`, `templates`, `utils`
 - `src/ai` — Integrates with AI providers for architecture analysis. (confidence: high)
   - Important files: `src/ai/README.md`
+  - Child folders: `providers`
+- `src/ai/providers` — Contains providers application source code. (confidence: medium)
+  - Important files: `src/ai/providers/README.md`
 - `src/analyzers` — Derives higher-level architectural knowledge from the PKM. (confidence: high)
   - Important files: `src/analyzers/README.md`
 - `src/config` — Resolves runtime configuration from CLI flags and environment variables. (confidence: high)
@@ -39,24 +42,71 @@ The folder analyzer documented 17 folder(s). Each entry below carries a determin
   - Important files: `src/incremental/README.md`
 - `src/knowledge` — Represents and persists the Project Knowledge Model used as the source of truth. (confidence: high)
   - Important files: `src/knowledge/README.md`
+- `src/plugins` — Contains plugins application source code. (confidence: medium)
+  - Important files: `src/plugins/README.md`
+  - Child folders: `builtin`, `technology`
+- `src/plugins/builtin` — Contains builtin application source code. (confidence: medium)
+- `src/plugins/technology` — Contains technology application source code. (confidence: medium)
+- `src/readiness` — Contains readiness application source code. (confidence: medium)
+  - Important files: `src/readiness/README.md`
 - `src/scanner` — Builds the repository tree used by analyzers. (confidence: high)
   - Important files: `src/scanner/README.md`
+- `src/templates` — Contains templates application source code. (confidence: medium)
+  - Important files: `src/templates/README.md`
 - `src/utils` — Provides shared utility functions with no domain knowledge. (confidence: high)
   - Important files: `src/utils/README.md`
+- `test/fixtures/fixture-monorepo/apps` — Contains apps application source code. (confidence: high)
+  - Child folders: `api`, `web`
+- `test/fixtures/fixture-monorepo/apps/api/src` — Contains the main source code of the project. (confidence: high)
+- `test/fixtures/fixture-monorepo/apps/web/src` — Contains the main source code of the project. (confidence: high)
+- `test/fixtures/fixture-monorepo/libs` — Contains libs application source code. (confidence: high)
+  - Child folders: `shared`
+- `test/fixtures/fixture-monorepo/libs/shared/src` — Contains the main source code of the project. (confidence: high)
+- `test/fixtures/fixture-typescript/src` — Contains the main source code of the project. (confidence: high)
+  - Child folders: `utils`
+
+### Test folders
+
+- `test` — Contains automated tests for the project. (confidence: high)
+  - Child folders: `fixtures`
+- `test/fixtures/fixture-typescript/tests` — Contains automated tests for the project. (confidence: high)
 
 ### Config folders
 
 - `.` — Project root containing top-level configuration, documentation, and source entry points. (confidence: high)
   - Important files: `AGENTS.md`, `README.md`, `package.json`, `tsconfig.json`
-  - Child folders: `docs`, `scripts`, `src`
+  - Child folders: `docs`, `scripts`, `src`, `test`
+- `test/fixtures/fixture-monorepo` — Contains project configuration files. (confidence: medium)
+  - Important files: `test/fixtures/fixture-monorepo/README.md`, `test/fixtures/fixture-monorepo/package.json`, `test/fixtures/fixture-monorepo/tsconfig.json`
+  - Child folders: `apps`, `libs`
+- `test/fixtures/fixture-monorepo/apps/api` — Contains project configuration files. (confidence: medium)
+  - Important files: `test/fixtures/fixture-monorepo/apps/api/package.json`
+  - Child folders: `src`
+- `test/fixtures/fixture-monorepo/apps/web` — Contains project configuration files. (confidence: medium)
+  - Important files: `test/fixtures/fixture-monorepo/apps/web/package.json`
+  - Child folders: `src`
+- `test/fixtures/fixture-monorepo/libs/shared` — Contains project configuration files. (confidence: medium)
+  - Important files: `test/fixtures/fixture-monorepo/libs/shared/package.json`
+  - Child folders: `src`
+- `test/fixtures/fixture-typescript` — Contains project configuration files. (confidence: medium)
+  - Important files: `test/fixtures/fixture-typescript/README.md`, `test/fixtures/fixture-typescript/package.json`, `test/fixtures/fixture-typescript/tsconfig.json`
+  - Child folders: `src`, `tests`
 
 ### Documentation folders
 
 - `docs` — Contains human-readable project documentation. (confidence: high)
+- `test/fixtures/fixture-minimal` — Contains human-readable project documentation. (confidence: medium)
+  - Important files: `test/fixtures/fixture-minimal/README.md`
 
 ### Scripts folders
 
 - `scripts` — Contains automation and utility scripts. (confidence: high)
+
+### Unknown folders
+
+- `test/fixtures` — Contains project files related to fixtures. (confidence: low)
+  - Child folders: `fixture-minimal`, `fixture-monorepo`, `fixture-typescript`
+- `test/fixtures/fixture-typescript/src/utils` — Contains project files related to utils. (confidence: low)
 
 ## Documentable vs ignored folders
 
