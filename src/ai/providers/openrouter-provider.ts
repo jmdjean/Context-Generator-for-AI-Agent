@@ -37,7 +37,7 @@ export class OpenRouterProvider implements AIProvider {
     const result = await client.complete({
       model: options.model,
       messages: [
-        { role: 'system', content: AI_ANALYSIS_SYSTEM_INSTRUCTION },
+        { role: 'system', content: options.systemInstruction ?? AI_ANALYSIS_SYSTEM_INSTRUCTION },
         { role: 'user', content: prompt },
       ],
       ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),

@@ -6,7 +6,8 @@ import {
   inlineCode,
   renderDocumentHeader,
 } from './render-helpers';
-import { hasRenderableAiInsights, renderAiInsightsSection } from './ai-insights-renderer';
+import { hasRenderableAiInsights } from './ai-insights-renderer';
+import { renderArchitectureEnrichmentSection } from './staged-architecture-renderer';
 
 const KEY_ENTRY_LIMIT = 8;
 
@@ -98,9 +99,14 @@ function renderKeyConventionsSection(conventions: ConventionKnowledge[] | undefi
 function renderLimitationsSection(knowledge: ProjectKnowledge): string[] {
   const lines = ['', '## Current limitations', ''];
 
-  if (hasRenderableAiInsights(knowledge.analysis.aiInsights)) {
+  const hasStagedArchitecture =
+    knowledge.analysis.stagedDocumentation?.architecture !== undefined &&
+    (knowledge.analysis.stagedDocumentation.architecture.content !== undefined ||
+      knowledge.analysis.stagedDocumentation.architecture.summary !== undefined);
+
+  if (hasStagedArchitecture || hasRenderableAiInsights(knowledge.analysis.aiInsights)) {
     lines.push(
-      '- Deterministic analysis remains authoritative. The AI Insights section above is enrichment only — verify against code when behavior matters.',
+      '- Deterministic analysis remains authoritative. Staged architecture / AI enrichment above is not ground truth — verify against code when behavior matters.',
     );
   } else {
     lines.push(
@@ -126,7 +132,7 @@ export function renderAiContextDocument(
     ...renderReadFirstSection(knowledge),
     ...renderKeyModulesSection(knowledge.analysis.modules),
     ...renderKeyConventionsSection(knowledge.analysis.conventions),
-    ...renderAiInsightsSection(knowledge),
+    ...renderArchitectureEnrichmentSection(knowledge),
     ...renderLimitationsSection(knowledge),
   ];
 

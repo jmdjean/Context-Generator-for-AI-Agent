@@ -7,7 +7,12 @@ import {
   extractJsonPayload,
   parseAiInsightsResponse,
   runAiAnalysis,
+  runArchitectureStage,
 } from './ai-analysis-service';
+import {
+  parseModuleDocumentationResponse,
+  runModuleDocumentationStage,
+} from './module-documentation-stage';
 import { ProjectKnowledge } from '../knowledge';
 
 function buildMinimalKnowledge(): ProjectKnowledge {
@@ -215,6 +220,75 @@ function buildFakeProvider(content: string): AIProvider & { prompts: string[] } 
   };
 }
 
+describe('runArchitectureStage', () => {
+  it('writes staged architecture output and legacy aiInsights on success', async () => {
+    const provider = buildFakeProvider(
+      JSON.stringify({
+        architectureSummary: 'CLI pipeline with PKM enrichment.',
+        risks: ['Orchestrator coupling'],
+        agentGuidance: ['Start from agent-navigation.md'],
+      }),
+    );
+
+    const result = await runArchitectureStage(buildMinimalKnowledge(), {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      provider,
+    });
+
+    assert.equal(result.architectureGenerated, true);
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.architecture?.status,
+      'completed',
+    );
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.architecture?.summary,
+      'CLI pipeline with PKM enrichment.',
+    );
+    assert.match(
+      result.knowledge.analysis.stagedDocumentation?.architecture?.content ?? '',
+      /Orchestrator coupling/,
+    );
+    assert.deepEqual(
+      result.knowledge.analysis.stagedDocumentation?.architecture?.documentPaths,
+      ['architecture.md', 'ai-context.md'],
+    );
+    assert.equal(result.knowledge.analysis.aiInsights?.architectureSummary, 'CLI pipeline with PKM enrichment.');
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.execution.some(
+        (entry) => entry.stageId === 'architecture' && entry.status === 'completed',
+      ),
+      true,
+    );
+    assert.match(provider.prompts[0] ?? '', /architecture-stage documentation context/);
+  });
+
+  it('records failed architecture status without dropping the PKM on invalid JSON', async () => {
+    const provider = buildFakeProvider('not-json');
+    const knowledge = buildMinimalKnowledge();
+
+    const result = await runArchitectureStage(knowledge, {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      provider,
+    });
+
+    assert.equal(result.architectureGenerated, false);
+    assert.equal(result.knowledge.analysis.aiInsights, undefined);
+    assert.equal(result.knowledge.analysis.modules?.length, knowledge.analysis.modules?.length);
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.architecture?.status,
+      'failed',
+    );
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.execution.some(
+        (entry) => entry.stageId === 'architecture' && entry.status === 'failed',
+      ),
+      true,
+    );
+  });
+});
+
 describe('runAiAnalysis', () => {
   it('enriches PKM when the provider returns valid JSON', async () => {
     const provider = buildFakeProvider(
@@ -242,7 +316,7 @@ describe('runAiAnalysis', () => {
     assert.match(provider.prompts[0] ?? '', /PKM summary \(JSON\):/);
   });
 
-  it('returns the original PKM when the provider response is invalid', async () => {
+  it('returns PKM without insights when the provider response is invalid', async () => {
     const provider = buildFakeProvider('not-json');
     const knowledge = buildMinimalKnowledge();
 
@@ -254,7 +328,8 @@ describe('runAiAnalysis', () => {
 
     assert.equal(result.insightsGenerated, false);
     assert.equal(result.attempted, true);
-    assert.equal(result.knowledge, knowledge);
+    assert.equal(result.knowledge.analysis.aiInsights, undefined);
+    assert.equal(result.knowledge.analysis.modules?.length, knowledge.analysis.modules?.length);
     assert.equal(result.warnings.length, 1);
   });
 
@@ -277,7 +352,11 @@ describe('runAiAnalysis', () => {
 
     assert.equal(result.insightsGenerated, false);
     assert.equal(result.attempted, true);
-    assert.equal(result.knowledge, knowledge);
+    assert.equal(result.knowledge.analysis.aiInsights, undefined);
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.architecture?.status,
+      'failed',
+    );
     assert.match(result.warnings[0] ?? '', /provider exploded/);
   });
 
@@ -292,7 +371,11 @@ describe('runAiAnalysis', () => {
 
     assert.equal(result.insightsGenerated, false);
     assert.equal(result.attempted, true);
-    assert.equal(result.knowledge, knowledge);
+    assert.equal(result.knowledge.analysis.aiInsights, undefined);
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.architecture?.status,
+      'failed',
+    );
     assert.match(result.warnings[0] ?? '', /Unsupported AI provider: does-not-exist/);
   });
 });
@@ -308,5 +391,184 @@ describe('enrichProjectKnowledgeWithAiInsights', () => {
 
     assert.notEqual(enriched, knowledge);
     assert.equal(enriched.analysis.aiInsights?.architectureSummary, 'Summary');
+  });
+});
+
+function withModulePlan(knowledge: ProjectKnowledge): ProjectKnowledge {
+  return {
+    ...knowledge,
+    analysis: {
+      ...knowledge.analysis,
+      stagedDocumentation: {
+        architecture: {
+          status: 'completed',
+          summary: 'PKM-centered CLI pipeline.',
+          content: 'Layers: scanner → detectors → analyzers → docs.',
+          documentPaths: ['architecture.md'],
+          warnings: [],
+        },
+        modulePlan: {
+          status: 'completed',
+          entries: [
+            {
+              moduleId: 'src/core',
+              moduleName: 'core',
+              moduleRelativePath: 'src/core',
+              documentPath: 'code/components/src__core.md',
+              order: 1,
+              status: 'pending',
+              rationale: 'Pipeline orchestration',
+            },
+            {
+              moduleId: 'src/docs',
+              moduleName: 'docs',
+              moduleRelativePath: 'src/docs',
+              documentPath: 'code/components/src__docs.md',
+              order: 2,
+              status: 'pending',
+              rationale: 'Documentation generators',
+            },
+          ],
+          warnings: [],
+        },
+        execution: [
+          { stageId: 'architecture', status: 'completed', warnings: [] },
+          { stageId: 'module-plan', status: 'completed', warnings: [] },
+        ],
+      },
+    },
+  };
+}
+
+describe('parseModuleDocumentationResponse', () => {
+  it('accepts valid module documentation JSON', () => {
+    const parsed = parseModuleDocumentationResponse(
+      JSON.stringify({
+        summary: 'Orchestrates the analysis pipeline.',
+        purpose: 'Coordinate scan, detect, analyze, and write stages.',
+        entryPoints: ['src/core/pipeline-orchestrator.ts'],
+        keyBehaviors: ['Dispatches ANALYSIS_PIPELINE steps'],
+        dependencies: ['src/knowledge'],
+        outOfScope: ['Markdown rendering'],
+        agentGuidance: ['Do not put scan logic in core'],
+      }),
+    );
+
+    assert.ok(parsed);
+    assert.equal(parsed?.summary, 'Orchestrates the analysis pipeline.');
+    assert.equal(parsed?.entryPoints?.length, 1);
+  });
+
+  it('rejects empty or invalid payloads', () => {
+    assert.equal(parseModuleDocumentationResponse('not-json'), undefined);
+    assert.equal(parseModuleDocumentationResponse(JSON.stringify({})), undefined);
+    assert.equal(parseModuleDocumentationResponse(JSON.stringify({ summary: 12 })), undefined);
+  });
+});
+
+describe('runModuleDocumentationStage', () => {
+  it('persists one result per module-plan entry on success', async () => {
+    const provider = buildFakeProvider(
+      JSON.stringify({
+        summary: 'Module documentation summary.',
+        purpose: 'Document this module for agents.',
+        entryPoints: ['index.ts'],
+        agentGuidance: ['Read architecture.md first'],
+      }),
+    );
+
+    const result = await runModuleDocumentationStage(withModulePlan(buildMinimalKnowledge()), {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      provider,
+    });
+
+    assert.equal(result.modulesGenerated, true);
+    assert.equal(result.completedCount, 2);
+    assert.equal(result.failedCount, 0);
+    assert.equal(result.knowledge.analysis.stagedDocumentation?.moduleResults?.status, 'completed');
+    assert.equal(result.knowledge.analysis.stagedDocumentation?.moduleResults?.results.length, 2);
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.moduleResults?.results.every(
+        (entry) => entry.status === 'completed' && Boolean(entry.summary),
+      ),
+      true,
+    );
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.modulePlan?.entries.every(
+        (entry) => entry.status === 'completed',
+      ),
+      true,
+    );
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.execution.some(
+        (entry) => entry.stageId === 'module-documentation' && entry.status === 'completed',
+      ),
+      true,
+    );
+    assert.equal(provider.prompts.length, 2);
+    assert.match(provider.prompts[0] ?? '', /src\/core/);
+    assert.match(provider.prompts[0] ?? '', /PKM-centered CLI pipeline|Layers: scanner/);
+  });
+
+  it('isolates failures so one bad module does not drop others', async () => {
+    const prompts: string[] = [];
+    let callCount = 0;
+    const provider: AIProvider & { prompts: string[] } = {
+      id: 'fake',
+      name: 'Fake Provider',
+      prompts,
+      supports: (providerId: string) => providerId === 'fake',
+      analyze: async (prompt: string, options) => {
+        prompts.push(prompt);
+        callCount += 1;
+        if (callCount === 1) {
+          return {
+            content: JSON.stringify({
+              summary: 'Core module docs.',
+              purpose: 'Orchestration',
+            }),
+            model: options.model,
+            provider: 'fake',
+          };
+        }
+        return { content: 'not-json', model: options.model, provider: 'fake' };
+      },
+    };
+
+    const result = await runModuleDocumentationStage(withModulePlan(buildMinimalKnowledge()), {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      provider,
+    });
+
+    assert.equal(result.modulesGenerated, true);
+    assert.equal(result.completedCount, 1);
+    assert.equal(result.failedCount, 1);
+    assert.equal(result.knowledge.analysis.stagedDocumentation?.moduleResults?.status, 'partial');
+    const results = result.knowledge.analysis.stagedDocumentation?.moduleResults?.results ?? [];
+    assert.equal(results[0]?.status, 'completed');
+    assert.equal(results[1]?.status, 'failed');
+    assert.equal(
+      result.knowledge.analysis.stagedDocumentation?.execution.some(
+        (entry) => entry.stageId === 'module-documentation' && entry.status === 'partial',
+      ),
+      true,
+    );
+  });
+
+  it('skips without calling the provider when no module-plan entries exist', async () => {
+    const provider = buildFakeProvider('{}');
+    const result = await runModuleDocumentationStage(buildMinimalKnowledge(), {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      provider,
+    });
+
+    assert.equal(result.attempted, false);
+    assert.equal(result.modulesGenerated, false);
+    assert.equal(provider.prompts.length, 0);
+    assert.match(result.message, /no module-plan entries/);
+    assert.equal(result.knowledge.analysis.stagedDocumentation?.moduleResults?.status, 'partial');
   });
 });

@@ -235,6 +235,80 @@ describe('analyzeDocumentImpact', () => {
     assert.equal(summary.unchangedDocuments.length, PLANNED_DOCUMENTS.length);
   });
 
+  it('maps staged documentation changes to playbook and module docs via metadata', () => {
+    const stagedDocuments: PlannedDocument[] = [
+      ...PLANNED_DOCUMENTS,
+      {
+        title: 'Module Documentation Plan',
+        relativePath: 'module-documentation-plan.md',
+        purpose: 'Module plan',
+        priority: 'required',
+        source: 'playbook',
+        stage: 'module-plan',
+        generatorKind: 'staged-module-plan',
+      },
+      {
+        title: 'Documentation Status',
+        relativePath: 'DOCUMENTATION_STATUS.md',
+        purpose: 'Status',
+        priority: 'recommended',
+        source: 'playbook',
+        stage: 'routing',
+        generatorKind: 'deterministic',
+      },
+      {
+        title: 'Core Module',
+        relativePath: 'code/components/src-core.md',
+        purpose: 'Module card',
+        priority: 'required',
+        source: 'module',
+        stage: 'module',
+        generatorKind: 'staged-module',
+        moduleId: 'src/core',
+      },
+    ];
+
+    const summary = analyzeDocumentImpact(
+      buildChangeSummary({ changedSections: ['stagedDocumentation'] }),
+      stagedDocuments,
+    );
+
+    const impacted = summary.impactedDocuments.map((impact) => impact.documentPath).sort();
+    assert.ok(impacted.includes('architecture.md'));
+    assert.ok(impacted.includes('module-documentation-plan.md'));
+    assert.ok(impacted.includes('DOCUMENTATION_STATUS.md'));
+    assert.ok(impacted.includes('code/components/src-core.md'));
+    assert.ok(impacted.includes('change-log.md'));
+    assert.equal(impacted.includes('technology-overview.md'), false);
+  });
+
+  it('maps module changes to per-module planned documents', () => {
+    const withModuleDoc: PlannedDocument[] = [
+      ...PLANNED_DOCUMENTS,
+      {
+        title: 'Core Module',
+        relativePath: 'code/components/src-core.md',
+        purpose: 'Module card',
+        priority: 'required',
+        source: 'module',
+        stage: 'module',
+        generatorKind: 'staged-module',
+        moduleId: 'src/core',
+      },
+    ];
+
+    const summary = analyzeDocumentImpact(
+      buildChangeSummary({ changedSections: ['modules'] }),
+      withModuleDoc,
+    );
+
+    assert.ok(
+      summary.impactedDocuments.some(
+        (impact) => impact.documentPath === 'code/components/src-core.md',
+      ),
+    );
+  });
+
   it('sorts unchanged documents for stable output', () => {
     const summary = analyzeDocumentImpact(
       buildChangeSummary({ changedSections: ['navigationMap'] }),

@@ -13,9 +13,15 @@ import {
   buildRegenerationPathSet,
   hasGeneratedFileMarker,
 } from './documentation-write-policy';
+import { orderDocumentsForWriting } from './documentation-write-order';
 import { renderDocumentWithTemplate } from '../templates/template-engine';
 import { TemplateRenderKind } from '../templates/template-context';
 import { PlannedDocument } from '../domain/documentation-plan';
+
+export {
+  DOCUMENTATION_STAGE_WRITE_ORDER,
+  orderDocumentsForWriting,
+} from './documentation-write-order';
 
 export interface DocumentationWriteResult {
   writtenCount: number;
@@ -142,7 +148,9 @@ export function writeDocumentation(
   let pkmPoweredCount = 0;
   let genericCount = 0;
 
-  for (const document of documentationPlan.documents) {
+  const orderedDocuments = orderDocumentsForWriting(documentationPlan.documents);
+
+  for (const document of orderedDocuments) {
     const result = writePlannedDocument(document, docsRootPath, knowledge, regenerationPaths);
 
     if (result.outcome === 'written') {

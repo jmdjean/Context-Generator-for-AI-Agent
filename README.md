@@ -38,7 +38,7 @@ Project: my-project
 Target: /path/to/my-project
 Docs: .ai-docs
 Duration: 29ms
-Pipeline: 16 completed, 2 skipped
+Pipeline: 17 completed, 3 skipped
 Technologies: TypeScript, React
 
 Knowledge:
@@ -151,6 +151,48 @@ npm install
 npm run build
 node dist/cli.js ./my-project
 ```
+
+### Web UI (local)
+
+Run a localhost-only browser UI that wraps the same analysis pipeline as the CLI:
+
+```bash
+npm install
+npm run ui
+```
+
+Then open [http://127.0.0.1:3847](http://127.0.0.1:3847). The server binds to `127.0.0.1` only.
+
+On Windows you can also use:
+
+```powershell
+.\scripts\start-ui.ps1
+```
+
+**What the UI supports**
+
+- Project path (paste or Browse on Windows)
+- Optional AI analysis (OpenRouter / OpenAI) with per-provider API keys (never stored)
+- Optional agent export targets (`generic` / `cursor` / `all`)
+- Live pipeline checklist via SSE (`POST /api/run?stream=1`)
+- Open generated docs folder in the OS file manager
+- Remembered path/toggles in `localStorage` (API keys are never saved)
+
+Optional port via env or flag:
+
+```bash
+AI_PROJECT_DOCS_UI_PORT=4000 npm run ui
+# or after build:
+node dist/ui/index.js --port 4000
+```
+
+Verify the UI smoke path:
+
+```bash
+npm run ui:smoke
+```
+
+See [`src/ui/README.md`](src/ui/README.md) and [`docs/web-ui/plan.md`](docs/web-ui/plan.md).
 
 ### Global link (development)
 

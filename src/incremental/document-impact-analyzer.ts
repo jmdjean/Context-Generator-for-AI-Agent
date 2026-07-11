@@ -45,6 +45,9 @@ const SECTION_DOCUMENT_IMPACT: Readonly<
     { path: 'dependency-map.md', reason: 'Modules changed' },
     { path: 'ai-context.md', reason: 'Modules changed' },
     { path: 'implementation-guide.md', reason: 'Modules changed' },
+    { path: 'PROJECT_MAP.md', reason: 'Modules changed' },
+    { path: 'DOCUMENTATION_STATUS.md', reason: 'Modules changed' },
+    { path: 'module-documentation-plan.md', reason: 'Modules changed' },
   ],
   dependencyGraph: [
     { path: 'dependency-map.md', reason: 'Dependency graph changed' },
@@ -60,12 +63,22 @@ const SECTION_DOCUMENT_IMPACT: Readonly<
   navigationMap: [
     { path: 'agent-navigation.md', reason: 'Navigation map changed' },
     { path: 'ai-context.md', reason: 'Navigation map changed' },
+    { path: 'CONTEXT_ROUTER.md', reason: 'Navigation map changed' },
   ],
   aiInsights: [
     { path: 'architecture.md', reason: 'AI insights changed' },
     { path: 'ai-context.md', reason: 'AI insights changed' },
     { path: 'implementation-guide.md', reason: 'AI insights changed' },
     { path: 'agent-navigation.md', reason: 'AI insights changed' },
+  ],
+  stagedDocumentation: [
+    { path: 'architecture.md', reason: 'Staged documentation changed' },
+    { path: 'ai-context.md', reason: 'Staged documentation changed' },
+    { path: 'implementation-guide.md', reason: 'Staged documentation changed' },
+    { path: 'agent-navigation.md', reason: 'Staged documentation changed' },
+    { path: 'module-documentation-plan.md', reason: 'Staged documentation changed' },
+    { path: 'DOCUMENTATION_STATUS.md', reason: 'Staged documentation changed' },
+    { path: 'DOCUMENTATION_MAINTENANCE.md', reason: 'Staged documentation changed' },
   ],
   documentation: [],
 };
@@ -134,6 +147,49 @@ function appendTechnologyDocumentImpacts(
       sections: new Set(['technologies']),
       reasons: new Set(['Technologies changed']),
     });
+  }
+}
+
+function isStagedOrPlaybookDocument(document: PlannedDocument): boolean {
+  return (
+    document.source === 'playbook' ||
+    document.source === 'module' ||
+    document.stage === 'routing' ||
+    document.stage === 'module-plan' ||
+    document.stage === 'module' ||
+    document.generatorKind === 'staged-architecture' ||
+    document.generatorKind === 'staged-module-plan' ||
+    document.generatorKind === 'staged-module'
+  );
+}
+
+function isModuleScopedDocument(document: PlannedDocument): boolean {
+  return (
+    document.source === 'module' ||
+    document.stage === 'module' ||
+    document.stage === 'module-plan' ||
+    document.generatorKind === 'staged-module' ||
+    document.generatorKind === 'staged-module-plan'
+  );
+}
+
+/**
+ * Marks planned documents that present staged PKM data as impacted.
+ * Uses PlannedDocument metadata rather than path heuristics.
+ */
+function appendMetadataDocumentImpacts(
+  impacts: Map<string, DocumentImpactAccumulator>,
+  plannedDocuments: readonly PlannedDocument[],
+  section: ChangeSection,
+  reason: string,
+  predicate: (document: PlannedDocument) => boolean,
+): void {
+  for (const document of plannedDocuments) {
+    if (!predicate(document)) {
+      continue;
+    }
+
+    upsertSectionImpact(impacts, document.relativePath, section, reason);
   }
 }
 
@@ -233,6 +289,38 @@ function collectSectionImpacts(
 
     if (section === 'technologies') {
       appendTechnologyDocumentImpacts(impacts, plannedDocuments);
+    }
+
+    if (section === 'modules') {
+      appendMetadataDocumentImpacts(
+        impacts,
+        plannedDocuments,
+        'modules',
+        'Modules changed',
+        isModuleScopedDocument,
+      );
+    }
+
+    if (section === 'stagedDocumentation') {
+      appendMetadataDocumentImpacts(
+        impacts,
+        plannedDocuments,
+        'stagedDocumentation',
+        'Staged documentation changed',
+        isStagedOrPlaybookDocument,
+      );
+    }
+
+    if (section === 'aiInsights') {
+      appendMetadataDocumentImpacts(
+        impacts,
+        plannedDocuments,
+        'aiInsights',
+        'AI insights changed',
+        (document) =>
+          document.generatorKind === 'staged-architecture' ||
+          document.stage === 'architecture',
+      );
     }
   }
 

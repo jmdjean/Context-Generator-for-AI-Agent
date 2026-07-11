@@ -40,7 +40,7 @@ When `analysis.documentImpact` exists, rewrite only impacted docs. Files without
 
 ## Existing renderers
 
-`architecture`, `folder-structure`, `dependency-map`, `conventions`, `agent-navigation`, `ai-context`, `implementation-guide` — see README table.
+`architecture`, `folder-structure`, `dependency-map`, `conventions`, `agent-navigation`, `ai-context`, `implementation-guide`, playbook routing (`AI_START_HERE`, `CONTEXT_ROUTER`, `DOCUMENTATION_MAINTENANCE`, `DOCUMENTATION_STATUS`, `PROJECT_MAP`), `module-documentation-plan`, and per-module cards (`generatorKind: staged-module`) — see README table.
 
 ## Hard stops
 

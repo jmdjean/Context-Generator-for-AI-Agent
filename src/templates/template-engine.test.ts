@@ -82,6 +82,12 @@ describe('template engine', () => {
       'ai-context.md',
       'implementation-guide.md',
       'ai-readiness.md',
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
+      'DOCUMENTATION_MAINTENANCE.md',
+      'DOCUMENTATION_STATUS.md',
+      'PROJECT_MAP.md',
+      'module-documentation-plan.md',
     ];
 
     assert.deepEqual([...REGISTERED_TEMPLATE_OUTPUT_PATHS].sort(), [...expectedPaths].sort());
@@ -151,6 +157,92 @@ describe('template engine', () => {
     assert.equal(rendered.renderKind, 'template');
     assert.ok(rendered.content.includes('Custom Architecture Title'));
     assert.ok(rendered.content.includes('Custom architecture purpose'));
+  });
+
+  it('routes staged module documents by generatorKind when the path is dynamic', () => {
+    const moduleDocument: PlannedDocument = {
+      title: 'Module: core',
+      relativePath: 'code/components/src__core.md',
+      purpose: 'Module documentation for src/core',
+      priority: 'recommended',
+      source: 'module',
+      stage: 'module',
+      generatorKind: 'staged-module',
+      moduleId: 'src/core',
+      moduleName: 'core',
+      order: 1,
+    };
+    const knowledge = buildKnowledge([moduleDocument]);
+    knowledge.analysis.stagedDocumentation = {
+      execution: [],
+      moduleResults: {
+        status: 'partial',
+        results: [
+          {
+            moduleId: 'src/core',
+            moduleName: 'core',
+            moduleRelativePath: 'src/core',
+            documentPath: 'code/components/src__core.md',
+            status: 'completed',
+            summary: 'Orchestrates the analysis pipeline.',
+            content: 'Coordinates scan, detect, analyze, and write stages.',
+            warnings: [],
+          },
+        ],
+        warnings: [],
+      },
+    };
+
+    const rendered = renderDocumentWithTemplate(moduleDocument, knowledge);
+
+    assert.equal(rendered.renderKind, 'template');
+    assert.equal(rendered.templateId, 'markdown.module-document');
+    assert.ok(rendered.content.includes('## Deterministic module facts'));
+    assert.ok(rendered.content.includes('Orchestrates the analysis pipeline.'));
+    assert.ok(rendered.content.includes('Coordinates scan, detect, analyze, and write stages.'));
+  });
+
+  it('renders module-plan and playbook docs from staged PKM sections', () => {
+    const knowledge = buildKnowledge([
+      buildPlannedDocument('module-documentation-plan.md'),
+      buildPlannedDocument('DOCUMENTATION_STATUS.md'),
+    ]);
+    knowledge.analysis.stagedDocumentation = {
+      execution: [
+        { stageId: 'architecture', status: 'completed', warnings: [] },
+        { stageId: 'module-plan', status: 'completed', warnings: [] },
+      ],
+      modulePlan: {
+        status: 'completed',
+        entries: [
+          {
+            moduleId: 'src/core',
+            moduleName: 'core',
+            moduleRelativePath: 'src/core',
+            documentPath: 'code/components/src__core.md',
+            order: 1,
+            status: 'pending',
+            rationale: 'Pipeline orchestration',
+          },
+        ],
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        warnings: [],
+      },
+    };
+
+    const planDoc = renderDocumentWithTemplate(
+      buildPlannedDocument('module-documentation-plan.md'),
+      knowledge,
+    );
+    const statusDoc = renderDocumentWithTemplate(
+      buildPlannedDocument('DOCUMENTATION_STATUS.md'),
+      knowledge,
+    );
+
+    assert.ok(planDoc.content.includes('`src/core`'));
+    assert.ok(planDoc.content.includes('code/components/src__core.md'));
+    assert.ok(statusDoc.content.includes('module-plan'));
+    assert.ok(statusDoc.content.includes('Documented'));
   });
 
   it('renderDocumentationPlan honors custom document metadata outside the plan', () => {

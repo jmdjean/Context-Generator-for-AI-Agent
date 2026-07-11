@@ -61,7 +61,7 @@ The persisted PKM at `.ai-docs/knowledge/project-knowledge.json` is the baseline
 
 
 
-Step **Detect Changes** runs after **Analyze AI Insights** and before **Write Documentation**:
+Step **Detect Changes** runs after the staged documentation steps (**Generate Architecture Context**, **Generate Module Documentation Plan**, **Generate Module Documentation**) and before **Write Documentation**:
 
 
 
@@ -120,6 +120,7 @@ If the snapshot belongs to a different repository root, it is ignored (`baseline
 | `navigationMap` | Normalized navigation entries |
 
 | `aiInsights` | Normalized insight content (ignores `generatedAt`) |
+| `stagedDocumentation` | Normalized architecture / module-plan / moduleResults content (ignores timestamps and execution timing) |
 | `documentation` | Documentation plan strategy/document list and `metadata.generatorVersion` |
 
 
@@ -147,15 +148,18 @@ The state loader strips `analysis.changeSummary`, `analysis.documentImpact`, and
 | `technologies` | `architecture.md`, `ai-context.md`, `implementation-guide.md`, plus all `source: technology` planned docs |
 | `folderContexts` | `folder-structure.md`, `architecture.md`, `ai-context.md`, `agent-navigation.md` |
 
-| `modules` | `architecture.md`, `dependency-map.md`, `ai-context.md`, `implementation-guide.md` |
+| `modules` | `architecture.md`, `dependency-map.md`, `ai-context.md`, `implementation-guide.md`, `PROJECT_MAP.md`, `DOCUMENTATION_STATUS.md`, `module-documentation-plan.md`, plus planned docs with module/module-plan metadata |
 
 | `dependencyGraph` | `dependency-map.md`, `architecture.md`, `ai-context.md` |
 
 | `conventions` | `conventions.md`, `implementation-guide.md`, `ai-context.md`, `agent-navigation.md` |
 
-| `navigationMap` | `agent-navigation.md`, `ai-context.md` |
+| `navigationMap` | `agent-navigation.md`, `ai-context.md`, `CONTEXT_ROUTER.md` |
 
-| `aiInsights` | `architecture.md`, `ai-context.md`, `implementation-guide.md`, `agent-navigation.md` |
+| `aiInsights` | `architecture.md`, `ai-context.md`, `implementation-guide.md`, `agent-navigation.md`, plus staged-architecture planned docs |
+
+| `stagedDocumentation` | Architecture / status / module-plan docs, plus all planned playbook and per-module docs (via PlannedDocument metadata) |
+
 | `documentation` | All planned documents (plan or generator version changed) |
 
 On `isInitialRun: true`, unreadable baseline, or `documentation` changes, every planned document is marked for regeneration.

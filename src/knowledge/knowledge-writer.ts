@@ -17,6 +17,7 @@ import {
   NavigationMapKnowledge,
   ProjectKnowledge,
   RepositoryKnowledge,
+  StagedDocumentationKnowledge,
   TechnologyKnowledge,
 } from './project-knowledge';
 import { RepositoryNode } from '../domain';
@@ -92,6 +93,10 @@ interface PersistedAgentExportsKnowledge extends PersistedKnowledgeHeader {
 
 interface PersistedAiReadinessKnowledge extends PersistedKnowledgeHeader {
   aiReadiness: NonNullable<AnalysisKnowledge['aiReadiness']>;
+}
+
+interface PersistedStagedDocumentationKnowledge extends PersistedKnowledgeHeader {
+  stagedDocumentation: StagedDocumentationKnowledge;
 }
 
 function buildAiReadinessPayload(
@@ -217,6 +222,14 @@ function buildKnowledgeFiles(
     files.push([KNOWLEDGE_FILE_NAMES.aiReadiness, aiReadinessPayload]);
   }
 
+  if (knowledge.analysis.stagedDocumentation !== undefined) {
+    const stagedDocumentationPayload: PersistedStagedDocumentationKnowledge = {
+      ...header,
+      stagedDocumentation: knowledge.analysis.stagedDocumentation,
+    };
+    files.push([KNOWLEDGE_FILE_NAMES.stagedDocumentation, stagedDocumentationPayload]);
+  }
+
   return files;
 }
 
@@ -338,6 +351,17 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
     fs.unlinkSync(aiReadinessPath);
   }
 
+  const stagedDocumentationPath = resolveKnowledgeFilePath(
+    rootPath,
+    docsDir,
+    KNOWLEDGE_FILE_NAMES.stagedDocumentation,
+  );
+  const hasStagedDocumentation = knowledge.analysis.stagedDocumentation !== undefined;
+
+  if (!hasStagedDocumentation && fs.existsSync(stagedDocumentationPath)) {
+    fs.unlinkSync(stagedDocumentationPath);
+  }
+
   return {
     schemaVersion: knowledge.metadata.schemaVersion,
     schemaVersionLabel: formatSchemaVersionLabel(knowledge.metadata.schemaVersion),
@@ -354,6 +378,7 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
       hasDocumentImpact,
       hasAgentExports,
       hasAiReadiness,
+      hasStagedDocumentation,
     ),
   };
 }

@@ -27,5 +27,23 @@ export const AI_RESPONSE_JSON_SCHEMA = {
   agentGuidance: 'string[]',
 } as const;
 
+export const MODULE_DOCUMENTATION_LIMITS = {
+  maxArrayItems: 6,
+  maxSummaryLength: 1_000,
+  maxItemLength: 400,
+  maxContentLength: 4_000,
+  maxArchitectureContextChars: 2_500,
+} as const;
+
+export const MODULE_DOCUMENTATION_JSON_SCHEMA = {
+  summary: 'string (1-3 sentences about this module)',
+  purpose: 'string',
+  entryPoints: 'string[] (relative paths or symbols known from PKM)',
+  keyBehaviors: 'string[]',
+  dependencies: 'string[] (module paths or packages known from PKM)',
+  outOfScope: 'string[]',
+  agentGuidance: 'string[]',
+} as const;
+
 export const DEFAULT_OPENROUTER_TIMEOUT_MS = 120_000;
 export const MAX_AI_PROMPT_CHARS = 28_000;

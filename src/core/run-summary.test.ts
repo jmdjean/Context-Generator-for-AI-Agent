@@ -10,6 +10,7 @@ function buildConfig(): RuntimeConfig {
     targetProjectPath: '/tmp/sample-project',
     docsDir: '.ai-docs',
     enableAiAnalysis: false,
+    enableModuleDocumentation: true,
     aiProvider: 'openrouter',
     enableAgentExports: false,
     exportTargets: ['generic'],
@@ -241,10 +242,16 @@ describe('formatRunSummary', () => {
         ...buildResult().metrics,
         aiInsightsGenerated: true,
         aiInsightsAttempted: true,
+        moduleDocumentationGenerated: true,
+        moduleDocumentationAttempted: true,
+        moduleDocumentationCompleted: 2,
+        moduleDocumentationFailed: 0,
+        moduleDocumentationSkipped: 0,
       },
       steps: [
         ...buildResult().steps,
-        { name: 'Analyze AI Insights', description: '', status: 'completed' },
+        { name: 'Generate Architecture Context', description: '', status: 'completed' },
+        { name: 'Generate Module Documentation', description: '', status: 'completed' },
       ],
     });
 
@@ -255,7 +262,23 @@ describe('formatRunSummary', () => {
 
     assert.match(output, /AI Analysis:/);
     assert.match(output, /- Model: openai\/gpt-4.1-mini/);
+    assert.match(output, /- Architecture context: yes/);
     assert.match(output, /- Insights generated: yes/);
+    assert.match(output, /- Module documentation: 2 completed, 0 failed/);
+  });
+
+  it('reports skipped module documentation when --skip-module-docs is set', () => {
+    const output = formatRunSummary({
+      config: {
+        ...buildConfig(),
+        enableAiAnalysis: true,
+        enableModuleDocumentation: false,
+      },
+      result: buildResult(),
+    }).join('\n');
+
+    assert.match(output, /AI Analysis:/);
+    assert.match(output, /- Module documentation: skipped \(--skip-module-docs\)/);
   });
 
   it('reports failed AI analysis with warning hint', () => {
@@ -348,7 +371,7 @@ describe('formatRunSummary', () => {
       },
       steps: [
         ...buildResult().steps,
-        { name: 'Analyze AI Insights', description: '', status: 'completed' },
+        { name: 'Generate Architecture Context', description: '', status: 'completed' },
       ],
     });
 

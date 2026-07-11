@@ -76,10 +76,17 @@ Templates receive PKM data through `TemplateContext` and planned-document metada
 | `markdown.agent-navigation` | `agent-navigation.md` | `agent-navigation-renderer.ts` |
 | `markdown.ai-context` | `ai-context.md` | `ai-context-renderer.ts` |
 | `markdown.implementation-guide` | `implementation-guide.md` | `implementation-guide-renderer.ts` |
+| `markdown.ai-start-here` | `AI_START_HERE.md` | `ai-start-here-renderer.ts` |
+| `markdown.context-router` | `CONTEXT_ROUTER.md` | `context-router-renderer.ts` |
+| `markdown.documentation-maintenance` | `DOCUMENTATION_MAINTENANCE.md` | `documentation-maintenance-renderer.ts` |
+| `markdown.documentation-status` | `DOCUMENTATION_STATUS.md` | `documentation-status-renderer.ts` |
+| `markdown.project-map` | `PROJECT_MAP.md` | `project-map-renderer.ts` |
+| `markdown.module-documentation-plan` | `module-documentation-plan.md` | `module-documentation-plan-renderer.ts` |
+| `markdown.module-document` | `code/components/<module>.md` *(via `generatorKind`)* | `module-document-renderer.ts` |
 | `markdown.ai-readiness` | `ai-readiness.md` | `src/readiness/ai-readiness-renderer.ts` |
 | `markdown.generic` | *(fallback)* | `document-template.ts` |
 
-Documents without a registered template use `markdown.generic`. Technology-specific and agent docs (`README.md`, `AGENTS.md`, etc.) continue to use the generic fallback until they get dedicated templates.
+Documents without a registered path template use `markdown.generic`, except per-module cards which resolve through `generatorKind: 'staged-module'` / `stage: 'module'`. Technology-specific agent docs (`README.md`, `AGENTS.md`, etc.) continue to use the generic fallback until they get dedicated templates.
 
 Renderers live in `src/docs/markdown-renderers/` as small, deterministic functions (the AI readiness renderer lives with its feature in `src/readiness/` and is registered here). Templates wrap those renderers today; future user-customizable templates can replace or extend the registry without changing the writer.
 

@@ -123,8 +123,9 @@ Never put scanner logic, detection logic, AI calls, or file writes directly insi
 ### Folder ownership
 
 - `src/cli.ts` — argument routing only. Delegates immediately to `config/` and `core/`. No logic.
+- `src/ui/` — local Web UI (`npm run ui`). HTTP server on `127.0.0.1`, static form, maps JSON to `buildRuntimeConfig()`, calls `executePipeline` (not `run()`). Port env/flag only in `index.ts`; never log API keys.
 - `src/domain/` — pure types only. No behavior, no Node.js imports, no dependencies on other `src/` modules.
-- `src/config/` — all configuration concerns. **The only place that reads `process.argv` and `process.env`.**
+- `src/config/` — all **pipeline** configuration concerns. **The only place that reads `process.argv` and `process.env` for `RuntimeConfig`.** (UI listen port is resolved in `src/ui/index.ts` only.)
 - `src/core/` — orchestration only. Receives `RuntimeConfig`, drives `executePipeline`, calls stage handlers in order. No scanner logic, no detection logic, no AI calls, no file I/O.
 - `src/scanner/` — reads the target repository from disk, produces `RepositoryInfo` and `RepositoryNode`.
 - `src/detectors/` — detects technology stack from `RepositoryInfo`, produces `TechnologyProfile`. No directory walking.
@@ -163,10 +164,11 @@ All runtime configuration flows through `src/config/index.ts`. It is the single 
 ## Implementation status
 
 The project has:
+- A local Web UI in `src/ui/` (`npm run ui`) — localhost HTTP server, browser form, `POST /api/run` (JSON) and `POST /api/run?stream=1` (SSE), `GET /api/providers`, `POST /api/browse-folder`, `POST /api/open-folder`, via `executePipeline` + `buildRunSummaryData`.
 - A working CLI with full argument parsing and runtime configuration resolution.
 - A complete domain model (`src/domain/`) defining analysis-stage types and the declarative pipeline.
 - A Project Knowledge Model (`src/knowledge/`) with types and `buildProjectKnowledge()`.
-- A pipeline orchestrator (`src/core/`) that runs all 18 steps and returns `PipelineExecutionResult`.
+- A pipeline orchestrator (`src/core/`) that runs all 20 steps and returns `PipelineExecutionResult`.
 - Step 2 (Load Repository Metadata) implemented in `src/scanner/repository-loader.ts`.
 - Step 3 (Scan Repository Structure) implemented in `src/scanner/repository-scanner.ts` — produces `RepositoryNode` tree with ignore rules and safety limits.
 - Step 4 (Detect Technologies) implemented in `src/detectors/technology-detector.ts` and `src/detectors/package-manager-detector.ts`.
@@ -179,7 +181,9 @@ The project has:
 - Step 10 (Analyze Conventions) — `builtin.convention-analyzer` → `convention-analyzer.ts` → `ConventionKnowledge[]` in `analysis.conventions`.
 - Step 11 (Build AI Navigation Map) — `builtin.navigation-analyzer` → `navigation-map-analyzer.ts` → `NavigationMapKnowledge` in `analysis.navigationMap`.
 - Technology placeholder plugins registered: `technology.angular` (detection), `technology.react`, `technology.nest`, `technology.node` (supports only).
-- Step 12 (Analyze AI Insights) implemented in `src/ai/ai-analysis-service.ts` — optional AI enrichment of `analysis.aiInsights` when `--ai` is set and an API key is available. The service resolves an `AIProvider` from `src/ai/providers/` (default: `openrouter`, selectable with `--ai-provider`) and sends a compact PKM summary only; invalid responses warn and continue.
+- Step 12 (Generate Architecture Context) optionally enriches the PKM when `--ai` is set and an API key is available. It currently bridges through `src/ai/ai-analysis-service.ts` into `analysis.aiInsights` and will migrate to `analysis.stagedDocumentation.architecture`. The service resolves an `AIProvider` from `src/ai/providers/` (default: `openrouter`, selectable with `--ai-provider`) and sends a compact PKM summary only; invalid responses warn and continue.
+- Steps 13 (Generate Module Documentation Plan) expands the documentation plan with playbook routing docs and one document per discovered module, mirroring entries into `analysis.stagedDocumentation.modulePlan`.
+- Step 14 (Generate Module Documentation) implemented in `src/ai/module-documentation-stage.ts` — sequential per-module AI fan-out when `--ai` is set and an API key is available; persists `analysis.stagedDocumentation.moduleResults` with isolated failure status.
 - Step 13 (Detect Changes) implemented in `src/incremental/` — compares the current PKM against the previously persisted snapshot, records `analysis.changeSummary`, and derives `analysis.documentImpact` for selective regeneration.
 - Step 14 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — renders planned documents through `src/templates/template-engine.ts`, then writes Markdown from `ProjectKnowledge`, regenerating only impacted tool-managed files when `documentImpact` is present (all planned docs on initial run).
 - Step 15 (Validate Documentation) implemented in `src/docs/documentation-validator.ts` — verifies written docs exist, carry the generated-file marker, and reports errors/warnings.
@@ -210,10 +214,10 @@ The summary headline is the run verdict: `AI Project Docs completed` (success), 
 | Summary section | Present | Meaning for agents |
 |---|---|---|
 | `Project` / `Target` / `Docs` | always | Which repository was analyzed, the resolved path, and where generated outputs live (default `.ai-docs/`). |
-| `Duration` / `Pipeline` | always | How long the run took and how many steps completed / skipped / failed. `Analyze AI Insights` shows `○` unless `--ai` and an API key are provided. `Export Agent Context` shows `○` unless `--export-agents` is provided. |
+| `Duration` / `Pipeline` | always | How long the run took and how many steps completed / skipped / failed. `Generate Architecture Context` and `Generate Module Documentation` show `○` unless `--ai` and an API key are provided. `Generate Module Documentation` also shows `○` when `--skip-module-docs` is set. `Generate Module Documentation Plan` always runs after modules are known. `Export Agent Context` shows `○` unless `--export-agents` is provided. |
 | `Technologies` | always | Detected stack from deterministic detection — use to confirm language/framework context. |
 | `Knowledge` counts | always | How much structural analysis was produced (repository tree, files scanned, folders, modules, dependency edges, conventions, navigation entries, persisted knowledge files). |
-| `AI Analysis` | only with `--ai` | Which provider (`--ai-provider`, default `openrouter`) and model were used (model from PKM when insights were generated) and whether insights were generated (`yes`, `no`, or `no (see warnings)` when the AI run failed). Absent section = AI analysis was off. |
+| `AI Analysis` | only with `--ai` | Which provider (`--ai-provider`, default `openrouter`) and model were used (model from PKM when insights were generated), whether architecture context / insights were generated (`yes`, `no`, or `no (see warnings)`), and module documentation fan-out status (`N completed, M failed`, `skipped (--skip-module-docs)`, or `not run`). Absent section = AI analysis was off. |
 | `Agent exporters` | only with `--export-agents` | Which targets ran and how many export files were written or skipped. Absent section = exports were off. |
 | `Change detection` | always on completed runs | `Initial run: yes (baseline created)` on the first run. On incremental runs: `Changed sections` plus counts for added/removed modules, folders, or dependency edges when those sections changed. |
 | `Document impact` | incremental runs only | Counts of impacted vs unchanged documents from selective regeneration. Omitted on initial runs (everything is impacted by definition). |
@@ -234,7 +238,7 @@ If the headline says `completed with errors` or `completed with validation error
 | `2` | Documentation validation failed |
 | `3` | Unexpected runtime / pipeline error |
 
-Steps marked `○` in the pipeline progress (e.g. `Analyze AI Insights` without `--ai`, or `Export Agent Context` without `--export-agents`) are skipped by design. They do not indicate a failed run.
+Steps marked `○` in the pipeline progress (e.g. staged documentation steps without `--ai`, or `Export Agent Context` without `--export-agents`) are skipped by design. They do not indicate a failed run.
 
 **AI insights are enrichment, not authority.** Deterministic PKM sections remain the source of truth. When `analysis.aiInsights` is present, PKM-powered Markdown renderers append a labeled **AI Insights** section to `architecture.md`, `ai-context.md`, `implementation-guide.md`, and `agent-navigation.md`. Renderers consume already-persisted PKM only — they never call AI providers.
 
@@ -246,9 +250,11 @@ The authoritative machine-readable output is `.ai-docs/knowledge/project-knowled
 
 ```bash
 npm install
-npm run build          # compiles TypeScript to dist/ with zero errors
+npm run build          # compiles TypeScript to dist/ with zero errors; copies UI assets
 npm test               # runs unit tests
 npm run smoke          # end-to-end smoke test against a temp fixture
+npm run ui             # local Web UI at http://127.0.0.1:3847
+npm run ui:smoke       # ephemeral UI server + fixture POST (JSON + SSE)
 node dist/cli.js .     # runs the pipeline against this project; shows detected technologies
 node dist/cli.js --help
 ```
@@ -260,7 +266,7 @@ The build must succeed with zero TypeScript errors before any commit.
 ## What to avoid
 
 - Do not modify files in `dist/` — it is a build artifact.
-- Do not read `process.argv` or `process.env` outside of `src/config/`.
+- Do not read `process.argv` or `process.env` for pipeline configuration outside of `src/config/`. (UI listen port may be read only in `src/ui/index.ts`.)
 - Do not import Node.js built-ins inside `src/domain/`.
 - Do not invent data structures for concepts that already have a domain type.
 - Do not add error handling for scenarios that cannot happen given the surrounding code.

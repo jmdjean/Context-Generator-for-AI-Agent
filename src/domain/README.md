@@ -15,6 +15,7 @@ The domain layer makes every concept explicit and shared:
 - `scanner/` produces a `RepositoryNode` — not "some object with file info".
 - `ai/` produces an `AnalysisResult` — not "a string from the model".
 - `docs/` writes a `DocumentationPlan` deterministically today — and will later enrich those files from structured analysis rather than "whatever the AI said".
+- Staged multi-agent documentation outputs (architecture context, module plans, per-module results) live in `ProjectKnowledge.analysis.stagedDocumentation` under `src/knowledge/` — not as ad hoc domain types here. Domain keeps analysis-stage contracts; the PKM holds generator-facing staged state.
 
 When every module's input and output is a named, typed interface, there is nothing to guess.
 

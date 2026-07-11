@@ -91,7 +91,8 @@ describe('AIProviderRegistry', () => {
 
     assert.equal(registry.resolve('openrouter')?.id, 'openrouter');
     assert.equal(registry.resolve(' OpenRouter ')?.id, 'openrouter');
-    assert.equal(registry.resolve('openai'), undefined);
+    assert.equal(registry.resolve('openai')?.id, 'openai');
+    assert.equal(registry.resolve('OpenAI')?.id, 'openai');
   });
 
   it('rejects duplicate provider registrations', () => {
@@ -115,7 +116,7 @@ describe('AIProviderRegistry', () => {
 
     registry.register(custom);
 
-    assert.deepEqual(registry.ids(), ['openrouter', 'custom']);
+    assert.deepEqual(registry.ids(), ['openrouter', 'openai', 'custom']);
     assert.equal(registry.resolve('custom'), custom);
   });
 });
@@ -125,19 +126,21 @@ describe('provider factory', () => {
     assert.equal(DEFAULT_AI_PROVIDER_ID, 'openrouter');
     assert.equal(createAiProvider().id, 'openrouter');
     assert.equal(createAiProvider('openrouter').id, 'openrouter');
+    assert.equal(createAiProvider('openai').id, 'openai');
   });
 
   it('throws a clear error for unsupported providers', () => {
     assert.throws(
       () => createAiProvider('gemini'),
-      /Unsupported AI provider: gemini\. Supported providers: openrouter\./,
+      /Unsupported AI provider: gemini\. Supported providers: openrouter, openai\./,
     );
   });
 
   it('reports supported provider ids', () => {
-    assert.deepEqual(listSupportedAiProviderIds(), ['openrouter']);
+    assert.deepEqual(listSupportedAiProviderIds(), ['openrouter', 'openai']);
     assert.equal(isSupportedAiProviderId('openrouter'), true);
     assert.equal(isSupportedAiProviderId('OPENROUTER'), true);
+    assert.equal(isSupportedAiProviderId('openai'), true);
     assert.equal(isSupportedAiProviderId('ollama'), false);
   });
 });

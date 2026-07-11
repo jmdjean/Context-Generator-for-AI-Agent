@@ -50,6 +50,7 @@ function createKnowledge(
     detectedFiles?: string[];
     dependencyGraph?: DependencyGraphKnowledge;
     aiInsights?: ProjectKnowledge['analysis']['aiInsights'];
+    stagedDocumentation?: ProjectKnowledge['analysis']['stagedDocumentation'];
     conventions?: ConventionKnowledge[];
     technologyConfidence?: ProjectKnowledge['technologies']['confidence'];
   } = {},
@@ -102,6 +103,7 @@ function createKnowledge(
       modules: options.modules,
       dependencyGraph: options.dependencyGraph,
       aiInsights: options.aiInsights,
+      stagedDocumentation: options.stagedDocumentation,
       conventions: options.conventions,
     },
   };
@@ -245,6 +247,84 @@ describe('change-detector', () => {
     const summary = detectChanges({ status: 'loaded', knowledge: previous }, current);
 
     assert.ok(summary.changedSections.includes('conventions'));
+  });
+
+  it('detects staged documentation content changes and ignores timestamps', () => {
+    const previous = createKnowledge('/tmp/project', {
+      stagedDocumentation: {
+        architecture: {
+          status: 'completed',
+          summary: 'Old architecture',
+          content: 'Old content',
+          documentPaths: ['architecture.md'],
+          generatedAt: '2026-01-01T00:00:00.000Z',
+          warnings: [],
+        },
+        execution: [
+          {
+            stageId: 'architecture',
+            status: 'completed',
+            startedAt: '2026-01-01T00:00:00.000Z',
+            completedAt: '2026-01-01T00:00:01.000Z',
+            warnings: [],
+          },
+        ],
+        generatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    });
+    const sameContentNewerTimestamp = createKnowledge('/tmp/project', {
+      stagedDocumentation: {
+        architecture: {
+          status: 'completed',
+          summary: 'Old architecture',
+          content: 'Old content',
+          documentPaths: ['architecture.md'],
+          generatedAt: '2026-01-02T00:00:00.000Z',
+          warnings: [],
+        },
+        execution: [
+          {
+            stageId: 'architecture',
+            status: 'completed',
+            startedAt: '2026-01-02T00:00:00.000Z',
+            completedAt: '2026-01-02T00:00:01.000Z',
+            warnings: [],
+          },
+        ],
+        generatedAt: '2026-01-02T00:00:00.000Z',
+      },
+    });
+    const changedContent = createKnowledge('/tmp/project', {
+      stagedDocumentation: {
+        architecture: {
+          status: 'completed',
+          summary: 'New architecture',
+          content: 'New content',
+          documentPaths: ['architecture.md'],
+          generatedAt: '2026-01-02T00:00:00.000Z',
+          warnings: [],
+        },
+        execution: [
+          {
+            stageId: 'architecture',
+            status: 'completed',
+            startedAt: '2026-01-02T00:00:00.000Z',
+            completedAt: '2026-01-02T00:00:01.000Z',
+            warnings: [],
+          },
+        ],
+        generatedAt: '2026-01-02T00:00:00.000Z',
+      },
+    });
+
+    const unchanged = detectChanges(
+      { status: 'loaded', knowledge: previous },
+      sameContentNewerTimestamp,
+    );
+    assert.equal(unchanged.changedSections.includes('stagedDocumentation'), false);
+
+    const changed = detectChanges({ status: 'loaded', knowledge: previous }, changedContent);
+    assert.ok(changed.changedSections.includes('stagedDocumentation'));
   });
 });
 

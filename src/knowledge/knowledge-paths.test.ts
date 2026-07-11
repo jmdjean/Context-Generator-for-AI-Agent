@@ -39,6 +39,40 @@ describe('knowledge-paths', () => {
     assert.ok(!withoutDependencies.includes('.ai-docs/knowledge/dependencies.json'));
   });
 
+  it('lists staged-documentation.json only when requested', () => {
+    const withStaged = listPersistedKnowledgeRelativeFilePaths(
+      '.ai-docs',
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+    );
+    const withoutStaged = listPersistedKnowledgeRelativeFilePaths(
+      '.ai-docs',
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+    );
+
+    assert.ok(withStaged.includes('.ai-docs/knowledge/staged-documentation.json'));
+    assert.ok(!withoutStaged.includes('.ai-docs/knowledge/staged-documentation.json'));
+  });
+
   it('defaults listKnowledgeRelativeFilePaths to omit optional split files', () => {
     const defaultListing = listKnowledgeRelativeFilePaths('.ai-docs');
     const fullListing = listKnowledgeRelativeFilePaths('.ai-docs', true, true, true, true);

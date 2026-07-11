@@ -14,6 +14,7 @@ import {
 } from '../readiness/ai-readiness-model';
 import { resolvePathWithinRoot } from '../utils/fs';
 import { GENERATED_FILE_MARKER } from './document-template';
+import { MODULE_DOCUMENTATION_PLAN_PATH } from './documentation-planner';
 import { normalizeGeneratedFileContent } from './documentation-write-policy';
 import { DocumentationWriteResult } from './documentation-writer';
 
@@ -31,6 +32,16 @@ export interface DocumentationValidationResult {
   status: DocumentationValidationStatus;
   issues: DocumentationValidationIssue[];
 }
+
+/** Playbook routing docs expected after module-plan expansion. */
+const EXPECTED_PLAYBOOK_PATHS: readonly string[] = [
+  'AI_START_HERE.md',
+  'CONTEXT_ROUTER.md',
+  'DOCUMENTATION_MAINTENANCE.md',
+  'DOCUMENTATION_STATUS.md',
+  'PROJECT_MAP.md',
+  MODULE_DOCUMENTATION_PLAN_PATH,
+];
 
 function validateDocumentOnDisk(
   docsRootPath: string,
@@ -69,6 +80,105 @@ function validateDocumentOnDisk(
       relativePath,
     });
   }
+}
+
+/**
+ * Validates staged documentation PKM coverage against the documentation plan.
+ * Uses PKM metadata only — does not parse Markdown bodies as source of truth.
+ */
+export function validateStagedDocumentationCoverage(
+  knowledge: ProjectKnowledge,
+): DocumentationValidationIssue[] {
+  const issues: DocumentationValidationIssue[] = [];
+  const staged = knowledge.analysis.stagedDocumentation;
+
+  if (staged === undefined || staged.modulePlan === undefined) {
+    return issues;
+  }
+
+  const plannedPaths = new Set(
+    getDocumentationPlan(knowledge).documents.map((document) => document.relativePath),
+  );
+  const modules = knowledge.analysis.modules ?? [];
+
+  for (const playbookPath of EXPECTED_PLAYBOOK_PATHS) {
+    if (!plannedPaths.has(playbookPath)) {
+      issues.push({
+        severity: 'error',
+        message: 'required playbook/module-plan document missing from documentation plan',
+        relativePath: playbookPath,
+      });
+    }
+  }
+
+  for (const entry of staged.modulePlan.entries) {
+    if (!plannedPaths.has(entry.documentPath)) {
+      issues.push({
+        severity: 'error',
+        message: `module-plan entry "${entry.moduleId}" is missing from the documentation plan`,
+        relativePath: entry.documentPath,
+      });
+    }
+  }
+
+  if (staged.modulePlan.entries.length !== modules.length) {
+    issues.push({
+      severity: 'warning',
+      message: `module-plan entries (${staged.modulePlan.entries.length}) do not match discovered modules (${modules.length})`,
+    });
+  }
+
+  const moduleResults = staged.moduleResults;
+  if (moduleResults !== undefined) {
+    const resultByModuleId = new Map(
+      moduleResults.results.map((result) => [result.moduleId, result]),
+    );
+
+    for (const entry of staged.modulePlan.entries) {
+      const result = resultByModuleId.get(entry.moduleId);
+      if (result === undefined) {
+        issues.push({
+          severity: 'warning',
+          message: `module-plan entry "${entry.moduleId}" has no moduleResults entry`,
+          relativePath: entry.documentPath,
+        });
+        continue;
+      }
+
+      if (result.status === 'failed') {
+        issues.push({
+          severity: 'warning',
+          message: result.error
+            ? `module documentation AI failed: ${result.error}`
+            : 'module documentation AI failed',
+          relativePath: result.documentPath,
+        });
+      }
+    }
+
+    if (
+      moduleResults.status === 'failed' ||
+      (moduleResults.status === 'partial' &&
+        moduleResults.results.every((result) => result.status === 'failed'))
+    ) {
+      issues.push({
+        severity: 'warning',
+        message: 'staged module documentation completed with failures; deterministic cards may still be present',
+      });
+    }
+  }
+
+  if (staged.architecture?.status === 'failed') {
+    issues.push({
+      severity: 'warning',
+      message: staged.architecture.error
+        ? `architecture stage failed: ${staged.architecture.error}`
+        : 'architecture stage failed',
+      relativePath: 'architecture.md',
+    });
+  }
+
+  return issues;
 }
 
 export function validateDocumentation(
@@ -138,6 +248,8 @@ export function validateDocumentation(
 
     validateDocumentOnDisk(docsRootPath, document.relativePath, issues);
   }
+
+  issues.push(...validateStagedDocumentationCoverage(knowledge));
 
   const errorCount = issues.filter((issue) => issue.severity === 'error').length;
   const warningCount = issues.filter((issue) => issue.severity === 'warning').length;

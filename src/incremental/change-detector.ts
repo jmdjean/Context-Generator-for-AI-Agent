@@ -11,6 +11,7 @@ import {
   ModuleKnowledge,
   NavigationEntry,
   ProjectKnowledge,
+  StagedDocumentationKnowledge,
 } from '../knowledge/project-knowledge';
 import { DependencyEdgeChange } from './change-summary';
 import { PreviousKnowledgeBaseline, repositoryRootsMatch } from './state-loader';
@@ -229,6 +230,79 @@ function normalizeAiInsights(insights: AiInsightsKnowledge | undefined): string 
   });
 }
 
+/**
+ * Compares staged documentation content that affects rendered docs.
+ * Ignores generatedAt timestamps and execution timing so re-runs without
+ * content changes do not force regeneration.
+ */
+function normalizeStagedDocumentation(
+  staged: StagedDocumentationKnowledge | undefined,
+): string {
+  if (staged === undefined) {
+    return stableSerialize(null);
+  }
+
+  const architecture = staged.architecture
+    ? {
+        status: staged.architecture.status,
+        summary: staged.architecture.summary,
+        content: staged.architecture.content,
+        documentPaths: sortedCopy(staged.architecture.documentPaths),
+        provider: staged.architecture.provider,
+        model: staged.architecture.model,
+        warnings: sortedCopy(staged.architecture.warnings),
+        error: staged.architecture.error,
+      }
+    : null;
+
+  const modulePlan = staged.modulePlan
+    ? {
+        status: staged.modulePlan.status,
+        warnings: sortedCopy(staged.modulePlan.warnings),
+        error: staged.modulePlan.error,
+        entries: [...staged.modulePlan.entries]
+          .map((entry) => ({
+            moduleId: entry.moduleId,
+            moduleName: entry.moduleName,
+            moduleRelativePath: entry.moduleRelativePath,
+            documentPath: entry.documentPath,
+            order: entry.order,
+            status: entry.status,
+            rationale: entry.rationale,
+          }))
+          .sort((left, right) => left.moduleId.localeCompare(right.moduleId)),
+      }
+    : null;
+
+  const moduleResults = staged.moduleResults
+    ? {
+        status: staged.moduleResults.status,
+        warnings: sortedCopy(staged.moduleResults.warnings),
+        results: [...staged.moduleResults.results]
+          .map((result) => ({
+            moduleId: result.moduleId,
+            moduleName: result.moduleName,
+            moduleRelativePath: result.moduleRelativePath,
+            documentPath: result.documentPath,
+            status: result.status,
+            summary: result.summary,
+            content: result.content,
+            provider: result.provider,
+            model: result.model,
+            warnings: sortedCopy(result.warnings),
+            error: result.error,
+          }))
+          .sort((left, right) => left.moduleId.localeCompare(right.moduleId)),
+      }
+    : null;
+
+  return stableSerialize({
+    architecture,
+    modulePlan,
+    moduleResults,
+  });
+}
+
 function normalizeDependencyGraph(graph: DependencyGraphKnowledge | undefined): string {
   if (graph === undefined) {
     return stableSerialize({ nodes: [], edges: [] });
@@ -254,6 +328,10 @@ function normalizeDocumentationPlan(plan: DocumentationPlan): string {
       relativePath: document.relativePath,
       source: document.source,
       priority: document.priority,
+      stage: document.stage,
+      generatorKind: document.generatorKind,
+      moduleId: document.moduleId,
+      order: document.order,
     }))
     .sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 
@@ -429,6 +507,13 @@ export function detectChanges(
     normalizeAiInsights(previous.analysis.aiInsights) !== normalizeAiInsights(current.analysis.aiInsights)
   ) {
     changedSections.push('aiInsights');
+  }
+
+  if (
+    normalizeStagedDocumentation(previous.analysis.stagedDocumentation) !==
+    normalizeStagedDocumentation(current.analysis.stagedDocumentation)
+  ) {
+    changedSections.push('stagedDocumentation');
   }
 
   if (

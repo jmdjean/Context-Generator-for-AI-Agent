@@ -5,10 +5,16 @@ import * as path from 'node:path';
 import { describe, it } from 'node:test';
 import { RuntimeConfig } from '../config';
 import { ANALYSIS_PIPELINE } from '../domain';
-import { handleAnalyzeAiInsights, handleDetectChanges, handleExportAgentContext, handleValidateDocumentation } from './pipeline-handlers';
+import { handleGenerateArchitectureContext, handleGenerateModuleDocumentation, handleGenerateModuleDocumentationPlan, handleDetectChanges, handleExportAgentContext, handleValidateDocumentation, STEP_HANDLERS } from './pipeline-handlers';
 import { createEmptyPipelineMetrics } from './pipeline-metrics';
 import { ProjectKnowledge } from '../knowledge';
 import { DocumentationWriteResult } from '../docs/documentation-writer';
+
+const STAGED_DOCUMENTATION_STEP_NAMES = [
+  'Generate Architecture Context',
+  'Generate Module Documentation Plan',
+  'Generate Module Documentation',
+] as const;
 
 function buildWriteResult(
   overrides: Partial<DocumentationWriteResult> = {},
@@ -39,6 +45,7 @@ function buildContext(writeResult: DocumentationWriteResult): {
       targetProjectPath: '/tmp/sample-project',
       docsDir: '.ai-docs',
       enableAiAnalysis: false,
+      enableModuleDocumentation: true,
       aiProvider: 'openrouter',
       enableAgentExports: false,
       exportTargets: ['generic'],
@@ -106,7 +113,30 @@ describe('handleValidateDocumentation', () => {
   });
 });
 
-describe('handleAnalyzeAiInsights', () => {
+describe('staged documentation pipeline contracts', () => {
+  it('declares architecture, module-plan, and module-documentation steps in order', () => {
+    const names = ANALYSIS_PIPELINE.map((step) => step.name);
+    const architectureIndex = names.indexOf('Generate Architecture Context');
+    const modulePlanIndex = names.indexOf('Generate Module Documentation Plan');
+    const moduleDocsIndex = names.indexOf('Generate Module Documentation');
+    const detectChangesIndex = names.indexOf('Detect Changes');
+    const navigationIndex = names.indexOf('Build AI Navigation Map');
+
+    assert.ok(architectureIndex > navigationIndex);
+    assert.equal(modulePlanIndex, architectureIndex + 1);
+    assert.equal(moduleDocsIndex, modulePlanIndex + 1);
+    assert.equal(detectChangesIndex, moduleDocsIndex + 1);
+    assert.equal(names.includes('Analyze AI Insights'), false);
+  });
+
+  it('wires handlers for each staged documentation step', () => {
+    for (const stepName of STAGED_DOCUMENTATION_STEP_NAMES) {
+      assert.equal(typeof STEP_HANDLERS[stepName], 'function');
+    }
+  });
+});
+
+describe('handleGenerateArchitectureContext', () => {
   function buildAiContext(configOverrides: Partial<RuntimeConfig> = {}): {
     config: RuntimeConfig;
     metrics: ReturnType<typeof createEmptyPipelineMetrics>;
@@ -117,6 +147,7 @@ describe('handleAnalyzeAiInsights', () => {
         targetProjectPath: '/tmp/sample-project',
         docsDir: '.ai-docs',
         enableAiAnalysis: false,
+        enableModuleDocumentation: true,
         aiProvider: 'openrouter',
         enableAgentExports: false,
         exportTargets: ['generic'],
@@ -130,10 +161,10 @@ describe('handleAnalyzeAiInsights', () => {
 
   it('skips when --ai is not provided', async () => {
     const context = buildAiContext();
-    const step = ANALYSIS_PIPELINE.find((item) => item.name === 'Analyze AI Insights');
+    const step = ANALYSIS_PIPELINE.find((item) => item.name === 'Generate Architecture Context');
     assert.ok(step);
 
-    const result = await handleAnalyzeAiInsights(context, step);
+    const result = await handleGenerateArchitectureContext(context, step);
 
     assert.equal(result.status, 'skipped');
     assert.match(result.message, /--ai not provided/);
@@ -141,14 +172,114 @@ describe('handleAnalyzeAiInsights', () => {
 
   it('skips when --ai is provided without an API key', async () => {
     const context = buildAiContext({ enableAiAnalysis: true });
-    const step = ANALYSIS_PIPELINE.find((item) => item.name === 'Analyze AI Insights');
+    const step = ANALYSIS_PIPELINE.find((item) => item.name === 'Generate Architecture Context');
     assert.ok(step);
 
-    const result = await handleAnalyzeAiInsights(context, step);
+    const result = await handleGenerateArchitectureContext(context, step);
 
     assert.equal(result.status, 'skipped');
     assert.match(result.message, /API key missing/);
     assert.equal(context.metrics.aiInsightsAttempted, true);
+  });
+});
+
+describe('handleGenerateModuleDocumentationPlan', () => {
+  it('expands the documentation plan from discovered modules', async () => {
+    const context = buildContext(buildWriteResult());
+    context.projectKnowledge!.analysis.modules = [
+      {
+        name: 'core',
+        path: '/tmp/sample-project/src/core',
+        relativePath: 'src/core',
+        type: 'core',
+        responsibility: 'Orchestration',
+        importantFiles: [],
+        relatedFolders: [],
+        signals: [],
+        confidence: 'high',
+      },
+    ];
+    const step = ANALYSIS_PIPELINE.find(
+      (item) => item.name === 'Generate Module Documentation Plan',
+    );
+    assert.ok(step);
+
+    const result = await handleGenerateModuleDocumentationPlan(context, step);
+
+    assert.equal(result.status, 'completed');
+    assert.match(result.message, /1 module/);
+    assert.ok(
+      context.projectKnowledge?.documentation.plan.documents.some(
+        (document) => document.relativePath === 'module-documentation-plan.md',
+      ),
+    );
+    assert.ok(
+      context.projectKnowledge?.documentation.plan.documents.some(
+        (document) => document.moduleId === 'src/core',
+      ),
+    );
+    assert.equal(
+      context.projectKnowledge?.analysis.stagedDocumentation?.modulePlan?.entries.length,
+      1,
+    );
+  });
+
+  it('completes with a partial module plan when no modules exist', async () => {
+    const context = buildContext(buildWriteResult());
+    const step = ANALYSIS_PIPELINE.find(
+      (item) => item.name === 'Generate Module Documentation Plan',
+    );
+    assert.ok(step);
+
+    const result = await handleGenerateModuleDocumentationPlan(context, step);
+
+    assert.equal(result.status, 'completed');
+    assert.equal(
+      context.projectKnowledge?.analysis.stagedDocumentation?.modulePlan?.status,
+      'partial',
+    );
+  });
+});
+
+describe('handleGenerateModuleDocumentation', () => {
+  it('skips when --ai is not provided', async () => {
+    const context = buildContext(buildWriteResult());
+    const step = ANALYSIS_PIPELINE.find((item) => item.name === 'Generate Module Documentation');
+    assert.ok(step);
+
+    const result = await handleGenerateModuleDocumentation(context, step);
+
+    assert.equal(result.status, 'skipped');
+    assert.match(result.message, /--ai not provided/);
+  });
+
+  it('skips when --skip-module-docs is set', async () => {
+    const context = buildContext(buildWriteResult());
+    context.config.enableAiAnalysis = true;
+    context.config.enableModuleDocumentation = false;
+    context.config.openRouterApiKey = 'test-key';
+    context.config.apiKeys = { openrouter: 'test-key' };
+    const step = ANALYSIS_PIPELINE.find((item) => item.name === 'Generate Module Documentation');
+    assert.ok(step);
+
+    const result = await handleGenerateModuleDocumentation(context, step);
+
+    assert.equal(result.status, 'skipped');
+    assert.match(result.message, /--skip-module-docs/);
+  });
+
+  it('skips when API key is missing', async () => {
+    const context = buildContext(buildWriteResult());
+    context.config.enableAiAnalysis = true;
+    context.config.openRouterApiKey = undefined;
+    context.config.apiKeys = undefined;
+    const step = ANALYSIS_PIPELINE.find((item) => item.name === 'Generate Module Documentation');
+    assert.ok(step);
+
+    const result = await handleGenerateModuleDocumentation(context, step);
+
+    assert.equal(result.status, 'skipped');
+    assert.match(result.message, /API key missing/);
   });
 });
 

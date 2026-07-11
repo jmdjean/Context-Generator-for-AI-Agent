@@ -1,28 +1,28 @@
-import * as path from 'node:path';
 import { AgentExportTarget } from '../knowledge';
 import {
-  DEFAULT_ENABLED_EXPORT_TARGETS,
-} from '../exporters/exporter-constants';
-import {
-  parseExportTargetSelector,
-  resolveEnabledExportTargets,
-} from '../exporters/export-target-resolver';
-import { normalizeAiProviderId } from '../ai/providers/ai-provider';
-import {
   DEFAULT_AI_PROVIDER_ID,
-  isSupportedAiProviderId,
   listSupportedAiProviderIds,
 } from '../ai/providers/provider-factory';
 import { DEFAULT_AI_MODEL, DEFAULT_DOCS_DIR } from './constants';
-import { assertReadableDirectory } from '../utils/fs';
+import { buildRuntimeConfig } from './runtime-config-builder';
 
 export { DEFAULT_AI_MODEL, DEFAULT_DOCS_DIR } from './constants';
+export { buildRuntimeConfig, resolveProviderApiKey } from './runtime-config-builder';
+export type { RuntimeConfigInput } from './runtime-config-builder';
 
 export interface RuntimeConfig {
   targetProjectPath: string;
   docsDir: string;
+  /** Derived from `apiKeys.openrouter` for OpenRouter backward compatibility. */
   openRouterApiKey?: string;
+  /** Per-provider API keys (e.g. `{ openrouter: '...', openai: '...' }`). */
+  apiKeys?: Partial<Record<string, string>>;
   enableAiAnalysis: boolean;
+  /**
+   * When AI analysis is enabled, also run per-module documentation fan-out.
+   * Defaults to true; disable with `--skip-module-docs`.
+   */
+  enableModuleDocumentation: boolean;
   aiProvider: string;
   aiModel: string;
   enableAgentExports: boolean;
@@ -32,8 +32,10 @@ export interface RuntimeConfig {
 interface ParsedArgs {
   targetPath: string | undefined;
   openRouterKey: string | undefined;
+  openAiKey: string | undefined;
   docsDir: string | undefined;
   enableAiAnalysis: boolean;
+  enableModuleDocumentation: boolean;
   aiProvider: string | undefined;
   aiModel: string | undefined;
   enableAgentExports: boolean;
@@ -52,8 +54,10 @@ function parseArgs(argv: string[]): ParsedArgs {
   const result: ParsedArgs = {
     targetPath: undefined,
     openRouterKey: undefined,
+    openAiKey: undefined,
     docsDir: undefined,
     enableAiAnalysis: false,
+    enableModuleDocumentation: true,
     aiProvider: undefined,
     aiModel: undefined,
     enableAgentExports: false,
@@ -70,6 +74,8 @@ function parseArgs(argv: string[]): ParsedArgs {
       );
     } else if (arg === '--ai') {
       result.enableAiAnalysis = true;
+    } else if (arg === '--skip-module-docs') {
+      result.enableModuleDocumentation = false;
     } else if (arg === '--export-agents') {
       result.enableAgentExports = true;
     } else if (arg === '--target') {
@@ -77,6 +83,9 @@ function parseArgs(argv: string[]): ParsedArgs {
       i++;
     } else if (arg === '--openrouter-key') {
       result.openRouterKey = readFlagValue(argv, i, '--openrouter-key');
+      i++;
+    } else if (arg === '--openai-key') {
+      result.openAiKey = readFlagValue(argv, i, '--openai-key');
       i++;
     } else if (arg === '--ai-provider') {
       result.aiProvider = readFlagValue(argv, i, '--ai-provider');
@@ -103,34 +112,6 @@ function parseArgs(argv: string[]): ParsedArgs {
   return result;
 }
 
-function resolveApiKey(flagValue: string | undefined): string | undefined {
-  const resolved = flagValue ?? process.env['OPENROUTER_API_KEY'];
-  if (resolved === undefined || resolved.trim() === '') {
-    return undefined;
-  }
-  return resolved;
-}
-
-function assertValidDocsDirName(docsDir: string): void {
-  if (docsDir === '.') {
-    throw new Error(
-      'Docs directory cannot be the repository root (.). Choose a dedicated folder such as .ai-docs.',
-    );
-  }
-
-  if (path.isAbsolute(docsDir)) {
-    throw new Error(
-      `Docs directory must be a relative folder name inside the target repository, not an absolute path: ${docsDir}`,
-    );
-  }
-
-  if (docsDir.includes('..') || docsDir.includes('/') || docsDir.includes('\\')) {
-    throw new Error(
-      `Docs directory must be a single folder name without path separators: ${docsDir}`,
-    );
-  }
-}
-
 export function isHelpOnly(argv: string[]): boolean {
   return argv.length > 0 && argv.every((arg) => arg === '--help' || arg === '-h');
 }
@@ -143,7 +124,7 @@ export function printHelp(): void {
   console.log('Analyzes a software repository and generates AI-readable documentation');
   console.log('for AI coding agents to understand the project architecture.');
   console.log('');
-  console.log('No OpenRouter API key is required unless you pass --ai.');
+  console.log('No API key is required unless you pass --ai.');
   console.log('');
   console.log('Usage:');
   console.log('  ai-project-docs <target-path> [options]');
@@ -153,6 +134,8 @@ export function printHelp(): void {
   console.log('');
   console.log('Options:');
   console.log('  --ai                       Run optional AI analysis (requires API key)');
+  console.log('  --skip-module-docs         With --ai, skip per-module documentation fan-out');
+  console.log('                             (architecture context still runs)');
   console.log(`  --ai-provider <name>       AI provider to use (default: ${DEFAULT_AI_PROVIDER_ID})`);
   console.log(`                             Supported providers: ${listSupportedAiProviderIds().join(', ')}`);
   console.log('  --export-agents            Export agent-specific context files from the PKM');
@@ -160,6 +143,8 @@ export function printHelp(): void {
   console.log('                             (default with --export-agents: generic)');
   console.log('  --openrouter-key <key>     OpenRouter API key for AI analysis (optional)');
   console.log('                             (also accepted via OPENROUTER_API_KEY env variable)');
+  console.log('  --openai-key <key>         OpenAI API key for AI analysis (optional)');
+  console.log('                             (also accepted via OPENAI_API_KEY env variable)');
   console.log(`  --model <id>               Model id passed to the provider (default: ${DEFAULT_AI_MODEL})`);
   console.log(`  --docs-dir <name>          Output docs folder name (default: ${DEFAULT_DOCS_DIR})`);
   console.log('                             Must be a single relative folder name (not "." or absolute)');
@@ -175,6 +160,8 @@ export function printHelp(): void {
   console.log('  ai-project-docs ./my-project');
   console.log('  ai-project-docs ./my-project --docs-dir .project-docs');
   console.log('  ai-project-docs ./my-project --ai --openrouter-key "$OPENROUTER_API_KEY"');
+  console.log('  ai-project-docs ./my-project --ai --skip-module-docs');
+  console.log('  ai-project-docs ./my-project --ai --ai-provider openai --openai-key "$OPENAI_API_KEY"');
   console.log('  ai-project-docs ./my-project --ai --ai-provider openrouter');
   console.log('  ai-project-docs ./my-project --export-agents');
   console.log('  ai-project-docs ./my-project --export-agents --target cursor');
@@ -183,71 +170,22 @@ export function printHelp(): void {
   console.log('');
 }
 
+/**
+ * CLI entry: parse argv, map to {@link RuntimeConfigInput}, validate via {@link buildRuntimeConfig}.
+ */
 export function resolveConfig(argv: string[]): RuntimeConfig {
   const args = parseArgs(argv);
 
-  if (args.targetPath === undefined) {
-    throw new Error(
-      'Target project path is required.\n\nUsage: ai-project-docs <target-path> [options]\nRun with --help for full usage information.',
-    );
-  }
-
-  const absolutePath = assertReadableDirectory(args.targetPath);
-
-  const docsDir = (args.docsDir ?? DEFAULT_DOCS_DIR).trim();
-
-  if (docsDir === '') {
-    throw new Error(
-      'Docs directory name must not be empty. Use --docs-dir <name> with a non-empty folder name.',
-    );
-  }
-
-  assertValidDocsDirName(docsDir);
-
-  const aiModel = (args.aiModel ?? DEFAULT_AI_MODEL).trim();
-  if (aiModel === '') {
-    throw new Error(
-      'Model id must not be empty. Use --model <id> with a non-empty model identifier.',
-    );
-  }
-
-  const aiProvider = normalizeAiProviderId(args.aiProvider ?? DEFAULT_AI_PROVIDER_ID);
-  if (aiProvider === '') {
-    throw new Error(
-      'AI provider must not be empty. Use --ai-provider <name> with a supported provider name.',
-    );
-  }
-  if (!isSupportedAiProviderId(aiProvider)) {
-    throw new Error(
-      `Unsupported AI provider: ${args.aiProvider}. Supported providers: ${listSupportedAiProviderIds().join(', ')}.`,
-    );
-  }
-
-  if (args.exportTarget !== undefined && !args.enableAgentExports) {
-    throw new Error(
-      '--target requires --export-agents. Run with --help for usage information.',
-    );
-  }
-
-  let exportTargets: AgentExportTarget[] = [...DEFAULT_ENABLED_EXPORT_TARGETS];
-  if (args.exportTarget !== undefined) {
-    const selector = parseExportTargetSelector(args.exportTarget);
-    if (selector === undefined) {
-      throw new Error(
-        `Unknown export target: ${args.exportTarget}. Supported targets: generic, cursor, all.`,
-      );
-    }
-    exportTargets = resolveEnabledExportTargets([selector]);
-  }
-
-  return {
-    targetProjectPath: absolutePath,
-    docsDir,
-    openRouterApiKey: resolveApiKey(args.openRouterKey),
+  return buildRuntimeConfig({
+    targetProjectPath: args.targetPath ?? '',
+    docsDir: args.docsDir,
     enableAiAnalysis: args.enableAiAnalysis,
-    aiProvider,
-    aiModel,
+    enableModuleDocumentation: args.enableModuleDocumentation,
+    aiProvider: args.aiProvider,
+    aiModel: args.aiModel,
+    openRouterApiKey: args.openRouterKey,
+    openAiApiKey: args.openAiKey,
     enableAgentExports: args.enableAgentExports,
-    exportTargets,
-  };
+    exportTargetSelector: args.exportTarget,
+  });
 }

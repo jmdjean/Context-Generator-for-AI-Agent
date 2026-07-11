@@ -266,6 +266,158 @@ describe('Release integration — Fixture A incremental second run', () => {
   });
 });
 
+describe('Release integration — Staged documentation workflow (Fixture A)', () => {
+  const docsDir = path.join(FIXTURE_TS, '.ai-docs');
+  const knowledgeDir = path.join(docsDir, 'knowledge');
+
+  const PLAYBOOK_PATHS = [
+    'AI_START_HERE.md',
+    'CONTEXT_ROUTER.md',
+    'DOCUMENTATION_MAINTENANCE.md',
+    'DOCUMENTATION_STATUS.md',
+    'PROJECT_MAP.md',
+    'module-documentation-plan.md',
+  ] as const;
+
+  before(() => {
+    // Reuse Fixture A outputs from the earlier first-run block when present;
+    // otherwise create a clean baseline for staged assertions.
+    if (!fs.existsSync(path.join(knowledgeDir, 'project-knowledge.json'))) {
+      removeDocsDir(FIXTURE_TS);
+      const result = runCli([FIXTURE_TS]);
+      assert.equal(result.status, 0, `Staged baseline run failed:\n${result.stdout}\n${result.stderr}`);
+    }
+  });
+
+  it('persists stagedDocumentation.modulePlan after module discovery', () => {
+    const pkm = readJson(path.join(knowledgeDir, 'project-knowledge.json')) as {
+      analysis: {
+        modules?: Array<{ relativePath: string; name: string }>;
+        stagedDocumentation?: {
+          modulePlan?: {
+            status: string;
+            entries: Array<{ moduleId: string; documentPath: string; order: number }>;
+          };
+        };
+      };
+    };
+
+    const modules = pkm.analysis.modules ?? [];
+    assert.ok(modules.length > 0, 'Expected discovered modules for staged planning');
+
+    const modulePlan = pkm.analysis.stagedDocumentation?.modulePlan;
+    assert.ok(modulePlan, 'stagedDocumentation.modulePlan missing from PKM');
+    assert.equal(modulePlan.entries.length, modules.length);
+
+    const moduleIds = new Set(modules.map((module) => module.relativePath));
+    for (const entry of modulePlan.entries) {
+      assert.ok(moduleIds.has(entry.moduleId), `Unexpected module-plan entry: ${entry.moduleId}`);
+      assert.ok(entry.documentPath.startsWith('code/components/'));
+      assert.ok(entry.order >= 1);
+    }
+  });
+
+  it('writes playbook routing docs and the module-plan document', () => {
+    for (const relativePath of PLAYBOOK_PATHS) {
+      const absolutePath = path.join(docsDir, relativePath);
+      assert.ok(fs.existsSync(absolutePath), `${relativePath} missing`);
+      const content = fs.readFileSync(absolutePath, 'utf-8');
+      assert.ok(content.startsWith(GENERATED_MARKER), `${relativePath} missing generated marker`);
+    }
+  });
+
+  it('writes one module document per discovered module from PKM plan entries', () => {
+    const pkm = readJson(path.join(knowledgeDir, 'project-knowledge.json')) as {
+      analysis: {
+        modules?: Array<{ relativePath: string; name: string; responsibility: string }>;
+        stagedDocumentation?: {
+          modulePlan?: {
+            entries: Array<{ moduleId: string; documentPath: string; moduleName: string }>;
+          };
+        };
+      };
+    };
+
+    const entries = pkm.analysis.stagedDocumentation?.modulePlan?.entries ?? [];
+    assert.ok(entries.length > 0, 'Expected module-plan entries');
+
+    for (const entry of entries) {
+      const absolutePath = path.join(docsDir, entry.documentPath);
+      assert.ok(fs.existsSync(absolutePath), `Module doc missing: ${entry.documentPath}`);
+
+      const content = fs.readFileSync(absolutePath, 'utf-8');
+      assert.ok(content.startsWith(GENERATED_MARKER), `${entry.documentPath} missing marker`);
+      assert.ok(
+        content.includes('## Deterministic module facts'),
+        `${entry.documentPath} should render deterministic PKM facts`,
+      );
+      assert.ok(
+        content.includes(entry.moduleId) || content.includes(entry.moduleName),
+        `${entry.documentPath} should reference the module from PKM`,
+      );
+    }
+  });
+
+  it('renders module-plan Markdown from PKM entries rather than empty placeholders', () => {
+    const planPath = path.join(docsDir, 'module-documentation-plan.md');
+    const content = fs.readFileSync(planPath, 'utf-8');
+    const pkm = readJson(path.join(knowledgeDir, 'project-knowledge.json')) as {
+      analysis: {
+        stagedDocumentation?: {
+          modulePlan?: { entries: Array<{ moduleId: string }> };
+        };
+      };
+    };
+    const firstModuleId =
+      pkm.analysis.stagedDocumentation?.modulePlan?.entries[0]?.moduleId ?? '';
+
+    assert.ok(content.includes('module-documentation-plan') || /module/i.test(content));
+    assert.ok(firstModuleId.length > 0);
+    assert.ok(
+      content.includes(firstModuleId),
+      'module-documentation-plan.md should list PKM module-plan entries',
+    );
+  });
+
+  it('persists staged-documentation.json split file when staged state exists', () => {
+    const stagedPath = path.join(knowledgeDir, 'staged-documentation.json');
+    assert.ok(fs.existsSync(stagedPath), 'staged-documentation.json missing');
+
+    const staged = readJson(stagedPath) as {
+      stagedDocumentation?: {
+        modulePlan?: { entries: unknown[] };
+        execution?: Array<{ stageId: string }>;
+      };
+    };
+    assert.ok(staged.stagedDocumentation?.modulePlan);
+    assert.ok(
+      staged.stagedDocumentation?.execution?.some((entry) => entry.stageId === 'module-plan'),
+    );
+  });
+
+  it('skips AI architecture and module fan-out without --ai (deterministic staged plan still runs)', () => {
+    const result = runCli([FIXTURE_TS]);
+    assert.equal(result.status, 0, result.stdout);
+
+    assert.ok(
+      /Generate Architecture Context/.test(result.stdout),
+      'Expected architecture stage in pipeline checklist',
+    );
+    assert.ok(
+      /Generate Module Documentation Plan/.test(result.stdout),
+      'Expected module-plan stage in pipeline checklist',
+    );
+    assert.ok(
+      /Generate Module Documentation/.test(result.stdout),
+      'Expected module documentation stage in pipeline checklist',
+    );
+
+    // Without --ai these AI stages are skipped by design; residual AI coverage
+    // lives in src/ai/*.test.ts with fake providers.
+    assert.doesNotMatch(result.stdout, /AI Analysis:/);
+  });
+});
+
 describe('Release integration — Fixture B (Monorepo)', () => {
   const docsDir = path.join(FIXTURE_MONO, '.ai-docs');
   const knowledgeDir = path.join(docsDir, 'knowledge');
@@ -285,6 +437,29 @@ describe('Release integration — Fixture B (Monorepo)', () => {
     };
     const moduleCount = pkm.analysis.modules?.length ?? 0;
     assert.ok(moduleCount >= 2, `Expected at least 2 modules, got ${moduleCount}`);
+  });
+
+  it('emits one module card per discovered module from staged modulePlan', () => {
+    const pkm = readJson(path.join(knowledgeDir, 'project-knowledge.json')) as {
+      analysis: {
+        modules?: Array<{ relativePath: string }>;
+        stagedDocumentation?: {
+          modulePlan?: { entries: Array<{ documentPath: string }> };
+        };
+      };
+    };
+
+    const modules = pkm.analysis.modules ?? [];
+    const entries = pkm.analysis.stagedDocumentation?.modulePlan?.entries ?? [];
+    assert.ok(modules.length >= 2, `Expected >=2 modules, got ${modules.length}`);
+    assert.equal(entries.length, modules.length);
+
+    for (const entry of entries) {
+      assert.ok(
+        fs.existsSync(path.join(docsDir, entry.documentPath)),
+        `Missing module card: ${entry.documentPath}`,
+      );
+    }
   });
 
   it('generates dependency-map.md', () => {

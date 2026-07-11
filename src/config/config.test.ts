@@ -121,8 +121,21 @@ describe('resolveConfig', () => {
     try {
       const config = resolveConfig([tempDir, '--ai', '--model', 'anthropic/claude-3.5-sonnet']);
       assert.equal(config.enableAiAnalysis, true);
+      assert.equal(config.enableModuleDocumentation, true);
       assert.equal(config.aiProvider, 'openrouter');
       assert.equal(config.aiModel, 'anthropic/claude-3.5-sonnet');
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('disables module documentation fan-out with --skip-module-docs', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-project-docs-config-'));
+
+    try {
+      const config = resolveConfig([tempDir, '--ai', '--skip-module-docs']);
+      assert.equal(config.enableAiAnalysis, true);
+      assert.equal(config.enableModuleDocumentation, false);
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -145,7 +158,7 @@ describe('resolveConfig', () => {
     try {
       assert.throws(
         () => resolveConfig([tempDir, '--ai', '--ai-provider', 'gemini']),
-        /Unsupported AI provider: gemini\. Supported providers: openrouter\./,
+        /Unsupported AI provider: gemini\. Supported providers: openrouter, openai\./,
       );
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });

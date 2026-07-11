@@ -14,7 +14,7 @@ This module is the central coordinator. It receives a validated `RuntimeConfig` 
 | `exit-codes.ts` | Maps `PipelineExecutionResult` to CLI exit codes (0–3). |
 | `pipeline-orchestrator.ts` | Execution engine. Loads pipeline steps, runs handlers, tracks status, prints progress, returns a structured result. |
 | `pipeline-metrics.ts` | Collects run-time counters (files scanned, analyzers, docs written, validation). |
-| `run-summary.ts` | Formats and prints the final CLI summary after pipeline completion. |
+| `run-summary.ts` | Builds structured `RunSummaryData` and formats/prints the final CLI summary. |
 | `pipeline-handlers.ts` | Step handler dispatch and `PipelineContext` state. |
 
 ---
@@ -25,7 +25,9 @@ This module is the central coordinator. It receives a validated `RuntimeConfig` 
 
 Called by `src/cli.ts`. Delegates execution to `executePipeline`, prints the final run summary via `printRunSummary()`, and returns the CLI exit code (`0` success, `2` validation failure, `3` runtime failure).
 
-### `executePipeline(config: RuntimeConfig): Promise<PipelineExecutionResult>`
+### `executePipeline(config: RuntimeConfig, options?: ExecutePipelineOptions): Promise<PipelineExecutionResult>`
+
+Runs every step in `ANALYSIS_PIPELINE`. Optional `options.onProgress` receives `PipelineProgressEvent` (`started` / `completed` / `skipped` / `failed`) for UI streaming; the CLI omits the callback and keeps stdout checklist behavior.
 
 Drives the full pipeline. For each step in `ANALYSIS_PIPELINE`:
 1. Initializes an `ExecutedPipelineStep` as `pending`.
@@ -121,23 +123,24 @@ executePipeline(config)
   ├─ Load Repository Metadata     → scanner/repository-loader → RepositoryInfo        ✅
   ├─ Scan Repository Structure    → scanner/repository-scanner → RepositoryNode tree  ✅
   ├─ Detect Technologies          → detectors/technology-detector → TechnologyProfile  ✅
-  ├─ Build Repository Model       → placeholder ✓
-  ├─ Analyze Architecture         → placeholder ✓
   ├─ Generate Documentation Plan  → docs/documentation-planner → DocumentationPlan     ✅
   ├─ Build Project Knowledge      → knowledge/knowledge-builder → ProjectKnowledge     ✅
   ├─ Analyze Folder Knowledge     → analyzers/folder-analyzer → FolderKnowledge[]      ✅
   ├─ Analyze Modules              → analyzers/module-analyzer → ModuleKnowledge[]     ✅
-  ├─ Analyze AI Insights          → ai/ai-analysis-service → AiInsightsKnowledge (optional) ✅
+  ├─ Analyze Dependency Graph     → analyzers/dependency-graph-analyzer → DependencyGraph ✅
+  ├─ Analyze Conventions          → analyzers/convention-analyzer → ConventionKnowledge[] ✅
+  ├─ Build AI Navigation Map      → analyzers/navigation-map-analyzer → NavigationMap ✅
+  ├─ Generate Architecture Context → ai/runArchitectureStage → stagedDocumentation.architecture (+ aiInsights) ✅
+  ├─ Generate Module Documentation Plan → docs/documentation-planner → modulePlan + expanded plan ✅
+  ├─ Generate Module Documentation → ai/runModuleDocumentationStage → moduleResults ✅
   ├─ Detect Changes               → incremental/ → ChangeSummary + DocumentImpact ✅
   ├─ Write Documentation          → docs/documentation-writer → DocumentationWriteResult ✅
   ├─ Validate Documentation       → docs/documentation-validator → Validation report ✅
+  ├─ Calculate AI Readiness       → readiness/ → AIReadinessKnowledge ✅
+  ├─ Export Agent Context         → exporters/ → agent export files (optional) ✅
   └─ Persist Project Knowledge    → knowledge/knowledge-writer → .ai-docs/knowledge/  ✅
 ```
 
 ## Planned pipeline (remaining handlers)
 
-```
-executePipeline(config)
-  ├─ Build Repository Model       → assembleContext(repositoryInfo, tree, profile)
-  └─ Analyze Architecture         → ai.analyze(projectContext) + future analyzers
-```
+None for staged documentation fan-out — module AI generation is wired through `runModuleDocumentationStage`.

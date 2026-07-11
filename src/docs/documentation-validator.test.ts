@@ -199,4 +199,150 @@ describe('validateDocumentation', () => {
     assert.equal(result.status, 'failed');
     assert.match(result.issues[0].message, /inconsistent/);
   });
+
+  it('reports missing playbook coverage when staged module plan is present', () => {
+    const rootPath = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-docs-validator-'));
+    const docsPath = path.join(rootPath, '.ai-docs');
+    fs.mkdirSync(docsPath, { recursive: true });
+    fs.writeFileSync(
+      path.join(docsPath, 'README.md'),
+      `${GENERATED_FILE_MARKER}\n\n# Sample`,
+      'utf-8',
+    );
+
+    const knowledge = buildKnowledge(rootPath, [buildPlannedDocument('README.md')]);
+    knowledge.analysis.modules = [
+      {
+        path: 'src/core',
+        relativePath: 'src/core',
+        name: 'core',
+        type: 'core',
+        responsibility: 'orchestration',
+        importantFiles: [],
+        relatedFolders: [],
+        signals: [],
+        confidence: 'high',
+      },
+    ];
+    knowledge.analysis.stagedDocumentation = {
+      modulePlan: {
+        status: 'completed',
+        entries: [
+          {
+            moduleId: 'src/core',
+            moduleName: 'core',
+            moduleRelativePath: 'src/core',
+            documentPath: 'code/components/src-core.md',
+            order: 1,
+            status: 'pending',
+          },
+        ],
+        warnings: [],
+      },
+      execution: [],
+    };
+
+    const result = validateDocumentation(knowledge, buildWriteResult(['README.md']));
+
+    assert.equal(result.status, 'failed');
+    assert.ok(
+      result.issues.some(
+        (issue) =>
+          issue.severity === 'error' &&
+          issue.relativePath === 'module-documentation-plan.md' &&
+          /missing from documentation plan/.test(issue.message),
+      ),
+    );
+    assert.ok(
+      result.issues.some(
+        (issue) =>
+          issue.severity === 'error' &&
+          issue.relativePath === 'code/components/src-core.md' &&
+          /missing from the documentation plan/.test(issue.message),
+      ),
+    );
+  });
+
+  it('warns when moduleResults report AI failures', () => {
+    const rootPath = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-docs-validator-'));
+    const docsPath = path.join(rootPath, '.ai-docs');
+    fs.mkdirSync(docsPath, { recursive: true });
+
+    const playbookPaths = [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
+      'DOCUMENTATION_MAINTENANCE.md',
+      'DOCUMENTATION_STATUS.md',
+      'PROJECT_MAP.md',
+      'module-documentation-plan.md',
+      'code/components/src-core.md',
+    ];
+
+    for (const relativePath of playbookPaths) {
+      const absolutePath = path.join(docsPath, relativePath);
+      fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
+      fs.writeFileSync(absolutePath, `${GENERATED_FILE_MARKER}\n\n# ${relativePath}`, 'utf-8');
+    }
+
+    const knowledge = buildKnowledge(
+      rootPath,
+      playbookPaths.map((relativePath) => buildPlannedDocument(relativePath)),
+    );
+    knowledge.analysis.modules = [
+      {
+        path: 'src/core',
+        relativePath: 'src/core',
+        name: 'core',
+        type: 'core',
+        responsibility: 'orchestration',
+        importantFiles: [],
+        relatedFolders: [],
+        signals: [],
+        confidence: 'high',
+      },
+    ];
+    knowledge.analysis.stagedDocumentation = {
+      modulePlan: {
+        status: 'completed',
+        entries: [
+          {
+            moduleId: 'src/core',
+            moduleName: 'core',
+            moduleRelativePath: 'src/core',
+            documentPath: 'code/components/src-core.md',
+            order: 1,
+            status: 'failed',
+          },
+        ],
+        warnings: [],
+      },
+      moduleResults: {
+        status: 'partial',
+        results: [
+          {
+            moduleId: 'src/core',
+            moduleName: 'core',
+            moduleRelativePath: 'src/core',
+            documentPath: 'code/components/src-core.md',
+            status: 'failed',
+            warnings: [],
+            error: 'provider timeout',
+          },
+        ],
+        warnings: [],
+      },
+      execution: [],
+    };
+
+    const result = validateDocumentation(knowledge, buildWriteResult(playbookPaths));
+
+    assert.equal(result.status, 'passed');
+    assert.ok(
+      result.issues.some(
+        (issue) =>
+          issue.severity === 'warning' &&
+          /module documentation AI failed: provider timeout/.test(issue.message),
+      ),
+    );
+  });
 });

@@ -29,6 +29,16 @@ export interface PipelineExecutionResult {
   projectKnowledge?: PipelineContext['projectKnowledge'];
 }
 
+export interface PipelineProgressEvent {
+  stepIndex: number;
+  stepName: string;
+  status: 'started' | 'completed' | 'skipped' | 'failed';
+}
+
+export interface ExecutePipelineOptions {
+  onProgress?: (event: PipelineProgressEvent) => void;
+}
+
 function initializeSteps(): ExecutedPipelineStep[] {
   return ANALYSIS_PIPELINE.map((step) => ({
     name: step.name,
@@ -43,19 +53,34 @@ function printStep(step: ExecutedPipelineStep): void {
   console.log(`${icon} ${step.name}`);
 }
 
+function emitProgress(
+  onProgress: ExecutePipelineOptions['onProgress'],
+  event: PipelineProgressEvent,
+): void {
+  onProgress?.(event);
+}
+
 function markRemainingStepsSkipped(
   steps: ExecutedPipelineStep[],
   startIndex: number,
+  onProgress: ExecutePipelineOptions['onProgress'],
 ): void {
   for (let i = startIndex; i < steps.length; i++) {
     steps[i].status = 'skipped';
     steps[i].message = 'skipped: previous step failed';
+    emitProgress(onProgress, {
+      stepIndex: i,
+      stepName: steps[i].name,
+      status: 'skipped',
+    });
   }
 }
 
 export async function executePipeline(
   config: RuntimeConfig,
+  options?: ExecutePipelineOptions,
 ): Promise<PipelineExecutionResult> {
+  const onProgress = options?.onProgress;
   const startedAt = new Date().toISOString();
   const errors: PipelineExecutionError[] = [];
   const steps = initializeSteps();
@@ -72,6 +97,11 @@ export async function executePipeline(
 
     step.status = 'running';
     step.startedAt = new Date().toISOString();
+    emitProgress(onProgress, {
+      stepIndex: i,
+      stepName: step.name,
+      status: 'started',
+    });
 
     try {
       const result = await runStepHandler(context, domainStep);
@@ -83,7 +113,12 @@ export async function executePipeline(
         step.status = 'failed';
         errors.push({ stepName: step.name, message: result.message });
         printStep(step);
-        markRemainingStepsSkipped(steps, i + 1);
+        emitProgress(onProgress, {
+          stepIndex: i,
+          stepName: step.name,
+          status: 'failed',
+        });
+        markRemainingStepsSkipped(steps, i + 1, onProgress);
         break;
       }
 
@@ -95,11 +130,21 @@ export async function executePipeline(
       step.message = message;
       errors.push({ stepName: step.name, message, cause: err });
       printStep(step);
-      markRemainingStepsSkipped(steps, i + 1);
+      emitProgress(onProgress, {
+        stepIndex: i,
+        stepName: step.name,
+        status: 'failed',
+      });
+      markRemainingStepsSkipped(steps, i + 1, onProgress);
       break;
     }
 
     printStep(step);
+    emitProgress(onProgress, {
+      stepIndex: i,
+      stepName: step.name,
+      status: step.status === 'skipped' ? 'skipped' : 'completed',
+    });
   }
 
   return {

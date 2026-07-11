@@ -31,6 +31,25 @@ The CLI entry point. Reads `process.argv`, checks for `--help`, delegates to `co
 
 ---
 
+### `src/ui/`
+
+Local Web UI entry point — a `node:http` server bound to `127.0.0.1` plus static HTML/CSS/JS. Alternative to the CLI for interactive runs; does not replace `src/cli.ts`.
+
+Contains:
+- `index.ts` — process entry; resolves port (`AI_PROJECT_DOCS_UI_PORT` / `--port`, default `3847`) and starts the server
+- `server.ts` — static file serving + API routing
+- `config-mapper.ts` — HTTP JSON body → `buildRuntimeConfig()` (no argv parsing)
+- `progress-bridge.ts` — reserved for SSE progress (later)
+- `routes/providers.ts` — `GET /api/providers`
+- `routes/run.ts` — `POST /api/run` via `executePipeline` + `buildRunSummaryData` (never `run()`)
+- `public/` — form UI (`index.html`, `styles.css`, `app.js`), copied to `dist/ui/public/` on build
+
+**When to modify:** When adding UI routes, changing the local server contract, or extending the browser form. Pipeline behavior changes belong in `src/core/` and related modules — not here.
+
+**Status:** ✅ MVP — localhost server, providers + run APIs, browser form.
+
+---
+
 ### `src/domain/`
 
 Pure TypeScript types — the domain model for the entire application. No behavior, no imports from Node.js APIs or any other `src/` module.
@@ -231,8 +250,9 @@ Contains:
 - `documentation-plan.ts` — application-level types: `DocumentationPlan`, `PlannedDocument`, `DocumentPriority`, `DocumentSource`.
 - `documentation-planner.ts` — `createDocumentationPlan(docsDir, technologyProfile)` returns a deterministic `DocumentationPlan` based on the detected technology stack.
 - `document-template.ts` — generic fallback Markdown template for documents without a registered template.
-- `markdown-renderers/` — one small deterministic renderer per key document (implementation detail behind templates) plus shared helpers (`render-helpers.ts`).
-- `documentation-writer.ts` — `writeDocumentation(knowledge)` renders via `src/templates/template-engine.ts`, then writes planned docs into the target project's docs directory.
+- `markdown-renderers/` — one small deterministic renderer per key document (including playbook routing docs, module-plan, and per-module cards) plus shared helpers (`render-helpers.ts`).
+- `documentation-write-order.ts` — stage-aware sort (`baseline` → `routing` → `architecture` → `module-plan` → `module` → `readiness`) using `PlannedDocument` metadata.
+- `documentation-writer.ts` — `writeDocumentation(knowledge)` renders via `src/templates/template-engine.ts`, writes planned docs in stage order into the target project's docs directory.
 - `markdown-renderers.test.ts` — renderer dispatch and content tests (delegates to template engine).
 
 The plan includes core docs (always), agent docs (always), and technology-specific docs (Angular, React, or NestJS suites; fallback `technology-overview.md` when none match). Renderers behind templates are **presentation-only**: they translate PKM data into Markdown and never analyze the repository. The generated-file marker distinguishes tool-managed files from user-managed files.

@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ai-project-docs` is a CLI tool with a pipeline architecture. The user runs a single command; the tool reads a target repository, assembles a **Project Knowledge Model (PKM)**, and runs generators that produce structured outputs — starting with deterministic Markdown in `.ai-docs/`. **Optional** OpenRouter AI analysis can enrich the PKM when `--ai` is provided; deterministic analysis remains authoritative.
+`ai-project-docs` is a Context Engineering tool with a pipeline architecture. Users typically run the **CLI**; an optional **local Web UI** (`npm run ui`) provides the same analysis without terminal flags. The tool reads a target repository, assembles a **Project Knowledge Model (PKM)**, and runs generators that produce structured outputs — starting with deterministic Markdown in `.ai-docs/`. **Optional** OpenRouter AI analysis can enrich the PKM when AI is enabled; deterministic analysis remains authoritative.
 
 Each stage of the pipeline is isolated in its own module. No module reaches into another module's internals. Analysis stages produce typed outputs that the knowledge builder maps into `ProjectKnowledge`. Generators consume only the PKM.
 
@@ -26,11 +26,24 @@ This separation means a new output format only needs a new generator. It does no
 | `repository` | Mapped from `RepositoryInfo` | Tree (`repositoryTree`), ignore rules |
 | `technologies` | Mapped from `TechnologyProfile` | Deeper stack signals |
 | `documentation` | `DocumentationPlan` | Generated document contents |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); optional `aiInsights` when `--ai` runs | Deeper AI stages |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`); optional `aiInsights` when `--ai` runs; optional `stagedDocumentation` for staged architecture / module-plan / per-module outputs | Staged multi-agent documentation pipeline |
 
 ### Integration rule
 
 **Future modules must consume `ProjectKnowledge`.** Do not pass `RepositoryInfo`, `TechnologyProfile`, or `DocumentationPlan` directly to generators. Upstream producers may still emit their own types; the knowledge builder maps them into the PKM at the **Build Project Knowledge** pipeline step.
+
+### Staged documentation state (`analysis.stagedDocumentation`)
+
+The staged multi-agent documentation flow mirrors intermediate AI outputs into PKM so later stages do not scrape Markdown:
+
+| Subsection | Responsibility |
+|---|---|
+| `architecture` | Architecture-stage summary/content and intended document paths |
+| `modulePlan` | Ordered per-module documentation plan entries after modules are known |
+| `moduleResults` | One result per discovered module, including status and safe failure detail |
+| `execution` | Stage-level status/metadata for partial progress, skips, and retries |
+
+Status is explicit at stage, plan-entry, and module-result levels (`pending` / `skipped` / `in-progress` / `partial` / `completed` / `failed`). Pipeline stages that populate this section are not wired yet; the contract exists so architecture generation, module planning, and module fan-out can share one durable shape. AI content here is enrichment — deterministic PKM sections remain the source of truth.
 
 ---
 
@@ -39,6 +52,7 @@ This separation means a new output format only needs a new generator. It does no
 ```
 ┌─────────────────────────────────────────────────┐
 │  src/cli.ts          CLI surface                │
+│  src/ui/             Local Web UI (localhost)   │  ✅ MVP
 │  src/config/         Arg parsing, env vars      │
 │  src/core/           Pipeline orchestration     │  ✅ done
 ├─────────────────────────────────────────────────┤
@@ -57,7 +71,7 @@ This separation means a new output format only needs a new generator. It does no
 └─────────────────────────────────────────────────┘
 ```
 
-The domain layer defines pipeline contracts and legacy analysis types. The PKM layer (`src/knowledge/`) is the application contract for all generators.
+The domain layer defines pipeline contracts and legacy analysis types. The PKM layer (`src/knowledge/`) is the application contract for all generators. The Web UI is an additional entry surface — it does not replace the CLI and does not re-implement analysis.
 
 ---
 
@@ -70,16 +84,16 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
  2. Load Repository Metadata   targetProjectPath               → RepositoryInfo       ✅
  3. Scan Repository Structure  RepositoryInfo                  → RepositoryNode (tree)  ✅
  4. Detect Technologies        RepositoryNode, RepositoryInfo  → TechnologyProfile    ✅
- 5. Build Repository Model     RepositoryInfo + tree + profile → ProjectContext
- 6. Analyze Architecture       ProjectContext                  → AnalysisResult
- 7. Generate Documentation     RepositoryInfo, TechnologyProfile → DocumentationPlan  ✅
- 8. Build Project Knowledge    RepositoryInfo + profile + plan → ProjectKnowledge     ✅
- 9. Analyze Folder Knowledge  ProjectKnowledge                → FolderKnowledge[]    ✅
-10. Analyze Modules           ProjectKnowledge                → ModuleKnowledge[]    ✅
-11. Analyze Dependency Graph  ProjectKnowledge                → DependencyGraphKnowledge ✅
-12. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
-13. Build AI Navigation Map   ProjectKnowledge                → NavigationMapKnowledge ✅
-14. Analyze AI Insights       ProjectKnowledge + RuntimeConfig → AiInsightsKnowledge  ✅ (optional)
+ 5. Generate Documentation     RepositoryInfo, TechnologyProfile → DocumentationPlan  ✅
+ 6. Build Project Knowledge    RepositoryInfo + profile + plan → ProjectKnowledge     ✅
+ 7. Analyze Folder Knowledge  ProjectKnowledge                → FolderKnowledge[]    ✅
+ 8. Analyze Modules           ProjectKnowledge                → ModuleKnowledge[]    ✅
+ 9. Analyze Dependency Graph  ProjectKnowledge                → DependencyGraphKnowledge ✅
+10. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
+11. Build AI Navigation Map   ProjectKnowledge                → NavigationMapKnowledge ✅
+12. Generate Architecture Context  ProjectKnowledge + RuntimeConfig → stagedDocumentation.architecture ✅ (optional; also writes legacy aiInsights)
+13. Generate Module Documentation Plan  ProjectKnowledge → stagedDocumentation.modulePlan + expanded DocumentationPlan ✅
+14. Generate Module Documentation  ProjectKnowledge → stagedDocumentation.moduleResults  ○ (wired; implementation pending)
 15. Detect Changes             ProjectKnowledge + previous PKM → ChangeSummary + DocumentImpact ✅
 16. Write Documentation        ProjectKnowledge + DocumentImpact → .ai-docs/*.md        ✅
 17. Validate Documentation     DocumentModel[], file paths     → validation report    ✅
@@ -88,7 +102,7 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
 20. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
 ```
 
-Steps 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14 (when `--ai` + API key), 15, 16, 17, 18, 19 (when `--export-agents`), and 20 are implemented. Step 8 assembles the PKM in memory; steps 9–13 execute built-in analyzer plugins via `PluginManager` (wrapping `src/analyzers/`); step 14 optionally enriches `analysis.aiInsights` from a compact PKM summary (no source code); step 15 compares against the previous persisted PKM and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 computes the deterministic AI Readiness Score from the final current-run PKM and validation result; step 19 optionally runs agent exporters and records `analysis.agentExports`; step 20 persists JSON. Steps 5 and 6 still have placeholder handlers.
+Steps 1–11, 13, 15–18, and 20 always run on a successful default pass. Step 12 skips unless `--ai` is set with an API key; step 14 skips unless `--ai` is set with an API key (and is also skipped when `--skip-module-docs` is passed). Step 19 skips unless `--export-agents` is set. Step 6 assembles the PKM in memory; steps 7–11 execute built-in analyzer plugins via `PluginManager` (wrapping `src/analyzers/`); step 12 writes `analysis.stagedDocumentation.architecture` (and legacy `aiInsights`) from a compact PKM summary; step 13 expands the documentation plan with playbook and per-module entries; step 15 compares against the previous persisted PKM (including `stagedDocumentation`) and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 computes the deterministic AI Readiness Score; step 19 optionally runs agent exporters; step 20 persists JSON.
 
 ---
 
@@ -374,7 +388,7 @@ The result is stored in `analysis.changeSummary` and persisted to `change-summar
 | `repository-tree.json` | Repository tree only (when scan completed) |
 | `technologies.json` | Technologies section + `schemaVersion` + `generatedAt` |
 | `documentation.json` | Documentation section + `schemaVersion` + `generatedAt` |
-| `analysis.json` | Analysis section including `folderContexts`, `modules`, `dependencyGraph`, `conventions`, and `navigationMap` |
+| `analysis.json` | Analysis section including `folderContexts`, `modules`, `dependencyGraph`, `conventions`, `navigationMap`, and optional `stagedDocumentation` |
 | `folders.json` | Folder knowledge only (when analysis ran) |
 | `modules.json` | Module knowledge only (when module analysis ran) |
 | `dependencies.json` | Dependency graph only (when dependency graph analysis ran) |
@@ -384,6 +398,7 @@ The result is stored in `analysis.changeSummary` and persisted to `change-summar
 | `document-impact.json` | Selective regeneration decisions (when Detect Changes ran) |
 | `ai-readiness.json` | Deterministic AI Readiness Score (when Calculate AI Readiness ran) |
 | `agent-exports.json` | Agent export results (when `--export-agents` ran) |
+| `staged-documentation.json` | Staged architecture / module-plan / per-module documentation state (when staged stages ran) |
 
 Path resolution uses `resolvePathWithinRoot()` via `knowledge-paths.ts` — writes never escape the target project root. JSON files are tool-managed machine state and are always overwritten on each persist run (no Markdown marker policy).
 
@@ -522,8 +537,11 @@ Analysis stages produce typed outputs defined in `src/domain/` and `src/docs/`. 
 | `TechnologyProfile` | 4 — Detect Technologies | `knowledge.technologies` |
 | `DocumentationPlan` | 7 — Generate Plan | `knowledge.documentation.plan` |
 | `AnalysisResult` | 6 — Analyze Architecture (legacy placeholder) | (not used — see `aiInsights`) |
-| `AiInsightsKnowledge` | 14 — Analyze AI Insights (optional) | `knowledge.analysis.aiInsights` |
-| `ProjectKnowledge` | 8 — Build Project Knowledge | consumed by all generators |
+| `AiInsightsKnowledge` | 12 — Generate Architecture Context (optional bridge) | `knowledge.analysis.aiInsights` |
+| `ArchitectureStageKnowledge` | 12 — Generate Architecture Context (target) | `knowledge.analysis.stagedDocumentation.architecture` |
+| `ModuleDocumentationPlanKnowledge` | 13 — Generate Module Documentation Plan | `knowledge.analysis.stagedDocumentation.modulePlan` |
+| `ModuleDocumentationResultsKnowledge` | 14 — Generate Module Documentation | `knowledge.analysis.stagedDocumentation.moduleResults` |
+| `ProjectKnowledge` | 6 — Build Project Knowledge | consumed by all generators |
 
 `ProjectContext` in `src/domain/context.ts` remains for a future consolidated AI stage. The current optional enrichment uses summarized `ProjectKnowledge` via `src/ai/`. Generators must use `ProjectKnowledge`, not `ProjectContext`.
 
@@ -570,13 +588,47 @@ cli.ts
                                  └─ (legacy placeholders: Build Repository Model, Analyze Architecture)
 ```
 
-Key invariant: `process.argv` and `process.env` are read only inside `src/config/`. Every other module receives a `RuntimeConfig` or a domain type.
+Key invariant: `process.argv` and `process.env` for pipeline `RuntimeConfig` are read only inside `src/config/`. Every other analysis module receives a `RuntimeConfig` or a domain/PKM type. The Web UI process entry (`src/ui/index.ts`) may read only the listen port (`AI_PROJECT_DOCS_UI_PORT` / `--port`); HTTP bodies are mapped through `buildRuntimeConfig()` and never by re-parsing CLI argv in the UI.
+
+---
+
+## Web UI layer (`src/ui/`)
+
+The Web UI is a **localhost-only** browser entry point for the same pipeline the CLI runs.
+
+```
+Browser (http://127.0.0.1:3847)
+   │  GET /              static HTML/CSS/JS
+   │  GET /api/providers AI provider registry
+   │  POST /api/run      JSON body → RuntimeConfig → pipeline
+   ▼
+src/ui/
+   ├─ index.ts           port resolution, startUiServer()
+   ├─ server.ts          node:http (127.0.0.1 only)
+   ├─ config-mapper.ts   JSON → buildRuntimeConfig()
+   ├─ routes/run.ts      executePipeline + buildRunSummaryData (not run())
+   ├─ routes/providers.ts createDefaultAiProviderRegistry()
+   └─ public/            form + results panel
+```
+
+| Rule | Detail |
+|---|---|
+| Bind address | `127.0.0.1` only — never `0.0.0.0` |
+| Default port | `3847` (`AI_PROJECT_DOCS_UI_PORT` or `--port`) |
+| Pipeline entry | `executePipeline(config)` + `buildRunSummaryData()` — **not** `run()` (avoids duplicate CLI stdout) |
+| Config | Shared `buildRuntimeConfig()` from `src/config/` |
+| Assets | `scripts/copy-ui-assets.mjs` copies `src/ui/public/` → `dist/ui/public/` on `npm run build` |
+| Start | `npm run ui` → build + `node dist/ui/index.js` |
+
+Hard stops: no Express/Fastify, no repository analysis in the frontend, no logging of request bodies (API keys), concurrent `POST /api/run` returns HTTP 409.
+
+See [`docs/web-ui/plan.md`](web-ui/plan.md) and [`src/ui/README.md`](../src/ui/README.md).
 
 ---
 
 ## Optional AI analysis (`src/ai/`)
 
-AI analysis is **opt-in** and **provider-based**. The CLI works without an API key. When the user passes `--ai` and a key is available (`--openrouter-key` or `OPENROUTER_API_KEY`), step 14 sends a **compact PKM summary** to the selected provider — modules, folders, technologies, dependency graph counts/edges, conventions, and navigation map entries. No source code or secrets are included.
+AI analysis is **opt-in** and **provider-based**. The CLI works without an API key. When the user passes `--ai` and a key is available (`--openrouter-key` or `OPENROUTER_API_KEY`), step 12 (**Generate Architecture Context**) sends a **compact PKM summary** to the selected provider — modules, folders, technologies, dependency graph counts/edges, conventions, and navigation map entries. No source code or secrets are included.
 
 ### Provider architecture
 
@@ -625,7 +677,7 @@ Default model: `openai/gpt-4.1-mini` (override with `--model`; the id is passed 
 
 **Plan before generate.** The documentation plan (step 7) commits to a deterministic file manifest before any content is generated or written. Future generation steps work against this manifest rather than deciding on-the-fly which files to create.
 
-**AI after deterministic analyzers, before generators.** Optional step 14 enriches the PKM from a summarized snapshot after folder/module/dependency/convention/navigation analysis. Step 15 writes Markdown that may include AI insights when available.
+**AI after deterministic analyzers, before generators.** Optional step 12 enriches the PKM from a summarized snapshot after folder/module/dependency/convention/navigation analysis. Steps 13–14 are reserved for module-plan and per-module documentation generation. Step 16 writes Markdown that may include AI insights when available.
 
 **Config is the only environment reader.** `src/config/index.ts` is the single point of contact with `process.argv` and `process.env`.
 
@@ -644,9 +696,10 @@ Default model: `openai/gpt-4.1-mini` (override with `--model`; the id is passed 
 | 1 (highest) | CLI flag `--openrouter-key` | `openRouterApiKey` |
 | 2 | Environment variable `OPENROUTER_API_KEY` | `openRouterApiKey` |
 | 3 | CLI flag `--ai` | `enableAiAnalysis` |
+| 3b | CLI flag `--skip-module-docs` | `enableModuleDocumentation` (default `true`) |
 | 4 | CLI flag `--ai-provider` | `aiProvider` (default `openrouter`; validated against the provider registry) |
 | 5 | CLI flag `--model` | `aiModel` (default `openai/gpt-4.1-mini`) |
-| 6 | Default value | `docsDir` → `.ai-docs` |
+| 6 | Default value | `docsDir` → `.ai-docs`; `enableModuleDocumentation` → `true` |
 | 7 (planned) | Project config file `.ai-docs.json` | multiple fields |
 
 ---

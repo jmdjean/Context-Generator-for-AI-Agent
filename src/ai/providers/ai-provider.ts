@@ -3,6 +3,8 @@ export interface AIProviderOptions {
   model: string;
   temperature?: number;
   maxTokens?: number;
+  /** Optional system instruction; defaults to the shared analysis instruction in each provider. */
+  systemInstruction?: string;
 }
 
 export interface AIProviderUsage {

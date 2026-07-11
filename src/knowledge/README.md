@@ -48,7 +48,7 @@ interface ProjectKnowledge {
 | `repository` | Mapped from `RepositoryInfo` (includes `repositoryTree`) | ✅ Done |
 | `technologies` | Mapped from `TechnologyProfile` | ✅ Done |
 | `documentation` | Contains `DocumentationPlan` | ✅ Done |
-| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`), AI readiness (`aiReadiness`); AI fields pending | Architecture |
+| `analysis` | Folder knowledge (`folderContexts`), module knowledge (`modules`), dependency graph (`dependencyGraph`), conventions (`conventions`), navigation map (`navigationMap`), AI readiness (`aiReadiness`); optional `aiInsights` and `stagedDocumentation` | Architecture |
 
 ---
 
@@ -72,7 +72,8 @@ After pipeline step **Persist Project Knowledge**, the target repository contain
     ├── navigation-map.json      # AI navigation map only (when the navigation map was built)
     ├── change-summary.json      # change summary vs previous PKM (when Detect Changes ran)
     ├── document-impact.json     # selective regeneration decisions (when Detect Changes ran)
-    └── ai-readiness.json        # deterministic AI Readiness Score (when Calculate AI Readiness ran)
+    ├── ai-readiness.json        # deterministic AI Readiness Score (when Calculate AI Readiness ran)
+    └── staged-documentation.json # staged architecture / module-plan / per-module outputs (when staged stages ran)
 ```
 
 ### `FolderKnowledge`
@@ -169,6 +170,22 @@ The deterministic AI Readiness Score lives in `analysis.aiReadiness`:
 The type itself is defined in `src/readiness/ai-readiness-model.ts` (a pure leaf module) and referenced here so the PKM stays the source of truth without a dependency cycle. Populated by `src/readiness/ai-readiness-calculator.ts` at pipeline step **Calculate AI Readiness** — deterministically, from the PKM and the validation result only, with no repository rescan and no AI provider calls. AI-generated insights never affect the score.
 
 Persisted to `analysis.json` and `ai-readiness.json`, and rendered as `ai-readiness.md` by the readiness template.
+
+### `StagedDocumentationKnowledge`
+
+Staged multi-agent documentation state lives in `analysis.stagedDocumentation`. Later pipeline stages write architecture output, a module documentation plan, and per-module results here so renderers and downstream AI stages consume PKM-mirrored data instead of scraping Markdown.
+
+| Field | Purpose |
+|---|---|
+| `architecture` | Architecture-stage summary/content, intended document paths, status, and transport metadata |
+| `modulePlan` | Ordered `ModuleDocumentationPlanEntry[]` derived from discovered modules |
+| `moduleResults` | Per-module AI documentation results with status for partial success and retries |
+| `execution` | One `StagedDocumentationStageExecution` per staged step (`architecture`, `module-plan`, `module-documentation`) |
+| `generatedAt` | ISO timestamp for the staged snapshot as a whole |
+
+Status values (`pending`, `skipped`, `in-progress`, `partial`, `completed`, `failed`) apply at stage, plan-entry, and module-result granularity so incomplete runs remain inspectable. AI content in this section is enrichment — deterministic analyzers remain authoritative.
+
+Absent until staged stages run. Persisted to `analysis.json` and `staged-documentation.json`.
 
 ### Why PKM is persisted
 

@@ -19,6 +19,11 @@ export interface PipelineRunMetrics {
   navigationEntries: number;
   aiInsightsGenerated: boolean;
   aiInsightsAttempted: boolean;
+  moduleDocumentationGenerated: boolean;
+  moduleDocumentationAttempted: boolean;
+  moduleDocumentationCompleted: number;
+  moduleDocumentationFailed: number;
+  moduleDocumentationSkipped: number;
   repositoryTreeGenerated: boolean;
   knowledgeFilesPersisted: number;
   documentationWrite?: DocumentationWriteResult;
@@ -36,6 +41,11 @@ export function createEmptyPipelineMetrics(): PipelineRunMetrics {
     navigationEntries: 0,
     aiInsightsGenerated: false,
     aiInsightsAttempted: false,
+    moduleDocumentationGenerated: false,
+    moduleDocumentationAttempted: false,
+    moduleDocumentationCompleted: 0,
+    moduleDocumentationFailed: 0,
+    moduleDocumentationSkipped: 0,
     repositoryTreeGenerated: false,
     knowledgeFilesPersisted: 0,
   };

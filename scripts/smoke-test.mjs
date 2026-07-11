@@ -146,19 +146,53 @@ function runHappyPath() {
     const docsDir = join(fixtureRoot, '.ai-docs');
     const knowledgePath = join(docsDir, 'knowledge', 'project-knowledge.json');
     const architecturePath = join(docsDir, 'architecture.md');
+    const modulePlanPath = join(docsDir, 'module-documentation-plan.md');
+    const stagedPath = join(docsDir, 'knowledge', 'staged-documentation.json');
 
     assertExists(docsDir, '.ai-docs directory');
     assertExists(knowledgePath, 'project-knowledge.json');
     assertExists(architecturePath, 'architecture.md');
+    assertExists(modulePlanPath, 'module-documentation-plan.md');
+    assertExists(join(docsDir, 'AI_START_HERE.md'), 'AI_START_HERE.md');
+    assertExists(join(docsDir, 'DOCUMENTATION_STATUS.md'), 'DOCUMENTATION_STATUS.md');
+    assertExists(stagedPath, 'staged-documentation.json');
 
     const knowledge = JSON.parse(readFileSync(knowledgePath, 'utf-8'));
     if (!knowledge.metadata || !knowledge.repository) {
       fail('project-knowledge.json is missing expected PKM sections');
     }
 
+    const modulePlan = knowledge.analysis?.stagedDocumentation?.modulePlan;
+    if (!modulePlan || !Array.isArray(modulePlan.entries)) {
+      fail('PKM is missing analysis.stagedDocumentation.modulePlan');
+    }
+
+    for (const entry of modulePlan.entries) {
+      const moduleDocPath = join(docsDir, entry.documentPath);
+      assertExists(moduleDocPath, `module doc ${entry.documentPath}`);
+      const moduleDoc = readFileSync(moduleDocPath, 'utf-8');
+      if (!moduleDoc.startsWith(GENERATED_FILE_MARKER)) {
+        fail(`${entry.documentPath} is missing the generated file marker`);
+      }
+      if (!moduleDoc.includes('## Deterministic module facts')) {
+        fail(`${entry.documentPath} did not render deterministic PKM module facts`);
+      }
+    }
+
     const architecture = readFileSync(architecturePath, 'utf-8');
     if (!architecture.startsWith(GENERATED_FILE_MARKER)) {
       fail('architecture.md is missing the generated file marker');
+    }
+
+    const modulePlanDoc = readFileSync(modulePlanPath, 'utf-8');
+    if (!modulePlanDoc.startsWith(GENERATED_FILE_MARKER)) {
+      fail('module-documentation-plan.md is missing the generated file marker');
+    }
+    if (modulePlan.entries.length > 0) {
+      const firstId = modulePlan.entries[0].moduleId;
+      if (!modulePlanDoc.includes(firstId)) {
+        fail('module-documentation-plan.md does not list PKM module-plan entries');
+      }
     }
 
     if (!/Status: passed/.test(result.stdout)) {

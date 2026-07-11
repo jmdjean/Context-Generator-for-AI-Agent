@@ -6,15 +6,20 @@ import { describe, it } from 'node:test';
 import { ProjectKnowledge } from '../knowledge';
 import { PlannedDocument } from '../domain/documentation-plan';
 import { GENERATED_FILE_MARKER } from './document-template';
+import { orderDocumentsForWriting } from './documentation-write-order';
 import { writeDocumentation } from './documentation-writer';
 
-function buildPlannedDocument(relativePath: string): PlannedDocument {
+function buildPlannedDocument(
+  relativePath: string,
+  overrides: Partial<PlannedDocument> = {},
+): PlannedDocument {
   return {
     title: relativePath,
     relativePath,
     purpose: 'Test purpose',
     priority: 'required',
     source: 'core',
+    ...overrides,
   };
 }
 
@@ -54,6 +59,52 @@ function buildKnowledge(rootPath: string, documents: PlannedDocument[]): Project
   };
 }
 
+describe('orderDocumentsForWriting', () => {
+  it('orders by stage metadata so architecture and module-plan precede modules', () => {
+    const ordered = orderDocumentsForWriting([
+      buildPlannedDocument('code/components/a.md', {
+        stage: 'module',
+        generatorKind: 'staged-module',
+        order: 1,
+        source: 'module',
+      }),
+      buildPlannedDocument('module-documentation-plan.md', {
+        stage: 'module-plan',
+        generatorKind: 'staged-module-plan',
+        source: 'playbook',
+      }),
+      buildPlannedDocument('architecture.md', {
+        stage: 'architecture',
+        generatorKind: 'staged-architecture',
+      }),
+      buildPlannedDocument('AI_START_HERE.md', {
+        stage: 'routing',
+        order: 1,
+        source: 'playbook',
+      }),
+      buildPlannedDocument('README.md', { stage: 'baseline' }),
+      buildPlannedDocument('code/components/b.md', {
+        stage: 'module',
+        generatorKind: 'staged-module',
+        order: 2,
+        source: 'module',
+      }),
+    ]);
+
+    assert.deepEqual(
+      ordered.map((document) => document.relativePath),
+      [
+        'README.md',
+        'AI_START_HERE.md',
+        'architecture.md',
+        'module-documentation-plan.md',
+        'code/components/a.md',
+        'code/components/b.md',
+      ],
+    );
+  });
+});
+
 describe('writeDocumentation', () => {
   it('skips unchanged generated documents when document impact is provided', () => {
     const rootPath = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-docs-writer-'));
@@ -89,6 +140,68 @@ describe('writeDocumentation', () => {
     assert.deepEqual(result.skippedUnchangedPaths, ['README.md']);
     assert.equal(fs.readFileSync(path.join(docsPath, 'README.md'), 'utf-8'), originalReadme);
     assert.notEqual(fs.readFileSync(path.join(docsPath, 'architecture.md'), 'utf-8'), originalArchitecture);
+  });
+
+  it('writes staged documents in stage-aware order', () => {
+    const rootPath = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-docs-writer-order-'));
+    const knowledge = buildKnowledge(rootPath, [
+      buildPlannedDocument('code/components/core.md', {
+        stage: 'module',
+        generatorKind: 'staged-module',
+        order: 1,
+        source: 'module',
+        moduleId: 'src/core',
+        moduleName: 'core',
+      }),
+      buildPlannedDocument('module-documentation-plan.md', {
+        stage: 'module-plan',
+        generatorKind: 'staged-module-plan',
+        source: 'playbook',
+      }),
+      buildPlannedDocument('architecture.md', {
+        stage: 'architecture',
+        generatorKind: 'staged-architecture',
+      }),
+    ]);
+    knowledge.analysis.modules = [
+      {
+        name: 'core',
+        path: path.join(rootPath, 'src/core'),
+        relativePath: 'src/core',
+        type: 'core',
+        responsibility: 'Pipeline orchestration',
+        importantFiles: ['index.ts'],
+        relatedFolders: ['src/core'],
+        signals: ['path:src/core'],
+        confidence: 'high',
+      },
+    ];
+    knowledge.analysis.stagedDocumentation = {
+      execution: [],
+      modulePlan: {
+        status: 'completed',
+        entries: [
+          {
+            moduleId: 'src/core',
+            moduleName: 'core',
+            moduleRelativePath: 'src/core',
+            documentPath: 'code/components/core.md',
+            order: 1,
+            status: 'pending',
+          },
+        ],
+        warnings: [],
+      },
+    };
+
+    const result = writeDocumentation(knowledge);
+
+    assert.deepEqual(result.writtenPaths, [
+      'architecture.md',
+      'module-documentation-plan.md',
+      'code/components/core.md',
+    ]);
+    assert.equal(result.pkmPoweredCount, 3);
   });
 
   it('treats BOM-prefixed generated files as tool-managed during selective regeneration', () => {

@@ -34,11 +34,13 @@ The PKM remains the source of truth. Templates and renderers are presentation-on
 | File | Role |
 |---|---|
 | `documentation-plan.ts` | Application-level types: `DocumentationPlan`, `PlannedDocument` |
-| `documentation-planner.ts` | `createDocumentationPlan()` — deterministic plan from config + metadata |
+| `documentation-planner.ts` | `createDocumentationPlan()` + `expandProjectKnowledgeWithModuleDocumentationPlan()` — baseline and post-module plan expansion |
 | `document-template.ts` | `renderDeterministicDocument()` — generic fallback Markdown template with the generated-file marker |
 | `markdown-renderers/` | PKM-powered renderers for key documents (wrapped by templates in `src/templates/`) |
-| `documentation-writer.ts` | `writeDocumentation()` — renders via template engine, writes planned docs from `ProjectKnowledge`, supports selective regeneration via `DocumentImpactSummary`, preserves unmarked files, reports written/skipped counts |
-| `documentation-validator.ts` | `validateDocumentation()` — verifies written docs exist, carry the generated marker, and reports errors/warnings |
+| `documentation-writer.ts` | `writeDocumentation()` — stage-aware ordered writes via `documentation-write-order.ts`, renders via template engine, supports selective regeneration via `DocumentImpactSummary`, preserves unmarked files |
+| `documentation-write-order.ts` | `orderDocumentsForWriting()` — explicit stage → order → path sort for staged documentation |
+| `documentation-validator.ts` | `validateDocumentation()` — verifies written docs exist, carry the generated marker, reports errors/warnings, and checks staged playbook/module-plan coverage against PKM metadata |
+| `staged-documentation.integration.test.ts` | End-to-end PKM-backed staged plan → ordered write → render/validate (no live AI) |
 | `markdown-renderers.test.ts` | Renderer dispatch and content tests (delegates to template engine) |
 
 ---
@@ -49,13 +51,21 @@ The PKM remains the source of truth. Templates and renderers are presentation-on
 
 | File | Renders | Reads from PKM |
 |---|---|---|
-| `architecture-renderer.ts` | `architecture.md` | `technologies`, `analysis.modules`, `analysis.conventions`, `analysis.dependencyGraph`, `analysis.navigationMap` |
+| `architecture-renderer.ts` | `architecture.md` | `technologies`, `analysis.modules`, `analysis.conventions`, `analysis.dependencyGraph`, `analysis.navigationMap`, `analysis.stagedDocumentation.architecture` |
 | `folder-structure-renderer.ts` | `folder-structure.md` | `analysis.folderContexts`, `repository.ignoredPaths` |
 | `dependency-map-renderer.ts` | `dependency-map.md` | `analysis.dependencyGraph` (nodes, edges, evidence) |
 | `conventions-renderer.ts` | `conventions.md` | `analysis.conventions` (category, description, confidence, evidence) |
 | `agent-navigation-renderer.ts` | `agent-navigation.md` | `analysis.navigationMap` (task types, recommendations, warnings) |
-| `ai-context-renderer.ts` | `ai-context.md` | Summary across all PKM sections |
+| `ai-context-renderer.ts` | `ai-context.md` | Summary across all PKM sections + staged architecture enrichment |
 | `implementation-guide-renderer.ts` | `implementation-guide.md` | `analysis.modules`, `analysis.navigationMap`, `metadata` |
+| `ai-start-here-renderer.ts` | `AI_START_HERE.md` | `technologies`, `analysis.modules`, architectural conventions |
+| `context-router-renderer.ts` | `CONTEXT_ROUTER.md` | `analysis.navigationMap` |
+| `documentation-maintenance-renderer.ts` | `DOCUMENTATION_MAINTENANCE.md` | `analysis.navigationMap` |
+| `documentation-status-renderer.ts` | `DOCUMENTATION_STATUS.md` | `analysis.stagedDocumentation`, playbook plan entries |
+| `project-map-renderer.ts` | `PROJECT_MAP.md` | `analysis.modules`, `analysis.folderContexts`, planned docs |
+| `module-documentation-plan-renderer.ts` | `module-documentation-plan.md` | `analysis.stagedDocumentation.modulePlan` |
+| `module-document-renderer.ts` | `code/components/*.md` | `analysis.modules` + `analysis.stagedDocumentation.moduleResults` |
+| `staged-architecture-renderer.ts` | *(section)* | Prefers staged architecture output; falls back to legacy `aiInsights` |
 | `render-helpers.ts` | — | Shared header/formatting helpers and the `MarkdownRenderer` type |
 | `index.ts` | — | Backward-compatible dispatch via template engine |
 
@@ -83,9 +93,10 @@ See `src/templates/README.md` for the full template contract.
 The documentation writer is a **generator**. It consumes only `ProjectKnowledge` — no `RuntimeConfig`, `RepositoryInfo`, `TechnologyProfile`, or `DocumentationPlan`.
 
 - `writeDocumentation(knowledge, impactSummary?)` resolves paths from `knowledge.repository.rootPath` and `knowledge.documentation.plan.docsDir`.
+- Documents are written in stage-aware order (`baseline` → `routing` → `architecture` → `module-plan` → `module` → `readiness`), using `PlannedDocument.stage` / `order` metadata — not path heuristics.
 - When `impactSummary` is omitted, every tool-managed planned document is rewritten (legacy behavior).
 - When `impactSummary` is present, only impacted generated documents are rewritten; unchanged generated files are skipped; missing files are still created.
-- `renderDocumentWithTemplate(document, knowledge)` in `src/templates/template-engine.ts` dispatches to the registered template for that document, or to the generic fallback when none exists.
+- `renderDocumentWithTemplate(document, knowledge)` in `src/templates/template-engine.ts` dispatches by output path, then by `generatorKind` for dynamic module cards (`staged-module`), or to the generic fallback.
 - Markdown is an **output derived from the PKM**. The PKM (persisted to `.ai-docs/knowledge/`) remains the source of truth; Markdown generation must never perform repository analysis of its own.
 
 When adding new rendering logic, read from the appropriate PKM section and register a template.
@@ -121,8 +132,13 @@ interface PlannedDocument {
   relativePath: string;    // path inside docsDir, e.g. 'architecture.md'
   purpose: string;         // one-sentence description for agents
   priority: 'required' | 'recommended' | 'optional';
-  source: 'core' | 'technology' | 'agent';
+  source: 'core' | 'technology' | 'agent' | 'playbook' | 'module';
   dependsOn?: string[];    // relativePaths this document depends on
+  stage?: DocumentationStage;
+  generatorKind?: DocumentGeneratorKind;
+  moduleId?: string;
+  moduleName?: string;
+  order?: number;
 }
 ```
 
@@ -130,11 +146,17 @@ interface PlannedDocument {
 - `core` — always generated; describes the project structure and architecture
 - `agent` — always generated; optimized for AI agent consumption
 - `technology` — generated only when the relevant technology is detected
+- `playbook` — agent-routing / maintenance docs added during module-plan expansion
+- `module` — one document per discovered module
+
+**`stage` / `generatorKind`:** tell writers and later templates which staged phase owns the document (`baseline`, `routing`, `architecture`, `module-plan`, `module`, `readiness`) and how the body is produced (`deterministic`, `staged-architecture`, `staged-module-plan`, `staged-module`, `generic`).
 
 **`priority` values:**
 - `required` — always generated in every run
 - `recommended` — generated by default but skippable
 - `optional` — generated only when explicitly requested
+
+Early pipeline planning uses `createDocumentationPlan()`. After modules are known, **Generate Module Documentation Plan** calls `expandProjectKnowledgeWithModuleDocumentationPlan()` to add playbook routing docs, `module-documentation-plan.md`, and one `code/components/<slug>.md` entry per module, mirroring entries into `analysis.stagedDocumentation.modulePlan`.
 
 ### `DocumentationPlan`
 
@@ -230,8 +252,9 @@ Do not add framework-specific logic directly to `executePipeline`. The orchestra
 
 ## What belongs here
 
-- `DocumentationPlan` and `PlannedDocument` types.
-- `createDocumentationPlan(docsDir, technologyProfile)` — receives docs directory name and detected technologies, returns a plan deterministically.
+- `DocumentationPlan` and `PlannedDocument` types (including staged metadata).
+- `createDocumentationPlan(docsDir, technologyProfile)` — receives docs directory name and detected technologies, returns a baseline plan deterministically.
+- `expandProjectKnowledgeWithModuleDocumentationPlan(knowledge)` — expands the plan after module discovery and mirrors module-plan state into PKM.
 - PKM-powered Markdown renderers (`markdown-renderers/`) — presentation only, wrapped by templates.
 - Safe overwrite rules for generated files only.
 - Future: per-technology document template functions.

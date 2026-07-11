@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Project Docs — Web UI</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="header">
+        <h1>AI Project Docs</h1>
+        <p class="lede">Analyze a local project and generate AI-readable documentation.</p>
+      </header>
+
+      <div id="banner" class="banner" hidden role="alert"></div>
+
+      <form id="run-form" class="panel" novalidate>
+        <h2 class="panel-title">Analyze project</h2>
+
+        <div class="field">
+          <span class="label">Project folder <span class="required">*</span></span>
+          <div class="path-row">
+            <input
+              id="targetProjectPath"
+              name="targetProjectPath"
+              type="text"
+              required
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="C:\path\to\project"
+            />
+            <button id="browse-button" type="button" class="secondary">Browse</button>
+          </div>
+          <span class="hint">Absolute path to the repository root.</span>
+        </div>
+
+        <label class="field">
+          <span class="label">Output folder</span>
+          <input
+            id="docsDir"
+            name="docsDir"
+            type="text"
+            value=".ai-docs"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+
+        <label class="field checkbox-field">
+          <input id="enableAiAnalysis" name="enableAiAnalysis" type="checkbox" />
+          <span>Enable AI analysis</span>
+        </label>
+
+        <div id="ai-options" class="ai-options" hidden>
+          <label class="field">
+            <span class="label">AI provider</span>
+            <select id="aiProvider" name="aiProvider"></select>
+          </label>
+
+          <label class="field">
+            <span class="label" id="api-key-label">API key</span>
+            <input
+              id="apiKey"
+              name="apiKey"
+              type="password"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="Provider API key"
+            />
+            <span class="hint">Kept in memory for this session only. Not stored on disk.</span>
+          </label>
+
+          <label class="field">
+            <span class="label">Model</span>
+            <input
+              id="aiModel"
+              name="aiModel"
+              type="text"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+        </div>
+
+        <label class="field checkbox-field">
+          <input id="enableAgentExports" name="enableAgentExports" type="checkbox" />
+          <span>Export agent context</span>
+        </label>
+
+        <fieldset id="export-options" class="export-options" hidden>
+          <legend class="label">Export target</legend>
+          <label class="radio-field">
+            <input type="radio" name="exportTarget" value="generic" checked />
+            <span>generic</span>
+          </label>
+          <label class="radio-field">
+            <input type="radio" name="exportTarget" value="cursor" />
+            <span>cursor</span>
+          </label>
+          <label class="radio-field">
+            <input type="radio" name="exportTarget" value="all" />
+            <span>all</span>
+          </label>
+        </fieldset>
+
+        <div class="actions">
+          <button id="run-button" type="submit" class="primary">Run analysis</button>
+          <span id="status" class="status" aria-live="polite"></span>
+        </div>
+
+        <p class="settings-row">
+          <button id="clear-settings" type="button" class="link-button">Clear saved settings</button>
+        </p>
+      </form>
+
+      <section id="progress" class="panel progress" hidden>
+        <div class="progress-header">
+          <h2 class="panel-title">Progress</h2>
+          <p id="elapsed" class="elapsed" aria-live="polite">Elapsed: 0s</p>
+        </div>
+        <ul id="checklist" class="checklist"></ul>
+      </section>
+
+      <section id="results" class="panel results" hidden>
+        <h2 class="panel-title">Results</h2>
+        <p id="results-headline" class="headline"></p>
+        <div id="docs-path-row" class="docs-path-row" hidden>
+          <p id="docs-path" class="docs-path"></p>
+          <button id="open-docs-button" type="button" class="secondary">Open docs folder</button>
+        </div>
+        <div id="results-body"></div>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -496,4 +496,95 @@ describe('knowledge-writer', () => {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
   });
+
+  it('writes staged-documentation.json when stagedDocumentation exists and removes it when absent', () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-writer-staged-docs-'));
+
+    try {
+      const withStaged = createKnowledge(tempRoot, { includeTree: true });
+      withStaged.analysis.stagedDocumentation = {
+        architecture: {
+          status: 'completed',
+          summary: 'Layered CLI pipeline',
+          content: 'Architecture overview for agents.',
+          documentPaths: ['architecture.md'],
+          generatedAt: '2026-01-01T00:00:00.000Z',
+          warnings: [],
+        },
+        modulePlan: {
+          status: 'partial',
+          entries: [
+            {
+              moduleId: 'src/core',
+              moduleName: 'core',
+              moduleRelativePath: 'src/core',
+              documentPath: 'code/components/core.md',
+              order: 1,
+              status: 'pending',
+              rationale: 'Orchestration entry point',
+            },
+          ],
+          generatedAt: '2026-01-01T00:00:00.000Z',
+          warnings: [],
+        },
+        moduleResults: {
+          status: 'pending',
+          results: [],
+          warnings: [],
+        },
+        execution: [
+          {
+            stageId: 'architecture',
+            status: 'completed',
+            startedAt: '2026-01-01T00:00:00.000Z',
+            completedAt: '2026-01-01T00:00:01.000Z',
+            warnings: [],
+          },
+          {
+            stageId: 'module-plan',
+            status: 'partial',
+            warnings: ['Plan generated without module AI results'],
+          },
+          {
+            stageId: 'module-documentation',
+            status: 'pending',
+            warnings: [],
+          },
+        ],
+        generatedAt: '2026-01-01T00:00:01.000Z',
+      };
+
+      const persistenceWithStaged = persistProjectKnowledge(withStaged);
+      const stagedPath = resolveKnowledgeFilePath(
+        tempRoot,
+        '.ai-docs',
+        KNOWLEDGE_FILE_NAMES.stagedDocumentation,
+      );
+
+      assert.equal(fs.existsSync(stagedPath), true);
+      assert.ok(
+        persistenceWithStaged.persistedRelativePaths.includes(
+          '.ai-docs/knowledge/staged-documentation.json',
+        ),
+      );
+
+      const persisted = JSON.parse(fs.readFileSync(stagedPath, 'utf-8')) as {
+        stagedDocumentation: {
+          architecture?: { status: string };
+          modulePlan?: { entries: unknown[] };
+          execution: unknown[];
+        };
+      };
+      assert.equal(persisted.stagedDocumentation.architecture?.status, 'completed');
+      assert.equal(persisted.stagedDocumentation.modulePlan?.entries.length, 1);
+      assert.equal(persisted.stagedDocumentation.execution.length, 3);
+
+      const withoutStaged = createKnowledge(tempRoot, { includeTree: true });
+      persistProjectKnowledge(withoutStaged);
+
+      assert.equal(fs.existsSync(stagedPath), false);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
 });

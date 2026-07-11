@@ -5,6 +5,8 @@ export type { DocumentSection, DocumentModel } from './documentation';
 export type {
   DocumentPriority,
   DocumentSource,
+  DocumentationStage,
+  DocumentGeneratorKind,
   DocumentationPlan,
   PlannedDocument,
 } from './documentation-plan';

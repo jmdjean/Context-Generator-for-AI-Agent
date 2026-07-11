@@ -4,7 +4,10 @@ import {
   GENERIC_MARKDOWN_TEMPLATE_ID,
   renderGenericMarkdownDocument,
 } from './markdown-template';
-import { getTemplateByOutputPath, hasRegisteredTemplate } from './template-registry';
+import {
+  hasRegisteredTemplate,
+  resolveTemplateForDocument,
+} from './template-registry';
 import {
   RenderedPlannedDocument,
   TemplateContext,
@@ -24,7 +27,7 @@ export function renderDocumentWithTemplate(
   knowledge: ProjectKnowledge,
 ): RenderedPlannedDocument {
   const context = buildTemplateContext(knowledge);
-  const template = getTemplateByOutputPath(document.relativePath);
+  const template = resolveTemplateForDocument(document);
 
   if (template) {
     const content = template.render(context, document);
@@ -64,4 +67,9 @@ export function renderDocumentationPlan(
   });
 }
 
-export { hasRegisteredTemplate, REGISTERED_TEMPLATE_OUTPUT_PATHS } from './template-registry';
+export {
+  hasRegisteredTemplate,
+  hasTemplateForDocument,
+  REGISTERED_TEMPLATE_OUTPUT_PATHS,
+  resolveTemplateForDocument,
+} from './template-registry';

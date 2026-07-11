@@ -98,11 +98,27 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
-    name: 'Analyze AI Insights',
+    name: 'Generate Architecture Context',
     description:
-      'Optionally call OpenRouter with a compact PKM summary to produce non-authoritative architecture insights. Enriches ProjectKnowledge.analysis.aiInsights when --ai is set and an API key is available.',
+      'Optionally generate architecture-level documentation context from a compact PKM summary. Writes staged architecture output into ProjectKnowledge.analysis.stagedDocumentation.architecture (and legacy aiInsights until the architecture stage is fully migrated). Runs when --ai is set and an API key is available.',
     input: 'ProjectKnowledge, RuntimeConfig (ai flags)',
-    output: 'AiInsightsKnowledge',
+    output: 'ArchitectureStageKnowledge in analysis.stagedDocumentation',
+    status: 'pending',
+  },
+  {
+    name: 'Generate Module Documentation Plan',
+    description:
+      'Produce a module-by-module documentation plan after modules are known and mirror it into ProjectKnowledge.analysis.stagedDocumentation.modulePlan. Expands the documentation plan with playbook routing docs and one document per discovered module. Downstream stages consume this plan instead of scraping Markdown.',
+    input: 'ProjectKnowledge (analysis.modules, stagedDocumentation.architecture)',
+    output: 'ModuleDocumentationPlanKnowledge in analysis.stagedDocumentation',
+    status: 'pending',
+  },
+  {
+    name: 'Generate Module Documentation',
+    description:
+      'Run one documentation-generation flow per planned module, persist each result into ProjectKnowledge.analysis.stagedDocumentation.moduleResults, and record per-module status for partial success and retries.',
+    input: 'ProjectKnowledge (stagedDocumentation.modulePlan, architecture)',
+    output: 'ModuleDocumentationResultsKnowledge in analysis.stagedDocumentation',
     status: 'pending',
   },
   {

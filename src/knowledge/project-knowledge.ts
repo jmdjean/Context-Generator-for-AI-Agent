@@ -204,6 +204,121 @@ export interface AiInsightsKnowledge {
   model: string;
 }
 
+/**
+ * Lifecycle status for staged documentation work: a pipeline stage, a plan
+ * entry, or a per-module result. Supports partial progress, skips, and retries.
+ */
+export type StagedDocumentationStatus =
+  | 'pending'
+  | 'skipped'
+  | 'in-progress'
+  | 'partial'
+  | 'completed'
+  | 'failed';
+
+export type StagedDocumentationStageId =
+  | 'architecture'
+  | 'module-plan'
+  | 'module-documentation';
+
+/**
+ * Per-stage execution metadata for observability. Provider/model fields are
+ * optional transport identifiers only — never treat them as ground truth.
+ */
+export interface StagedDocumentationStageExecution {
+  stageId: StagedDocumentationStageId;
+  status: StagedDocumentationStatus;
+  startedAt?: string;
+  completedAt?: string;
+  provider?: string;
+  model?: string;
+  warnings: string[];
+  /** Safe failure detail; do not store secrets or raw provider payloads. */
+  error?: string;
+}
+
+/**
+ * Architecture-stage output mirrored in PKM so later stages and renderers
+ * consume structured data instead of scraping Markdown from disk.
+ */
+export interface ArchitectureStageKnowledge {
+  status: StagedDocumentationStatus;
+  /** Short architecture summary for routing and later stage prompts. */
+  summary?: string;
+  /** Architecture body used by templates and downstream AI stages. */
+  content?: string;
+  /** Relative document paths this stage intends to feed. */
+  documentPaths: string[];
+  generatedAt?: string;
+  provider?: string;
+  model?: string;
+  warnings: string[];
+  error?: string;
+}
+
+/**
+ * One planned module documentation unit derived from discovered modules.
+ */
+export interface ModuleDocumentationPlanEntry {
+  /** Stable id — typically the module relativePath. */
+  moduleId: string;
+  moduleName: string;
+  moduleRelativePath: string;
+  /** Relative path of the planned Markdown document. */
+  documentPath: string;
+  /** 1-based sequence for writer/order-aware rendering. */
+  order: number;
+  status: StagedDocumentationStatus;
+  /** Why this module is documented and/or ordered this way. */
+  rationale?: string;
+}
+
+export interface ModuleDocumentationPlanKnowledge {
+  status: StagedDocumentationStatus;
+  entries: ModuleDocumentationPlanEntry[];
+  generatedAt?: string;
+  warnings: string[];
+  error?: string;
+}
+
+/**
+ * Per-module AI documentation result ready for deterministic rendering.
+ */
+export interface ModuleDocumentationResultKnowledge {
+  moduleId: string;
+  moduleName: string;
+  moduleRelativePath: string;
+  documentPath: string;
+  status: StagedDocumentationStatus;
+  summary?: string;
+  content?: string;
+  generatedAt?: string;
+  provider?: string;
+  model?: string;
+  warnings: string[];
+  error?: string;
+}
+
+export interface ModuleDocumentationResultsKnowledge {
+  status: StagedDocumentationStatus;
+  results: ModuleDocumentationResultKnowledge[];
+  generatedAt?: string;
+  warnings: string[];
+}
+
+/**
+ * Staged multi-agent documentation state. Absent until staged AI/planning
+ * stages run. AI content here is enrichment, not deterministic truth.
+ */
+export interface StagedDocumentationKnowledge {
+  architecture?: ArchitectureStageKnowledge;
+  modulePlan?: ModuleDocumentationPlanKnowledge;
+  moduleResults?: ModuleDocumentationResultsKnowledge;
+  /** One entry per staged pipeline step for partial progress visibility. */
+  execution: StagedDocumentationStageExecution[];
+  generatedAt?: string;
+}
+
 export type AgentExportTarget =
   | 'generic'
   | 'cursor'
@@ -238,6 +353,8 @@ export interface AnalysisKnowledge {
   status: AnalysisKnowledgeStatus;
   architecture?: string;
   aiInsights?: AiInsightsKnowledge;
+  /** Staged architecture / module-plan / per-module documentation outputs. */
+  stagedDocumentation?: StagedDocumentationKnowledge;
   aiReadiness?: AIReadinessKnowledge;
   agentExports?: AgentExportsKnowledge;
   changeSummary?: ChangeSummaryKnowledge;
@@ -260,6 +377,7 @@ export type ChangeSection =
   | 'conventions'
   | 'navigationMap'
   | 'aiInsights'
+  | 'stagedDocumentation'
   | 'documentation';
 
 export interface DependencyEdgeChangeKnowledge {

@@ -1,17 +1,17 @@
-import { RuntimeConfig } from '../config';
+import { RuntimeConfig, resolveProviderApiKey } from '../config';
 import { AnalysisPipelineStep, RepositoryInfo, TechnologyProfile } from '../domain';
 import { DocumentationPlan } from '../domain/documentation-plan';
 import { loadRepositoryMetadata } from '../scanner/repository-loader';
 import { scanRepository } from '../scanner/repository-scanner';
 import { detectTechnologies } from '../detectors/technology-detector';
-import { createDocumentationPlan } from '../docs/documentation-planner';
+import { createDocumentationPlan, expandProjectKnowledgeWithModuleDocumentationPlan } from '../docs/documentation-planner';
 import { writeDocumentation, writeSinglePlannedDocument } from '../docs/documentation-writer';
 import {
   mergeValidationIssues,
   validateAiReadiness,
   validateDocumentation,
 } from '../docs/documentation-validator';
-import { runAiAnalysis } from '../ai';
+import { runArchitectureStage, runModuleDocumentationStage } from '../ai';
 import {
   buildProjectKnowledge,
   persistAiReadinessKnowledge,
@@ -255,7 +255,7 @@ export async function handleBuildNavigationMap(
   };
 }
 
-export async function handleAnalyzeAiInsights(
+export async function handleGenerateArchitectureContext(
   context: PipelineContext,
   step: AnalysisPipelineStep,
 ): Promise<StepHandlerResult> {
@@ -270,25 +270,27 @@ export async function handleAnalyzeAiInsights(
     };
   }
 
-  if (!context.config.openRouterApiKey) {
+  const apiKey = resolveProviderApiKey(context.config);
+  if (!apiKey) {
     console.warn(
-      'Warning: --ai was provided but no OpenRouter API key was found. Set OPENROUTER_API_KEY or pass --openrouter-key. Skipping AI analysis.',
+      `Warning: --ai was provided but no API key was found for provider "${context.config.aiProvider}". ` +
+        'Set the provider env var (OPENROUTER_API_KEY / OPENAI_API_KEY) or pass --openrouter-key / --openai-key. Skipping architecture context generation.',
     );
     context.metrics.aiInsightsAttempted = true;
     return {
       status: 'skipped',
-      message: 'skipped: OpenRouter API key missing',
+      message: 'skipped: API key missing',
     };
   }
 
-  const analysisResult = await runAiAnalysis(context.projectKnowledge, {
-    apiKey: context.config.openRouterApiKey,
+  const analysisResult = await runArchitectureStage(context.projectKnowledge, {
+    apiKey,
     model: context.config.aiModel,
     providerId: context.config.aiProvider,
   });
 
   context.projectKnowledge = analysisResult.knowledge;
-  context.metrics.aiInsightsGenerated = analysisResult.insightsGenerated;
+  context.metrics.aiInsightsGenerated = analysisResult.architectureGenerated;
   context.metrics.aiInsightsAttempted = analysisResult.attempted;
 
   for (const warning of analysisResult.warnings) {
@@ -296,8 +298,104 @@ export async function handleAnalyzeAiInsights(
   }
 
   return {
-    status: analysisResult.insightsGenerated ? 'completed' : 'skipped',
+    status: analysisResult.architectureGenerated ? 'completed' : 'skipped',
     message: analysisResult.message,
+  };
+}
+
+/**
+ * @deprecated Use handleGenerateArchitectureContext. Kept as an alias for tests
+ * and call sites that still refer to the previous step name.
+ */
+export const handleAnalyzeAiInsights = handleGenerateArchitectureContext;
+
+export async function handleGenerateModuleDocumentationPlan(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  const expansion = expandProjectKnowledgeWithModuleDocumentationPlan(context.projectKnowledge);
+  context.projectKnowledge = expansion.knowledge;
+  context.documentationPlan = expansion.knowledge.documentation.plan;
+
+  return {
+    status: 'completed',
+    message: expansion.message,
+  };
+}
+
+export async function handleGenerateModuleDocumentation(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  if (!context.config.enableAiAnalysis) {
+    return {
+      status: 'skipped',
+      message: 'skipped: --ai not provided',
+    };
+  }
+
+  if (!context.config.enableModuleDocumentation) {
+    return {
+      status: 'skipped',
+      message: 'skipped: --skip-module-docs',
+    };
+  }
+
+  const apiKey = resolveProviderApiKey(context.config);
+  if (!apiKey) {
+    console.warn(
+      `Warning: --ai was provided but no API key was found for provider "${context.config.aiProvider}". ` +
+        'Set the provider env var (OPENROUTER_API_KEY / OPENAI_API_KEY) or pass --openrouter-key / --openai-key. Skipping module documentation generation.',
+    );
+    context.metrics.moduleDocumentationAttempted = true;
+    return {
+      status: 'skipped',
+      message: 'skipped: API key missing',
+    };
+  }
+
+  const fanoutResult = await runModuleDocumentationStage(context.projectKnowledge, {
+    apiKey,
+    model: context.config.aiModel,
+    providerId: context.config.aiProvider,
+  });
+
+  context.projectKnowledge = fanoutResult.knowledge;
+  context.metrics.moduleDocumentationAttempted = fanoutResult.attempted;
+  context.metrics.moduleDocumentationGenerated = fanoutResult.modulesGenerated;
+  context.metrics.moduleDocumentationCompleted = fanoutResult.completedCount;
+  context.metrics.moduleDocumentationFailed = fanoutResult.failedCount;
+  context.metrics.moduleDocumentationSkipped = fanoutResult.skippedCount;
+
+  for (const warning of fanoutResult.warnings) {
+    console.warn(`Warning: ${warning}`);
+  }
+
+  if (!fanoutResult.attempted) {
+    return {
+      status: 'skipped',
+      message: fanoutResult.message,
+    };
+  }
+
+  if (fanoutResult.modulesGenerated) {
+    return {
+      status: 'completed',
+      message: fanoutResult.message,
+    };
+  }
+
+  return {
+    status: 'skipped',
+    message: fanoutResult.message,
   };
 }
 
@@ -494,7 +592,9 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Analyze Dependency Graph': handleAnalyzeDependencyGraph,
   'Analyze Conventions': handleAnalyzeConventions,
   'Build AI Navigation Map': handleBuildNavigationMap,
-  'Analyze AI Insights': handleAnalyzeAiInsights,
+  'Generate Architecture Context': handleGenerateArchitectureContext,
+  'Generate Module Documentation Plan': handleGenerateModuleDocumentationPlan,
+  'Generate Module Documentation': handleGenerateModuleDocumentation,
   'Detect Changes': handleDetectChanges,
   'Write Documentation': handleWriteDocumentation,
   'Validate Documentation': handleValidateDocumentation,
