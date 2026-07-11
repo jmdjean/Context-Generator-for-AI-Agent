@@ -5,7 +5,7 @@
 Guides AI agents to the right files for any task type
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-08T23:17:35.065Z
+- Generated: 2026-07-11T00:34:27.223Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -65,7 +65,7 @@ Adding, updating, or reorganizing tests for existing or new behavior.
 - Recommended PKM knowledge: `conventions`, `modules`, `folderContexts`
 - Recommended documents: `conventions.md`, `implementation-guide.md`
 - Related modules: None resolved
-- Related folders: None resolved
+- Related folders: `test`, `test/fixtures/fixture-typescript/tests`
 - Confidence: high
 
 Warnings:
@@ -80,7 +80,7 @@ Updating Markdown documentation, READMEs, or the generated context layer.
 - Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`
 - Recommended documents: `README.md`, `agent-navigation.md`, `ai-context.md`, `conventions.md`
 - Related modules: `.ai-docs`, `docs`, `src/docs`, `src/knowledge`
-- Related folders: `docs`
+- Related folders: `docs`, `test/fixtures/fixture-minimal`
 - Confidence: high
 
 Warnings:
@@ -95,7 +95,7 @@ Changing runtime configuration, compiler options, or tooling configuration files
 - Recommended PKM knowledge: `technologies`, `conventions`, `modules`
 - Recommended documents: `architecture.md`, `conventions.md`, `implementation-guide.md`
 - Related modules: `src/config`, `src/detectors`, `src/utils`
-- Related folders: None resolved
+- Related folders: `test/fixtures/fixture-monorepo`, `test/fixtures/fixture-monorepo/apps/api`, `test/fixtures/fixture-monorepo/apps/web`, `test/fixtures/fixture-monorepo/libs/shared`, `test/fixtures/fixture-typescript`
 - Confidence: high
 
 Warnings:
@@ -110,7 +110,7 @@ Adding, removing, or upgrading package dependencies.
 - Recommended PKM knowledge: `technologies`, `dependencyGraph`, `conventions`
 - Recommended documents: `dependency-map.md`, `conventions.md`, `implementation-guide.md`
 - Related modules: `src/detectors`
-- Related folders: None resolved
+- Related folders: `test/fixtures/fixture-monorepo`, `test/fixtures/fixture-monorepo/apps/api`, `test/fixtures/fixture-monorepo/apps/web`, `test/fixtures/fixture-monorepo/libs/shared`, `test/fixtures/fixture-typescript`
 - Confidence: high
 
 Warnings:
@@ -125,7 +125,7 @@ Building or adjusting agent-facing outputs: agent docs, exporters, rules, or ski
 - Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`, `modules`
 - Recommended documents: `AGENTS.md`, `ai-context.md`, `agent-navigation.md`, `implementation-guide.md`
 - Related modules: `.ai-docs`, `docs`, `src/analyzers`, `src/docs`, `src/knowledge`
-- Related folders: `docs`
+- Related folders: `docs`, `test/fixtures/fixture-minimal`
 - Confidence: high
 
 Warnings:

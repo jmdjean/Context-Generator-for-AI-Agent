@@ -5,10 +5,10 @@
 Portable context for AI coding agents. Derived from the Project Knowledge Model — not from a fresh repository scan.
 
 - Project: Context-Generator-for-AI-Agent
-- Exported: 2026-07-08T23:14:08.664Z
-- PKM assembled: 2026-07-08T23:14:08.206Z
+- Exported: 2026-07-11T00:40:24.778Z
+- PKM assembled: 2026-07-11T00:40:24.740Z
 - PKM schema: 1.0.0
-- Analysis status: partial
+- Analysis status: complete
 
 ## Project summary
 
@@ -17,10 +17,10 @@ Portable context for AI coding agents. Derived from the Project Knowledge Model 
 - Package managers: npm
 - Tooling: TypeScript
 - Detection confidence: high
-- Planned documents: 11
-- Folder contexts: 17
+- Planned documents: 12
+- Folder contexts: 39
 - Modules: 12
-- Conventions: 30
+- Conventions: 31
 - Navigation entries: 8
 
 ## Where to read first
@@ -92,7 +92,7 @@ Adding, updating, or reorganizing tests for existing or new behavior.
 - Recommended PKM knowledge: `conventions`, `modules`, `folderContexts`
 - Recommended documents: `conventions.md`, `implementation-guide.md`
 - Related modules: None resolved
-- Related folders: None resolved
+- Related folders: `test`, `test/fixtures/fixture-typescript/tests`
 - Confidence: high
 
 Warnings:
@@ -106,7 +106,7 @@ Updating Markdown documentation, READMEs, or the generated context layer.
 - Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`
 - Recommended documents: `README.md`, `agent-navigation.md`, `ai-context.md`, `conventions.md`
 - Related modules: `.ai-docs`, `docs`, `src/docs`, `src/knowledge`
-- Related folders: `docs`
+- Related folders: `docs`, `test/fixtures/fixture-minimal`
 - Confidence: high
 
 Warnings:
@@ -120,7 +120,7 @@ Changing runtime configuration, compiler options, or tooling configuration files
 - Recommended PKM knowledge: `technologies`, `conventions`, `modules`
 - Recommended documents: `architecture.md`, `conventions.md`, `implementation-guide.md`
 - Related modules: `src/config`, `src/detectors`, `src/utils`
-- Related folders: None resolved
+- Related folders: `test/fixtures/fixture-monorepo`, `test/fixtures/fixture-monorepo/apps/api`, `test/fixtures/fixture-monorepo/apps/web`, `test/fixtures/fixture-monorepo/libs/shared`, `test/fixtures/fixture-typescript`
 - Confidence: high
 
 Warnings:
@@ -134,7 +134,7 @@ Adding, removing, or upgrading package dependencies.
 - Recommended PKM knowledge: `technologies`, `dependencyGraph`, `conventions`
 - Recommended documents: `dependency-map.md`, `conventions.md`, `implementation-guide.md`
 - Related modules: `src/detectors`
-- Related folders: None resolved
+- Related folders: `test/fixtures/fixture-monorepo`, `test/fixtures/fixture-monorepo/apps/api`, `test/fixtures/fixture-monorepo/apps/web`, `test/fixtures/fixture-monorepo/libs/shared`, `test/fixtures/fixture-typescript`
 - Confidence: high
 
 Warnings:
@@ -148,7 +148,7 @@ Building or adjusting agent-facing outputs: agent docs, exporters, rules, or ski
 - Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`, `modules`
 - Recommended documents: `AGENTS.md`, `ai-context.md`, `agent-navigation.md`, `implementation-guide.md`
 - Related modules: `.ai-docs`, `docs`, `src/analyzers`, `src/docs`, `src/knowledge`
-- Related folders: `docs`
+- Related folders: `docs`, `test/fixtures/fixture-minimal`
 - Confidence: high
 
 Warnings:
@@ -177,7 +177,11 @@ Warnings:
 - **Domain types under src/domain** (repository-structure, high) — Pure domain types and the declarative pipeline live under src/domain.
 - **Pipeline orchestration under src/core** (repository-structure, high) — Pipeline orchestration and step handlers live under src/core.
 - **PKM under src/knowledge** (repository-structure, high) — The Project Knowledge Model types, builder, and persistence live under src/knowledge.
-- …and 22 more in `.ai-docs/conventions.md`
+- **Repository scanning under src/scanner** (repository-structure, high) — Repository loading and scanning live under src/scanner.
+- **Source code under src/** (repository-structure, high) — Application source code lives under the src/ directory.
+- **Technology detection under src/detectors** (repository-structure, high) — Technology detection lives under src/detectors.
+- **src/analyzers consume the PKM** (architecture, high) — Analyzers enrich the PKM deterministically without re-scanning the repository.
+- …and 19 more in `.ai-docs/conventions.md`
 
 ## Dependency graph summary
 
@@ -192,7 +196,7 @@ High-confidence relationships:
 - `src/analyzers` → `src/knowledge` (imports)
 - `src/analyzers` → `src/scanner` (imports)
 - `src/analyzers` → `src/utils` (imports)
-- `src/config` → `src/knowledge` (imports)
+- `src/config` → `src/ai` (imports)
 - …and 19 more
 
 See `.ai-docs/dependency-map.md` for the full node and edge list with evidence.
@@ -209,11 +213,12 @@ See `.ai-docs/dependency-map.md` for the full node and edge list with evidence.
 
 ## PKM is the source of truth
 
-This file is a derived agent pack generated from the Project Knowledge Model (PKM).
+This file is a derived presentation layer generated from the Project Knowledge Model (PKM).
 Facts come from deterministic analyzers assembled once per pipeline run.
 
 - Canonical snapshot: `.ai-docs/knowledge/project-knowledge.json`
 - Split sections: `.ai-docs/knowledge/`
 
-Markdown documents and agent packs are presentation layers. When outputs disagree, trust the PKM.
-Regenerate this file with `ai-project-docs --export-agents` after PKM sections change.
+Markdown documents, agent packs, and agent-specific exports must never become the source of truth.
+When outputs disagree, trust the PKM.
+Regenerate with `ai-project-docs --export-agents` after PKM sections change.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
   "navigationMap": {
     "entries": [
       {
@@ -117,7 +117,10 @@
           "implementation-guide.md"
         ],
         "relatedModules": [],
-        "relatedFolders": [],
+        "relatedFolders": [
+          "test",
+          "test/fixtures/fixture-typescript/tests"
+        ],
         "warnings": [
           "Preserve existing testing conventions.",
           "Do not weaken assertions or remove tests."
@@ -145,7 +148,8 @@
           "src/knowledge"
         ],
         "relatedFolders": [
-          "docs"
+          "docs",
+          "test/fixtures/fixture-minimal"
         ],
         "warnings": [
           "Markdown should reflect PKM.",
@@ -171,7 +175,13 @@
           "src/detectors",
           "src/utils"
         ],
-        "relatedFolders": [],
+        "relatedFolders": [
+          "test/fixtures/fixture-monorepo",
+          "test/fixtures/fixture-monorepo/apps/api",
+          "test/fixtures/fixture-monorepo/apps/web",
+          "test/fixtures/fixture-monorepo/libs/shared",
+          "test/fixtures/fixture-typescript"
+        ],
         "warnings": [
           "Check package manager and TypeScript strict mode conventions.",
           "Avoid introducing conflicting tooling."
@@ -194,7 +204,13 @@
         "relatedModules": [
           "src/detectors"
         ],
-        "relatedFolders": [],
+        "relatedFolders": [
+          "test/fixtures/fixture-monorepo",
+          "test/fixtures/fixture-monorepo/apps/api",
+          "test/fixtures/fixture-monorepo/apps/web",
+          "test/fixtures/fixture-monorepo/libs/shared",
+          "test/fixtures/fixture-typescript"
+        ],
         "warnings": [
           "Check impacted modules before changing dependencies.",
           "Keep dependency changes minimal."
@@ -224,7 +240,8 @@
           "src/knowledge"
         ],
         "relatedFolders": [
-          "docs"
+          "docs",
+          "test/fixtures/fixture-minimal"
         ],
         "warnings": [
           "Agent-specific outputs must be derived from PKM.",
@@ -233,6 +250,6 @@
         "confidence": "high"
       }
     ],
-    "generatedAt": "2026-07-08T23:18:43.505Z"
+    "generatedAt": "2026-07-11T00:40:24.740Z"
   }
 }

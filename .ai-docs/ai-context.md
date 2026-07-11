@@ -5,7 +5,7 @@
 Curated context snapshot optimized for AI agent consumption
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-08T23:17:35.065Z
+- Generated: 2026-07-11T00:34:27.223Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
@@ -13,11 +13,11 @@ Curated context snapshot optimized for AI agent consumption
 
 - Languages: TypeScript
 - Frameworks: None detected
-- Planned documents: 11
-- Folder contexts: 17
+- Planned documents: 12
+- Folder contexts: 39
 - Modules: 12
 - Dependency graph: 10 node(s), 27 edge(s)
-- Conventions: 30
+- Conventions: 31
 - Navigation entries: 8
 
 ## What to read first
@@ -52,7 +52,7 @@ Then use `agent-navigation.md` to pick the right documents for your specific tas
 - **Domain types under src/domain** — Pure domain types and the declarative pipeline live under src/domain.
 - **Pipeline orchestration under src/core** — Pipeline orchestration and step handlers live under src/core.
 - **PKM under src/knowledge** — The Project Knowledge Model types, builder, and persistence live under src/knowledge.
-- …and 22 more in `conventions.md`
+- …and 23 more in `conventions.md`
 
 ## Current limitations
 

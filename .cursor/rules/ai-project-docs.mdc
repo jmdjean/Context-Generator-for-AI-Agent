@@ -12,19 +12,19 @@ Derived from the Project Knowledge Model (PKM). Do not treat this file as author
 ## Project summary
 
 - Project: Context-Generator-for-AI-Agent
-- Exported: 2026-07-08T23:18:43.691Z
-- PKM assembled: 2026-07-08T23:18:43.505Z
+- Exported: 2026-07-11T00:40:24.779Z
+- PKM assembled: 2026-07-11T00:40:24.740Z
 - PKM schema: 1.0.0
-- Analysis status: partial
+- Analysis status: complete
 - Languages: TypeScript
 - Frameworks: None detected
 - Package managers: npm
 - Tooling: TypeScript
 - Detection confidence: high
-- Planned documents: 11
-- Folder contexts: 17
+- Planned documents: 12
+- Folder contexts: 39
 - Modules: 12
-- Conventions: 30
+- Conventions: 31
 - Navigation entries: 8
 
 ## Mandatory reading order
@@ -47,23 +47,39 @@ Respect folder classifications and responsibilities. Do not move logic across bo
 
 - `src` — Contains the main source code of the project.
 - `src/ai` — Integrates with AI providers for architecture analysis.
+- `src/ai/providers` — Contains providers application source code.
 - `src/analyzers` — Derives higher-level architectural knowledge from the PKM.
 - `src/config` — Resolves runtime configuration from CLI flags and environment variables.
 - `src/core` — Contains pipeline orchestration and core application coordination logic.
-- `src/detectors` — Detects technologies and tooling from repository metadata.
-- …and 8 more source folders
+- …and 20 more source folders
+
+### Test
+
+- `test` — Contains automated tests for the project.
+- `test/fixtures/fixture-typescript/tests` — Contains automated tests for the project.
 
 ### Config
 
 - `` — Project root containing top-level configuration, documentation, and source entry points.
+- `test/fixtures/fixture-monorepo` — Contains project configuration files.
+- `test/fixtures/fixture-monorepo/apps/api` — Contains project configuration files.
+- `test/fixtures/fixture-monorepo/apps/web` — Contains project configuration files.
+- `test/fixtures/fixture-monorepo/libs/shared` — Contains project configuration files.
+- `test/fixtures/fixture-typescript` — Contains project configuration files.
 
 ### Documentation
 
 - `docs` — Contains human-readable project documentation.
+- `test/fixtures/fixture-minimal` — Contains human-readable project documentation.
 
 ### Scripts
 
 - `scripts` — Contains automation and utility scripts.
+
+### Unknown
+
+- `test/fixtures` — Contains project files related to fixtures.
+- `test/fixtures/fixture-typescript/src/utils` — Contains project files related to utils.
 
 ### Architectural conventions
 
@@ -114,7 +130,7 @@ Respect folder classifications and responsibilities. Do not move logic across bo
 - **Source code under src/** (repository-structure, high) — Application source code lives under the src/ directory.
 - **Technology detection under src/detectors** (repository-structure, high) — Technology detection lives under src/detectors.
 - **src/analyzers consume the PKM** (architecture, high) — Analyzers enrich the PKM deterministically without re-scanning the repository.
-- …and 18 more in `.ai-docs/conventions.md`
+- …and 19 more in `.ai-docs/conventions.md`
 
 ## Navigation map by task type
 
@@ -171,7 +187,7 @@ Adding, updating, or reorganizing tests for existing or new behavior.
 - Recommended PKM knowledge: `conventions`, `modules`, `folderContexts`
 - Recommended documents: `conventions.md`, `implementation-guide.md`
 - Related modules: None resolved
-- Related folders: None resolved
+- Related folders: `test`, `test/fixtures/fixture-typescript/tests`
 - Confidence: high
 
 Warnings:
@@ -185,7 +201,7 @@ Updating Markdown documentation, READMEs, or the generated context layer.
 - Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`
 - Recommended documents: `README.md`, `agent-navigation.md`, `ai-context.md`, `conventions.md`
 - Related modules: `.ai-docs`, `docs`, `src/docs`, `src/knowledge`
-- Related folders: `docs`
+- Related folders: `docs`, `test/fixtures/fixture-minimal`
 - Confidence: high
 
 Warnings:
@@ -199,7 +215,7 @@ Changing runtime configuration, compiler options, or tooling configuration files
 - Recommended PKM knowledge: `technologies`, `conventions`, `modules`
 - Recommended documents: `architecture.md`, `conventions.md`, `implementation-guide.md`
 - Related modules: `src/config`, `src/detectors`, `src/utils`
-- Related folders: None resolved
+- Related folders: `test/fixtures/fixture-monorepo`, `test/fixtures/fixture-monorepo/apps/api`, `test/fixtures/fixture-monorepo/apps/web`, `test/fixtures/fixture-monorepo/libs/shared`, `test/fixtures/fixture-typescript`
 - Confidence: high
 
 Warnings:
@@ -213,7 +229,7 @@ Adding, removing, or upgrading package dependencies.
 - Recommended PKM knowledge: `technologies`, `dependencyGraph`, `conventions`
 - Recommended documents: `dependency-map.md`, `conventions.md`, `implementation-guide.md`
 - Related modules: `src/detectors`
-- Related folders: None resolved
+- Related folders: `test/fixtures/fixture-monorepo`, `test/fixtures/fixture-monorepo/apps/api`, `test/fixtures/fixture-monorepo/apps/web`, `test/fixtures/fixture-monorepo/libs/shared`, `test/fixtures/fixture-typescript`
 - Confidence: high
 
 Warnings:
@@ -227,7 +243,7 @@ Building or adjusting agent-facing outputs: agent docs, exporters, rules, or ski
 - Recommended PKM knowledge: `documentation`, `conventions`, `navigationMap`, `modules`
 - Recommended documents: `AGENTS.md`, `ai-context.md`, `agent-navigation.md`, `implementation-guide.md`
 - Related modules: `.ai-docs`, `docs`, `src/analyzers`, `src/docs`, `src/knowledge`
-- Related folders: `docs`
+- Related folders: `docs`, `test/fixtures/fixture-minimal`
 - Confidence: high
 
 Warnings:
@@ -247,7 +263,7 @@ High-confidence relationships:
 - `src/analyzers` → `src/knowledge` (imports)
 - `src/analyzers` → `src/scanner` (imports)
 - `src/analyzers` → `src/utils` (imports)
-- `src/config` → `src/knowledge` (imports)
+- `src/config` → `src/ai` (imports)
 - …and 19 more
 
 See `.ai-docs/dependency-map.md` for the full node and edge list with evidence.

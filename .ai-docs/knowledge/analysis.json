@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
-  "status": "partial",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
+  "status": "complete",
   "folderContexts": [
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
+      "path": "/home/user/Context-Generator-for-AI-Agent",
       "relativePath": "",
       "name": "Context-Generator-for-AI-Agent",
       "depth": 0,
@@ -19,7 +19,8 @@
       "childFolders": [
         "docs",
         "scripts",
-        "src"
+        "src",
+        "test"
       ],
       "signals": [
         "folder-name:root"
@@ -27,7 +28,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/docs",
       "relativePath": "docs",
       "name": "docs",
       "depth": 1,
@@ -42,7 +43,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\scripts",
+      "path": "/home/user/Context-Generator-for-AI-Agent/scripts",
       "relativePath": "scripts",
       "name": "scripts",
       "depth": 1,
@@ -57,7 +58,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src",
       "relativePath": "src",
       "name": "src",
       "depth": 1,
@@ -75,7 +76,10 @@
         "exporters",
         "incremental",
         "knowledge",
+        "plugins",
+        "readiness",
         "scanner",
+        "templates",
         "utils"
       ],
       "signals": [
@@ -85,7 +89,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
       "relativePath": "src/ai",
       "name": "ai",
       "depth": 2,
@@ -94,7 +98,9 @@
       "importantFiles": [
         "src/ai/README.md"
       ],
-      "childFolders": [],
+      "childFolders": [
+        "providers"
+      ],
       "signals": [
         "folder-name:ai",
         "test-file:ai-analysis.test.ts",
@@ -106,7 +112,26 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/ai/providers",
+      "relativePath": "src/ai/providers",
+      "name": "providers",
+      "depth": 3,
+      "classification": "source",
+      "responsibility": "Contains providers application source code.",
+      "importantFiles": [
+        "src/ai/providers/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:providers",
+        "test-file:providers.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
       "relativePath": "src/analyzers",
       "name": "analyzers",
       "depth": 2,
@@ -134,7 +159,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
       "relativePath": "src/config",
       "name": "config",
       "depth": 2,
@@ -152,7 +177,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
       "relativePath": "src/core",
       "name": "core",
       "depth": 2,
@@ -174,7 +199,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
       "relativePath": "src/detectors",
       "name": "detectors",
       "depth": 2,
@@ -196,7 +221,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
       "relativePath": "src/docs",
       "name": "docs",
       "depth": 2,
@@ -216,7 +241,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\markdown-renderers",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers",
       "relativePath": "src/docs/markdown-renderers",
       "name": "markdown-renderers",
       "depth": 3,
@@ -231,7 +256,7 @@
       "confidence": "medium"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
       "relativePath": "src/domain",
       "name": "domain",
       "depth": 2,
@@ -250,7 +275,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\exporters",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/exporters",
       "relativePath": "src/exporters",
       "name": "exporters",
       "depth": 2,
@@ -274,7 +299,7 @@
       "confidence": "medium"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\incremental",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/incremental",
       "relativePath": "src/incremental",
       "name": "incremental",
       "depth": 2,
@@ -295,7 +320,7 @@
       "confidence": "medium"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
       "relativePath": "src/knowledge",
       "name": "knowledge",
       "depth": 2,
@@ -316,7 +341,78 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/plugins",
+      "relativePath": "src/plugins",
+      "name": "plugins",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains plugins application source code.",
+      "importantFiles": [
+        "src/plugins/README.md"
+      ],
+      "childFolders": [
+        "builtin",
+        "technology"
+      ],
+      "signals": [
+        "folder-name:plugins",
+        "test-file:plugin-manager.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/plugins/builtin",
+      "relativePath": "src/plugins/builtin",
+      "name": "builtin",
+      "depth": 3,
+      "classification": "source",
+      "responsibility": "Contains builtin application source code.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:builtin",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/plugins/technology",
+      "relativePath": "src/plugins/technology",
+      "name": "technology",
+      "depth": 3,
+      "classification": "source",
+      "responsibility": "Contains technology application source code.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:technology",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/readiness",
+      "relativePath": "src/readiness",
+      "name": "readiness",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains readiness application source code.",
+      "importantFiles": [
+        "src/readiness/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:readiness",
+        "test-file:ai-readiness.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
       "relativePath": "src/scanner",
       "name": "scanner",
       "depth": 2,
@@ -339,7 +435,26 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/templates",
+      "relativePath": "src/templates",
+      "name": "templates",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains templates application source code.",
+      "importantFiles": [
+        "src/templates/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:templates",
+        "doc-file:README.md",
+        "test-file:template-engine.test.ts",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
       "relativePath": "src/utils",
       "name": "utils",
       "depth": 2,
@@ -357,12 +472,296 @@
         "path-context:source-module"
       ],
       "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test",
+      "relativePath": "test",
+      "name": "test",
+      "depth": 1,
+      "classification": "test",
+      "responsibility": "Contains automated tests for the project.",
+      "importantFiles": [],
+      "childFolders": [
+        "fixtures"
+      ],
+      "signals": [
+        "folder-name:test",
+        "name-match:test"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures",
+      "relativePath": "test/fixtures",
+      "name": "fixtures",
+      "depth": 2,
+      "classification": "unknown",
+      "responsibility": "Contains project files related to fixtures.",
+      "importantFiles": [],
+      "childFolders": [
+        "fixture-minimal",
+        "fixture-monorepo",
+        "fixture-typescript"
+      ],
+      "signals": [
+        "folder-name:fixtures",
+        "child-folders:3"
+      ],
+      "confidence": "low"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-minimal",
+      "relativePath": "test/fixtures/fixture-minimal",
+      "name": "fixture-minimal",
+      "depth": 3,
+      "classification": "documentation",
+      "responsibility": "Contains human-readable project documentation.",
+      "importantFiles": [
+        "test/fixtures/fixture-minimal/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:fixture-minimal",
+        "doc-file:README.md"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo",
+      "relativePath": "test/fixtures/fixture-monorepo",
+      "name": "fixture-monorepo",
+      "depth": 3,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/README.md",
+        "test/fixtures/fixture-monorepo/package.json",
+        "test/fixtures/fixture-monorepo/tsconfig.json"
+      ],
+      "childFolders": [
+        "apps",
+        "libs"
+      ],
+      "signals": [
+        "folder-name:fixture-monorepo",
+        "config-file:package.json",
+        "doc-file:README.md",
+        "config-file:tsconfig.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps",
+      "relativePath": "test/fixtures/fixture-monorepo/apps",
+      "name": "apps",
+      "depth": 4,
+      "classification": "source",
+      "responsibility": "Contains apps application source code.",
+      "importantFiles": [],
+      "childFolders": [
+        "api",
+        "web"
+      ],
+      "signals": [
+        "folder-name:apps",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/api",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/api",
+      "name": "api",
+      "depth": 5,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/apps/api/package.json"
+      ],
+      "childFolders": [
+        "src"
+      ],
+      "signals": [
+        "folder-name:api",
+        "config-file:package.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/api/src",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/api/src",
+      "name": "src",
+      "depth": 6,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/web",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/web",
+      "name": "web",
+      "depth": 5,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/apps/web/package.json"
+      ],
+      "childFolders": [
+        "src"
+      ],
+      "signals": [
+        "folder-name:web",
+        "config-file:package.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/web/src",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/web/src",
+      "name": "src",
+      "depth": 6,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/libs",
+      "relativePath": "test/fixtures/fixture-monorepo/libs",
+      "name": "libs",
+      "depth": 4,
+      "classification": "source",
+      "responsibility": "Contains libs application source code.",
+      "importantFiles": [],
+      "childFolders": [
+        "shared"
+      ],
+      "signals": [
+        "folder-name:libs",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/libs/shared",
+      "relativePath": "test/fixtures/fixture-monorepo/libs/shared",
+      "name": "shared",
+      "depth": 5,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/libs/shared/package.json"
+      ],
+      "childFolders": [
+        "src"
+      ],
+      "signals": [
+        "folder-name:shared",
+        "config-file:package.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/libs/shared/src",
+      "relativePath": "test/fixtures/fixture-monorepo/libs/shared/src",
+      "name": "src",
+      "depth": 6,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript",
+      "relativePath": "test/fixtures/fixture-typescript",
+      "name": "fixture-typescript",
+      "depth": 3,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-typescript/README.md",
+        "test/fixtures/fixture-typescript/package.json",
+        "test/fixtures/fixture-typescript/tsconfig.json"
+      ],
+      "childFolders": [
+        "src",
+        "tests"
+      ],
+      "signals": [
+        "folder-name:fixture-typescript",
+        "config-file:package.json",
+        "doc-file:README.md",
+        "config-file:tsconfig.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript/src",
+      "relativePath": "test/fixtures/fixture-typescript/src",
+      "name": "src",
+      "depth": 4,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [
+        "utils"
+      ],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript/src/utils",
+      "relativePath": "test/fixtures/fixture-typescript/src/utils",
+      "name": "utils",
+      "depth": 5,
+      "classification": "unknown",
+      "responsibility": "Contains project files related to utils.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:utils"
+      ],
+      "confidence": "low"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript/tests",
+      "relativePath": "test/fixtures/fixture-typescript/tests",
+      "name": "tests",
+      "depth": 4,
+      "classification": "test",
+      "responsibility": "Contains automated tests for the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:tests",
+        "name-match:test"
+      ],
+      "confidence": "high"
     }
   ],
   "modules": [
     {
       "name": ".ai-docs",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\.ai-docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/.ai-docs",
       "relativePath": ".ai-docs",
       "type": "documentation",
       "responsibility": "Contains AI-readable project context generated by this tool.",
@@ -381,7 +780,7 @@
     },
     {
       "name": "docs",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/docs",
       "relativePath": "docs",
       "type": "documentation",
       "responsibility": "Contains human-readable project documentation.",
@@ -398,14 +797,16 @@
     },
     {
       "name": "ai",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
       "relativePath": "src/ai",
       "type": "core",
       "responsibility": "Integrates with AI providers for architecture analysis.",
       "importantFiles": [
         "src/ai/README.md"
       ],
-      "relatedFolders": [],
+      "relatedFolders": [
+        "providers"
+      ],
       "signals": [
         "path:src-module:src/ai",
         "module-type:core",
@@ -417,7 +818,7 @@
     },
     {
       "name": "analyzers",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
       "relativePath": "src/analyzers",
       "type": "core",
       "responsibility": "Derives higher-level architectural knowledge from the PKM.",
@@ -436,7 +837,7 @@
     },
     {
       "name": "config",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
       "relativePath": "src/config",
       "type": "configuration",
       "responsibility": "Resolves runtime configuration from CLI flags and environment variables.",
@@ -455,7 +856,7 @@
     },
     {
       "name": "core",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
       "relativePath": "src/core",
       "type": "core",
       "responsibility": "Contains pipeline orchestration and core application coordination logic.",
@@ -474,7 +875,7 @@
     },
     {
       "name": "detectors",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
       "relativePath": "src/detectors",
       "type": "core",
       "responsibility": "Detects technologies and tooling from repository metadata.",
@@ -493,7 +894,7 @@
     },
     {
       "name": "docs",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
       "relativePath": "src/docs",
       "type": "core",
       "responsibility": "Plans and writes documentation outputs derived from project knowledge.",
@@ -514,7 +915,7 @@
     },
     {
       "name": "domain",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
       "relativePath": "src/domain",
       "type": "core",
       "responsibility": "Defines pure domain types and the declarative analysis pipeline.",
@@ -533,7 +934,7 @@
     },
     {
       "name": "knowledge",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
       "relativePath": "src/knowledge",
       "type": "core",
       "responsibility": "Represents and persists the Project Knowledge Model used as the source of truth.",
@@ -552,7 +953,7 @@
     },
     {
       "name": "scanner",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
       "relativePath": "src/scanner",
       "type": "core",
       "responsibility": "Builds the repository tree used by analyzers.",
@@ -571,7 +972,7 @@
     },
     {
       "name": "utils",
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
       "relativePath": "src/utils",
       "type": "tooling",
       "responsibility": "Provides shared utility functions with no domain knowledge.",
@@ -775,6 +1176,18 @@
       },
       {
         "from": "src/config",
+        "to": "src/ai",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/config/index.ts",
+            "importPath": "../ai/providers/ai-provider"
+          }
+        ]
+      },
+      {
+        "from": "src/config",
         "to": "src/knowledge",
         "type": "imports",
         "confidence": "high",
@@ -806,18 +1219,6 @@
           {
             "sourceFile": "src/core/pipeline-handlers.ts",
             "importPath": "../ai"
-          }
-        ]
-      },
-      {
-        "from": "src/core",
-        "to": "src/analyzers",
-        "type": "imports",
-        "confidence": "high",
-        "evidence": [
-          {
-            "sourceFile": "src/core/pipeline-handlers.ts",
-            "importPath": "../analyzers"
           }
         ]
       },
@@ -872,10 +1273,6 @@
             "importPath": "../docs/documentation-writer"
           },
           {
-            "sourceFile": "src/core/pipeline-handlers.ts",
-            "importPath": "../docs/documentation-validator"
-          },
-          {
             "sourceFile": "src/core/pipeline-metrics.ts",
             "importPath": "../docs/documentation-validator"
           },
@@ -911,10 +1308,6 @@
         "type": "imports",
         "confidence": "high",
         "evidence": [
-          {
-            "sourceFile": "src/core/pipeline-handlers.ts",
-            "importPath": "../knowledge"
-          },
           {
             "sourceFile": "src/core/pipeline-metrics.ts",
             "importPath": "../knowledge"
@@ -1041,10 +1434,6 @@
         "evidence": [
           {
             "sourceFile": "src/docs/document-template.ts",
-            "importPath": "../knowledge"
-          },
-          {
-            "sourceFile": "src/docs/documentation-validator.ts",
             "importPath": "../knowledge"
           },
           {
@@ -1194,7 +1583,7 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-08T23:18:43.505Z"
+    "generatedAt": "2026-07-11T00:40:24.740Z"
   },
   "conventions": [
     {
@@ -1453,8 +1842,26 @@
         },
         {
           "type": "file",
-          "source": "src/analyzers/convention-analyzer.test.ts",
+          "source": "src/ai/providers/providers.test.ts",
           "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "testing",
+      "name": "Dedicated test folders",
+      "description": "Tests live in dedicated test folders (test, tests, __tests__, spec).",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "test",
+          "detail": "Folder name marks a dedicated test folder"
+        },
+        {
+          "type": "folder",
+          "source": "test/fixtures/fixture-typescript/tests",
+          "detail": "Folder name marks a dedicated test folder"
         }
       ],
       "confidence": "high"
@@ -1467,7 +1874,7 @@
         {
           "type": "config",
           "source": "package.json",
-          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/utils/*.test.js dist/cli.integration.test.js"
+          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/templates/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/ai/providers/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/plugins/*.test.js dist/readiness/*.test.js dist/utils/*.test.js dist/cli.integration.test.js dist/release-integration.test.js"
         }
       ],
       "confidence": "medium"
@@ -1719,7 +2126,10 @@
           "implementation-guide.md"
         ],
         "relatedModules": [],
-        "relatedFolders": [],
+        "relatedFolders": [
+          "test",
+          "test/fixtures/fixture-typescript/tests"
+        ],
         "warnings": [
           "Preserve existing testing conventions.",
           "Do not weaken assertions or remove tests."
@@ -1747,7 +2157,8 @@
           "src/knowledge"
         ],
         "relatedFolders": [
-          "docs"
+          "docs",
+          "test/fixtures/fixture-minimal"
         ],
         "warnings": [
           "Markdown should reflect PKM.",
@@ -1773,7 +2184,13 @@
           "src/detectors",
           "src/utils"
         ],
-        "relatedFolders": [],
+        "relatedFolders": [
+          "test/fixtures/fixture-monorepo",
+          "test/fixtures/fixture-monorepo/apps/api",
+          "test/fixtures/fixture-monorepo/apps/web",
+          "test/fixtures/fixture-monorepo/libs/shared",
+          "test/fixtures/fixture-typescript"
+        ],
         "warnings": [
           "Check package manager and TypeScript strict mode conventions.",
           "Avoid introducing conflicting tooling."
@@ -1796,7 +2213,13 @@
         "relatedModules": [
           "src/detectors"
         ],
-        "relatedFolders": [],
+        "relatedFolders": [
+          "test/fixtures/fixture-monorepo",
+          "test/fixtures/fixture-monorepo/apps/api",
+          "test/fixtures/fixture-monorepo/apps/web",
+          "test/fixtures/fixture-monorepo/libs/shared",
+          "test/fixtures/fixture-typescript"
+        ],
         "warnings": [
           "Check impacted modules before changing dependencies.",
           "Keep dependency changes minimal."
@@ -1826,7 +2249,8 @@
           "src/knowledge"
         ],
         "relatedFolders": [
-          "docs"
+          "docs",
+          "test/fixtures/fixture-minimal"
         ],
         "warnings": [
           "Agent-specific outputs must be derived from PKM.",
@@ -1835,7 +2259,7 @@
         "confidence": "high"
       }
     ],
-    "generatedAt": "2026-07-08T23:18:43.505Z"
+    "generatedAt": "2026-07-11T00:40:24.740Z"
   },
   "changeSummary": {
     "isInitialRun": false,
@@ -1849,7 +2273,7 @@
     "addedFolders": [],
     "removedFolders": [],
     "dependencyEdgeChanges": [],
-    "generatedAt": "2026-07-08T23:18:43.664Z"
+    "generatedAt": "2026-07-11T00:40:24.769Z"
   },
   "documentImpact": {
     "impactedDocuments": [],
@@ -1858,6 +2282,7 @@
       "README.md",
       "agent-navigation.md",
       "ai-context.md",
+      "ai-readiness.md",
       "architecture.md",
       "change-log.md",
       "conventions.md",
@@ -1866,20 +2291,405 @@
       "implementation-guide.md",
       "technology-overview.md"
     ],
-    "generatedAt": "2026-07-08T23:18:43.675Z"
+    "generatedAt": "2026-07-11T00:40:24.771Z"
+  },
+  "aiReadiness": {
+    "overallScore": 100,
+    "level": "excellent",
+    "categories": [
+      {
+        "id": "repository-structure",
+        "name": "Repository Structure",
+        "score": 100,
+        "weight": 20,
+        "findings": [
+          {
+            "id": "repository-tree-generated",
+            "status": "passed",
+            "description": "The repository tree was generated and persisted in the PKM.",
+            "evidence": [
+              "repository tree contains 220 file(s) and 38 folder(s)"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          },
+          {
+            "id": "source-folders-identified",
+            "status": "passed",
+            "description": "Source folders were identified by the folder analyzer.",
+            "evidence": [
+              "26 folder(s) classified as source out of 39 analyzed"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          },
+          {
+            "id": "generated-folders-excluded",
+            "status": "passed",
+            "description": "Ignored and generated folders were excluded from the scan.",
+            "evidence": [
+              "24 path(s) excluded, e.g. dist, build, out"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "folder-responsibilities-inferred",
+            "status": "passed",
+            "description": "Important folders have inferred responsibilities.",
+            "evidence": [
+              "37 of 39 analyzed folder(s) have a known classification and responsibility"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          },
+          {
+            "id": "modules-discovered",
+            "status": "passed",
+            "description": "Modules were discovered from the repository structure.",
+            "evidence": [
+              "12 module(s) in analysis.modules"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "architecture-knowledge",
+        "name": "Architecture Knowledge",
+        "score": 100,
+        "weight": 20,
+        "findings": [
+          {
+            "id": "modules-defined",
+            "status": "passed",
+            "description": "The PKM contains discovered modules.",
+            "evidence": [
+              "12 module(s) in analysis.modules"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "module-responsibilities-documented",
+            "status": "passed",
+            "description": "Discovered modules carry responsibilities and types.",
+            "evidence": [
+              "12 of 12 module(s) have a responsibility and a known type"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          },
+          {
+            "id": "dependency-graph-generated",
+            "status": "passed",
+            "description": "A module dependency graph was generated.",
+            "evidence": [
+              "10 node(s) and 27 edge(s) in analysis.dependencyGraph"
+            ],
+            "points": 5,
+            "maxPoints": 5
+          },
+          {
+            "id": "dependency-edges-evidence-backed",
+            "status": "passed",
+            "description": "Dependency edges are backed by import evidence.",
+            "evidence": [
+              "27 of 27 dependency edge(s) carry import evidence"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          },
+          {
+            "id": "architecture-boundaries-detected",
+            "status": "passed",
+            "description": "Architecture boundaries or structural conventions were detected.",
+            "evidence": [
+              "15 architecture/repository-structure convention(s) out of 31 total"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "documentation-coverage",
+        "name": "Documentation Coverage",
+        "score": 100,
+        "weight": 20,
+        "findings": [
+          {
+            "id": "documentation-plan-defined",
+            "status": "passed",
+            "description": "A documentation plan with required documents exists.",
+            "evidence": [
+              "12 planned document(s), 11 required"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "required-context-documents-present",
+            "status": "passed",
+            "description": "All required context documents are planned and generated.",
+            "evidence": [
+              "7 of 7 required context document(s) present"
+            ],
+            "points": 10,
+            "maxPoints": 10
+          },
+          {
+            "id": "documentation-validation-passed",
+            "status": "passed",
+            "description": "Documentation validation passed.",
+            "evidence": [
+              "0 error(s), 0 warning(s)"
+            ],
+            "points": 6,
+            "maxPoints": 6
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "agent-navigation",
+        "name": "Agent Navigation",
+        "score": 100,
+        "weight": 15,
+        "findings": [
+          {
+            "id": "navigation-map-generated",
+            "status": "passed",
+            "description": "A task navigation map for AI agents exists.",
+            "evidence": [
+              "8 navigation entr(ies) in analysis.navigationMap"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "common-tasks-covered",
+            "status": "passed",
+            "description": "All common task types have navigation guidance.",
+            "evidence": [
+              "6 of 6 common task type(s) covered"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "navigation-recommends-documents",
+            "status": "passed",
+            "description": "Navigation entries recommend documents to read first.",
+            "evidence": [
+              "8 of 8 entr(ies) recommend at least one document"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "navigation-includes-warnings",
+            "status": "passed",
+            "description": "Navigation entries include cautionary warnings for agents.",
+            "evidence": [
+              "8 of 8 entr(ies) include warnings"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "navigation-grounded-in-pkm",
+            "status": "passed",
+            "description": "Navigation references resolve to known documents, modules, and folders.",
+            "evidence": [
+              "8 of 8 entr(ies) fully grounded in the PKM"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "project-conventions",
+        "name": "Project Conventions",
+        "score": 100,
+        "weight": 15,
+        "findings": [
+          {
+            "id": "structured-conventions-detected",
+            "status": "passed",
+            "description": "Structured project conventions were detected.",
+            "evidence": [
+              "31 convention(s) in analysis.conventions"
+            ],
+            "points": 4,
+            "maxPoints": 4
+          },
+          {
+            "id": "conventions-evidence-backed",
+            "status": "passed",
+            "description": "Detected conventions are backed by evidence.",
+            "evidence": [
+              "31 of 31 convention(s) carry evidence"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "testing-convention-detected",
+            "status": "passed",
+            "description": "A testing convention was detected.",
+            "evidence": [
+              "45 test file signal(s); testing convention present"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "package-manager-convention-detected",
+            "status": "passed",
+            "description": "A package manager convention was detected.",
+            "evidence": [
+              "package managers: npm; convention present"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "typescript-strict-mode-detected",
+            "status": "passed",
+            "description": "TypeScript strict mode is enabled and documented as a convention.",
+            "evidence": [
+              "strict mode convention present in analysis.conventions"
+            ],
+            "points": 3,
+            "maxPoints": 3
+          },
+          {
+            "id": "generated-context-rules-documented",
+            "status": "passed",
+            "description": "Rules for the generated context are documented as conventions.",
+            "evidence": [
+              "generated-context convention present in analysis.conventions"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          }
+        ],
+        "recommendations": []
+      },
+      {
+        "id": "context-maintainability",
+        "name": "Context Maintainability",
+        "score": 100,
+        "weight": 10,
+        "findings": [
+          {
+            "id": "pkm-schema-version-present",
+            "status": "passed",
+            "description": "The PKM declares a schema version.",
+            "evidence": [
+              "metadata.schemaVersion: 1.0.0"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "pkm-persisted",
+            "status": "passed",
+            "description": "A previously persisted PKM snapshot was loaded successfully.",
+            "evidence": [
+              "baseline status: loaded; initial run: false"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "validation-integrated",
+            "status": "passed",
+            "description": "Documentation validation runs and passes for the generated context.",
+            "evidence": [
+              "0 validation error(s), 0 warning(s)"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "incremental-change-detection",
+            "status": "passed",
+            "description": "Incremental change detection compared this run against the previous snapshot.",
+            "evidence": [
+              "0 changed section(s) recorded"
+            ],
+            "points": 2,
+            "maxPoints": 2
+          },
+          {
+            "id": "selective-regeneration",
+            "status": "passed",
+            "description": "Document impact analysis enables selective regeneration.",
+            "evidence": [
+              "0 impacted document(s) recorded"
+            ],
+            "points": 1,
+            "maxPoints": 1
+          },
+          {
+            "id": "generated-files-protected",
+            "status": "passed",
+            "description": "Generated files carry protection markers so user edits are preserved.",
+            "evidence": [
+              "0 document(s) reported without the generated-file marker"
+            ],
+            "points": 1,
+            "maxPoints": 1
+          }
+        ],
+        "recommendations": []
+      }
+    ],
+    "strengths": [
+      "All required context documents are planned and generated.",
+      "Dependency edges are backed by import evidence.",
+      "Documentation validation passed.",
+      "Important folders have inferred responsibilities.",
+      "The repository tree was generated and persisted in the PKM."
+    ],
+    "gaps": [],
+    "recommendations": [],
+    "calculatedAt": "2026-07-11T00:40:24.740Z",
+    "scoringVersion": "1.0.0"
   },
   "agentExports": {
     "enabled": true,
     "enabledTargets": [
+      "generic",
       "cursor"
     ],
     "results": [
+      {
+        "target": "generic",
+        "filesWritten": 1,
+        "filesSkipped": 0,
+        "warnings": [],
+        "generatedAt": "2026-07-11T00:40:24.778Z",
+        "files": [
+          {
+            "relativePath": "agent-pack/AGENTS.generated.md",
+            "status": "written"
+          }
+        ]
+      },
       {
         "target": "cursor",
         "filesWritten": 1,
         "filesSkipped": 0,
         "warnings": [],
-        "generatedAt": "2026-07-08T23:18:43.691Z",
+        "generatedAt": "2026-07-11T00:40:24.779Z",
         "files": [
           {
             "relativePath": ".cursor/rules/ai-project-docs.mdc",
@@ -1888,7 +2698,7 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-08T23:18:43.691Z",
+    "generatedAt": "2026-07-11T00:40:24.777Z",
     "warnings": []
   }
 }

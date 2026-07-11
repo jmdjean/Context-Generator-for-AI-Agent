@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
   "conventions": [
     {
       "category": "language",
@@ -258,8 +258,26 @@
         },
         {
           "type": "file",
-          "source": "src/analyzers/convention-analyzer.test.ts",
+          "source": "src/ai/providers/providers.test.ts",
           "detail": "Matches the co-located test file pattern (*.test.* / *.spec.*)"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "category": "testing",
+      "name": "Dedicated test folders",
+      "description": "Tests live in dedicated test folders (test, tests, __tests__, spec).",
+      "evidence": [
+        {
+          "type": "folder",
+          "source": "test",
+          "detail": "Folder name marks a dedicated test folder"
+        },
+        {
+          "type": "folder",
+          "source": "test/fixtures/fixture-typescript/tests",
+          "detail": "Folder name marks a dedicated test folder"
         }
       ],
       "confidence": "high"
@@ -272,7 +290,7 @@
         {
           "type": "config",
           "source": "package.json",
-          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/utils/*.test.js dist/cli.integration.test.js"
+          "detail": "Defines a \"test\" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/templates/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/ai/providers/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/plugins/*.test.js dist/readiness/*.test.js dist/utils/*.test.js dist/cli.integration.test.js dist/release-integration.test.js"
         }
       ],
       "confidence": "medium"

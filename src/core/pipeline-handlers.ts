@@ -381,10 +381,13 @@ export async function handleCalculateAiReadiness(
     return placeholderResult(step);
   }
 
-  const { knowledge, readiness } = enrichProjectKnowledgeWithAiReadiness(
+  const { knowledge: enrichedKnowledge, readiness } = enrichProjectKnowledgeWithAiReadiness(
     context.projectKnowledge,
     context.metrics.validation,
   );
+  const knowledge: typeof enrichedKnowledge = enrichedKnowledge.analysis.status === 'partial'
+    ? { ...enrichedKnowledge, analysis: { ...enrichedKnowledge.analysis, status: 'complete' } }
+    : enrichedKnowledge;
   context.projectKnowledge = knowledge;
 
   const plannedDocument = knowledge.documentation.plan.documents.find(

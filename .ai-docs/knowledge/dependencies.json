@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
   "dependencyGraph": {
     "nodes": [
       {
@@ -187,6 +187,18 @@
       },
       {
         "from": "src/config",
+        "to": "src/ai",
+        "type": "imports",
+        "confidence": "high",
+        "evidence": [
+          {
+            "sourceFile": "src/config/index.ts",
+            "importPath": "../ai/providers/ai-provider"
+          }
+        ]
+      },
+      {
+        "from": "src/config",
         "to": "src/knowledge",
         "type": "imports",
         "confidence": "high",
@@ -218,18 +230,6 @@
           {
             "sourceFile": "src/core/pipeline-handlers.ts",
             "importPath": "../ai"
-          }
-        ]
-      },
-      {
-        "from": "src/core",
-        "to": "src/analyzers",
-        "type": "imports",
-        "confidence": "high",
-        "evidence": [
-          {
-            "sourceFile": "src/core/pipeline-handlers.ts",
-            "importPath": "../analyzers"
           }
         ]
       },
@@ -284,10 +284,6 @@
             "importPath": "../docs/documentation-writer"
           },
           {
-            "sourceFile": "src/core/pipeline-handlers.ts",
-            "importPath": "../docs/documentation-validator"
-          },
-          {
             "sourceFile": "src/core/pipeline-metrics.ts",
             "importPath": "../docs/documentation-validator"
           },
@@ -323,10 +319,6 @@
         "type": "imports",
         "confidence": "high",
         "evidence": [
-          {
-            "sourceFile": "src/core/pipeline-handlers.ts",
-            "importPath": "../knowledge"
-          },
           {
             "sourceFile": "src/core/pipeline-metrics.ts",
             "importPath": "../knowledge"
@@ -453,10 +445,6 @@
         "evidence": [
           {
             "sourceFile": "src/docs/document-template.ts",
-            "importPath": "../knowledge"
-          },
-          {
-            "sourceFile": "src/docs/documentation-validator.ts",
             "importPath": "../knowledge"
           },
           {
@@ -606,6 +594,6 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-08T23:18:43.505Z"
+    "generatedAt": "2026-07-11T00:40:24.740Z"
   }
 }

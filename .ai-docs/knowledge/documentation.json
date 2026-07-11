@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
   "plan": {
     "docsDir": ".ai-docs",
     "documents": [
@@ -54,6 +54,13 @@
         "source": "core"
       },
       {
+        "title": "AI Readiness Score",
+        "relativePath": "ai-readiness.md",
+        "purpose": "Deterministic Context Engineering assessment of how prepared this repository is for AI coding agents",
+        "priority": "recommended",
+        "source": "core"
+      },
+      {
         "title": "Agent Instructions",
         "relativePath": "AGENTS.md",
         "purpose": "Mandatory entry point for any AI agent working in this repository",
@@ -98,7 +105,7 @@
         ]
       }
     ],
-    "generatedAt": "2026-07-08T23:18:43.504Z",
+    "generatedAt": "2026-07-11T00:40:24.740Z",
     "strategy": "standard"
   }
 }

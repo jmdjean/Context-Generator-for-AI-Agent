@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T23:18:43.505Z",
+  "generatedAt": "2026-07-11T00:40:24.740Z",
   "folders": [
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent",
+      "path": "/home/user/Context-Generator-for-AI-Agent",
       "relativePath": "",
       "name": "Context-Generator-for-AI-Agent",
       "depth": 0,
@@ -18,7 +18,8 @@
       "childFolders": [
         "docs",
         "scripts",
-        "src"
+        "src",
+        "test"
       ],
       "signals": [
         "folder-name:root"
@@ -26,7 +27,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/docs",
       "relativePath": "docs",
       "name": "docs",
       "depth": 1,
@@ -41,7 +42,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\scripts",
+      "path": "/home/user/Context-Generator-for-AI-Agent/scripts",
       "relativePath": "scripts",
       "name": "scripts",
       "depth": 1,
@@ -56,7 +57,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src",
       "relativePath": "src",
       "name": "src",
       "depth": 1,
@@ -74,7 +75,10 @@
         "exporters",
         "incremental",
         "knowledge",
+        "plugins",
+        "readiness",
         "scanner",
+        "templates",
         "utils"
       ],
       "signals": [
@@ -84,7 +88,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\ai",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/ai",
       "relativePath": "src/ai",
       "name": "ai",
       "depth": 2,
@@ -93,7 +97,9 @@
       "importantFiles": [
         "src/ai/README.md"
       ],
-      "childFolders": [],
+      "childFolders": [
+        "providers"
+      ],
       "signals": [
         "folder-name:ai",
         "test-file:ai-analysis.test.ts",
@@ -105,7 +111,26 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\analyzers",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/ai/providers",
+      "relativePath": "src/ai/providers",
+      "name": "providers",
+      "depth": 3,
+      "classification": "source",
+      "responsibility": "Contains providers application source code.",
+      "importantFiles": [
+        "src/ai/providers/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:providers",
+        "test-file:providers.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/analyzers",
       "relativePath": "src/analyzers",
       "name": "analyzers",
       "depth": 2,
@@ -133,7 +158,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\config",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/config",
       "relativePath": "src/config",
       "name": "config",
       "depth": 2,
@@ -151,7 +176,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\core",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/core",
       "relativePath": "src/core",
       "name": "core",
       "depth": 2,
@@ -173,7 +198,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\detectors",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/detectors",
       "relativePath": "src/detectors",
       "name": "detectors",
       "depth": 2,
@@ -195,7 +220,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs",
       "relativePath": "src/docs",
       "name": "docs",
       "depth": 2,
@@ -215,7 +240,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\docs\\markdown-renderers",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/docs/markdown-renderers",
       "relativePath": "src/docs/markdown-renderers",
       "name": "markdown-renderers",
       "depth": 3,
@@ -230,7 +255,7 @@
       "confidence": "medium"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\domain",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/domain",
       "relativePath": "src/domain",
       "name": "domain",
       "depth": 2,
@@ -249,7 +274,7 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\exporters",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/exporters",
       "relativePath": "src/exporters",
       "name": "exporters",
       "depth": 2,
@@ -273,7 +298,7 @@
       "confidence": "medium"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\incremental",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/incremental",
       "relativePath": "src/incremental",
       "name": "incremental",
       "depth": 2,
@@ -294,7 +319,7 @@
       "confidence": "medium"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\knowledge",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/knowledge",
       "relativePath": "src/knowledge",
       "name": "knowledge",
       "depth": 2,
@@ -315,7 +340,78 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\scanner",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/plugins",
+      "relativePath": "src/plugins",
+      "name": "plugins",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains plugins application source code.",
+      "importantFiles": [
+        "src/plugins/README.md"
+      ],
+      "childFolders": [
+        "builtin",
+        "technology"
+      ],
+      "signals": [
+        "folder-name:plugins",
+        "test-file:plugin-manager.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/plugins/builtin",
+      "relativePath": "src/plugins/builtin",
+      "name": "builtin",
+      "depth": 3,
+      "classification": "source",
+      "responsibility": "Contains builtin application source code.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:builtin",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/plugins/technology",
+      "relativePath": "src/plugins/technology",
+      "name": "technology",
+      "depth": 3,
+      "classification": "source",
+      "responsibility": "Contains technology application source code.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:technology",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/readiness",
+      "relativePath": "src/readiness",
+      "name": "readiness",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains readiness application source code.",
+      "importantFiles": [
+        "src/readiness/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:readiness",
+        "test-file:ai-readiness.test.ts",
+        "doc-file:README.md",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/scanner",
       "relativePath": "src/scanner",
       "name": "scanner",
       "depth": 2,
@@ -338,7 +434,26 @@
       "confidence": "high"
     },
     {
-      "path": "C:\\projeto\\Context-Generator-for-AI-Agent\\src\\utils",
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/templates",
+      "relativePath": "src/templates",
+      "name": "templates",
+      "depth": 2,
+      "classification": "source",
+      "responsibility": "Contains templates application source code.",
+      "importantFiles": [
+        "src/templates/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:templates",
+        "doc-file:README.md",
+        "test-file:template-engine.test.ts",
+        "path-context:source-files"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/src/utils",
       "relativePath": "src/utils",
       "name": "utils",
       "depth": 2,
@@ -354,6 +469,290 @@
         "doc-file:README.md",
         "path-context:source-files",
         "path-context:source-module"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test",
+      "relativePath": "test",
+      "name": "test",
+      "depth": 1,
+      "classification": "test",
+      "responsibility": "Contains automated tests for the project.",
+      "importantFiles": [],
+      "childFolders": [
+        "fixtures"
+      ],
+      "signals": [
+        "folder-name:test",
+        "name-match:test"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures",
+      "relativePath": "test/fixtures",
+      "name": "fixtures",
+      "depth": 2,
+      "classification": "unknown",
+      "responsibility": "Contains project files related to fixtures.",
+      "importantFiles": [],
+      "childFolders": [
+        "fixture-minimal",
+        "fixture-monorepo",
+        "fixture-typescript"
+      ],
+      "signals": [
+        "folder-name:fixtures",
+        "child-folders:3"
+      ],
+      "confidence": "low"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-minimal",
+      "relativePath": "test/fixtures/fixture-minimal",
+      "name": "fixture-minimal",
+      "depth": 3,
+      "classification": "documentation",
+      "responsibility": "Contains human-readable project documentation.",
+      "importantFiles": [
+        "test/fixtures/fixture-minimal/README.md"
+      ],
+      "childFolders": [],
+      "signals": [
+        "folder-name:fixture-minimal",
+        "doc-file:README.md"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo",
+      "relativePath": "test/fixtures/fixture-monorepo",
+      "name": "fixture-monorepo",
+      "depth": 3,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/README.md",
+        "test/fixtures/fixture-monorepo/package.json",
+        "test/fixtures/fixture-monorepo/tsconfig.json"
+      ],
+      "childFolders": [
+        "apps",
+        "libs"
+      ],
+      "signals": [
+        "folder-name:fixture-monorepo",
+        "config-file:package.json",
+        "doc-file:README.md",
+        "config-file:tsconfig.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps",
+      "relativePath": "test/fixtures/fixture-monorepo/apps",
+      "name": "apps",
+      "depth": 4,
+      "classification": "source",
+      "responsibility": "Contains apps application source code.",
+      "importantFiles": [],
+      "childFolders": [
+        "api",
+        "web"
+      ],
+      "signals": [
+        "folder-name:apps",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/api",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/api",
+      "name": "api",
+      "depth": 5,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/apps/api/package.json"
+      ],
+      "childFolders": [
+        "src"
+      ],
+      "signals": [
+        "folder-name:api",
+        "config-file:package.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/api/src",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/api/src",
+      "name": "src",
+      "depth": 6,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/web",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/web",
+      "name": "web",
+      "depth": 5,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/apps/web/package.json"
+      ],
+      "childFolders": [
+        "src"
+      ],
+      "signals": [
+        "folder-name:web",
+        "config-file:package.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/apps/web/src",
+      "relativePath": "test/fixtures/fixture-monorepo/apps/web/src",
+      "name": "src",
+      "depth": 6,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/libs",
+      "relativePath": "test/fixtures/fixture-monorepo/libs",
+      "name": "libs",
+      "depth": 4,
+      "classification": "source",
+      "responsibility": "Contains libs application source code.",
+      "importantFiles": [],
+      "childFolders": [
+        "shared"
+      ],
+      "signals": [
+        "folder-name:libs",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/libs/shared",
+      "relativePath": "test/fixtures/fixture-monorepo/libs/shared",
+      "name": "shared",
+      "depth": 5,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-monorepo/libs/shared/package.json"
+      ],
+      "childFolders": [
+        "src"
+      ],
+      "signals": [
+        "folder-name:shared",
+        "config-file:package.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-monorepo/libs/shared/src",
+      "relativePath": "test/fixtures/fixture-monorepo/libs/shared/src",
+      "name": "src",
+      "depth": 6,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript",
+      "relativePath": "test/fixtures/fixture-typescript",
+      "name": "fixture-typescript",
+      "depth": 3,
+      "classification": "config",
+      "responsibility": "Contains project configuration files.",
+      "importantFiles": [
+        "test/fixtures/fixture-typescript/README.md",
+        "test/fixtures/fixture-typescript/package.json",
+        "test/fixtures/fixture-typescript/tsconfig.json"
+      ],
+      "childFolders": [
+        "src",
+        "tests"
+      ],
+      "signals": [
+        "folder-name:fixture-typescript",
+        "config-file:package.json",
+        "doc-file:README.md",
+        "config-file:tsconfig.json"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript/src",
+      "relativePath": "test/fixtures/fixture-typescript/src",
+      "name": "src",
+      "depth": 4,
+      "classification": "source",
+      "responsibility": "Contains the main source code of the project.",
+      "importantFiles": [],
+      "childFolders": [
+        "utils"
+      ],
+      "signals": [
+        "folder-name:src",
+        "name-match:source"
+      ],
+      "confidence": "high"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript/src/utils",
+      "relativePath": "test/fixtures/fixture-typescript/src/utils",
+      "name": "utils",
+      "depth": 5,
+      "classification": "unknown",
+      "responsibility": "Contains project files related to utils.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:utils"
+      ],
+      "confidence": "low"
+    },
+    {
+      "path": "/home/user/Context-Generator-for-AI-Agent/test/fixtures/fixture-typescript/tests",
+      "relativePath": "test/fixtures/fixture-typescript/tests",
+      "name": "tests",
+      "depth": 4,
+      "classification": "test",
+      "responsibility": "Contains automated tests for the project.",
+      "importantFiles": [],
+      "childFolders": [],
+      "signals": [
+        "folder-name:tests",
+        "name-match:test"
       ],
       "confidence": "high"
     }

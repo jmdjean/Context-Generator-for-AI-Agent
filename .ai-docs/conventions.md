@@ -5,11 +5,11 @@
 Coding, naming, and structural conventions to follow
 
 - Project: Context-Generator-for-AI-Agent
-- Generated: 2026-07-08T21:54:39.545Z
+- Generated: 2026-07-11T00:34:27.223Z
 - PKM schema: 1.0.0
 - Analysis status: partial
 
-The convention analyzer detected 30 convention(s). Treat high-confidence entries as hard constraints and low-confidence entries as hints. Every convention can be verified from its evidence.
+The convention analyzer detected 31 convention(s). Treat high-confidence entries as hard constraints and low-confidence entries as hints. Every convention can be verified from its evidence.
 
 ## Architecture
 
@@ -182,7 +182,17 @@ Tests are co-located with source files using *.test.* and *.spec.* naming.
 - Evidence:
   - file — `src/ai/ai-analysis.test.ts`: Matches the co-located test file pattern (*.test.* / *.spec.*)
   - file — `src/ai/openrouter-client.test.ts`: Matches the co-located test file pattern (*.test.* / *.spec.*)
-  - file — `src/analyzers/convention-analyzer.test.ts`: Matches the co-located test file pattern (*.test.* / *.spec.*)
+  - file — `src/ai/providers/providers.test.ts`: Matches the co-located test file pattern (*.test.* / *.spec.*)
+
+### Dedicated test folders
+
+Tests live in dedicated test folders (test, tests, __tests__, spec).
+
+- Category: testing
+- Confidence: high
+- Evidence:
+  - folder — `test`: Folder name marks a dedicated test folder
+  - folder — `test/fixtures/fixture-typescript/tests`: Folder name marks a dedicated test folder
 
 ### Package test script
 
@@ -191,7 +201,7 @@ Tests run through the package manager test script.
 - Category: testing
 - Confidence: medium
 - Evidence:
-  - config — `package.json`: Defines a "test" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/utils/*.test.js dist/cli.integration.test.js
+  - config — `package.json`: Defines a "test" script: npm run build && node --test dist/scanner/*.test.js dist/detectors/*.test.js dist/knowledge/*.test.js dist/analyzers/*.test.js dist/docs/*.test.js dist/templates/*.test.js dist/core/*.test.js dist/config/*.test.js dist/ai/*.test.js dist/ai/providers/*.test.js dist/incremental/*.test.js dist/exporters/*.test.js dist/plugins/*.test.js dist/readiness/*.test.js dist/utils/*.test.js dist/cli.integration.test.js dist/release-integration.test.js
 
 ## Package management
 
