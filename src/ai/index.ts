@@ -2,12 +2,16 @@ export {
   AI_INSIGHTS_LIMITS,
   AI_RESPONSE_JSON_SCHEMA,
   ARCHITECTURE_STAGE_JSON_SCHEMA,
+  CAPABILITY_MAP_JSON_SCHEMA,
+  CAPABILITY_MAP_LIMITS,
   DEFAULT_OPENROUTER_TIMEOUT_MS,
   MAX_AI_PROMPT_CHARS,
   MODULE_DOCUMENTATION_JSON_SCHEMA,
   MODULE_DOCUMENTATION_LIMITS,
   PKM_SUMMARY_COMPACT_LIMITS,
   PKM_SUMMARY_LIMITS,
+  ROUTER_JSON_SCHEMA,
+  ROUTER_LIMITS,
 } from './constants';
 export { DEFAULT_AI_MODEL } from '../config/constants';
 export {
@@ -50,11 +54,15 @@ export {
 export {
   AI_ANALYSIS_SYSTEM_INSTRUCTION,
   ARCHITECTURE_STAGE_SYSTEM_INSTRUCTION,
+  CAPABILITY_MAP_SYSTEM_INSTRUCTION,
   MODULE_DOCUMENTATION_SYSTEM_INSTRUCTION,
+  ROUTER_SYSTEM_INSTRUCTION,
   buildAiAnalysisPrompt,
   buildArchitectureStagePrompt,
+  buildCapabilityMapStagePrompt,
   buildModuleDocumentationPrompt,
   buildPkmSummaryPayload,
+  buildRouterStagePrompt,
   type ModuleDocumentationPromptInput,
   type PkmSummaryPayload,
 } from './prompt-builder';
@@ -75,6 +83,16 @@ export {
   type ModuleDocumentationStageServiceResult,
   type ParsedModuleDocumentationResponse,
 } from './module-documentation-stage';
+export {
+  parseCapabilityMapResponse,
+  runCapabilityMapStage,
+  type CapabilityMapStageServiceResult,
+} from './capability-map-stage';
+export {
+  parseRouterResponse,
+  runRouterStage,
+  type RouterStageServiceResult,
+} from './router-stage';
 export {
   ARCHITECTURE_STAGE_DOCUMENT_PATHS,
   buildFailedArchitectureStage,

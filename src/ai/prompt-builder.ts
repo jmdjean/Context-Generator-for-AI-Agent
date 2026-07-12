@@ -6,11 +6,15 @@ import {
 import {
   AI_RESPONSE_JSON_SCHEMA,
   ARCHITECTURE_STAGE_JSON_SCHEMA,
+  CAPABILITY_MAP_JSON_SCHEMA,
+  CAPABILITY_MAP_LIMITS,
   MAX_AI_PROMPT_CHARS,
   MODULE_DOCUMENTATION_JSON_SCHEMA,
   MODULE_DOCUMENTATION_LIMITS,
   PKM_SUMMARY_COMPACT_LIMITS,
   PKM_SUMMARY_LIMITS,
+  ROUTER_JSON_SCHEMA,
+  ROUTER_LIMITS,
 } from './constants';
 
 /**
@@ -451,4 +455,108 @@ export function buildModuleDocumentationPrompt(
   };
 
   return assembleModuleDocumentationPrompt(compactKnowledge, input);
+}
+
+/**
+ * System instruction for the capability-map stage.
+ */
+export const CAPABILITY_MAP_SYSTEM_INSTRUCTION =
+  'You inventory capability areas from a deterministic project knowledge model. Output a single JSON object. Never request secrets or source code. Names must come from detected module/folder names — never from a fixed product taxonomy. Mark conclusions as enrichment, not ground truth.';
+
+/**
+ * System instruction for the router stage.
+ */
+export const ROUTER_SYSTEM_INSTRUCTION =
+  'You map task types to ordered reading paths using a deterministic project knowledge model. Output a single JSON object. Never request secrets or source code. Reading-path entries must be real planned doc paths or module paths from the PKM — never invented. Mark conclusions as enrichment, not ground truth.';
+
+function assembleCapabilityMapPrompt(
+  summary: PkmSummaryPayload,
+  modulePaths: readonly string[],
+): string {
+  const limits = CAPABILITY_MAP_LIMITS;
+  return [
+    'You are generating a capability-map inventory for AI coding agents.',
+    'Inputs come from the Project Knowledge Model (PKM) — not from source files.',
+    'Respond with valid JSON only. No markdown fences, comments, or prose outside the JSON object.',
+    '',
+    'Required JSON shape:',
+    JSON.stringify(CAPABILITY_MAP_JSON_SCHEMA, null, 2),
+    '',
+    'Rules:',
+    `- features, domains, integrations: at most ${limits.maxFeatures} items each.`,
+    '- Names must come from detected folder/module names — never invent a product taxonomy.',
+    `- entryPaths: up to ${limits.maxEntryPaths} relative paths known from the PKM module/folder list.`,
+    `- relatedModules: up to ${limits.maxRelatedModules} module relativePaths from the PKM.`,
+    '- Omit empty arrays; omit a top-level key entirely if no items were detected.',
+    '- Prefer concrete paths from the module list over vague area names.',
+    '- Do not invent modules, folders, or paths not present in the summary.',
+    '- Describe only this repository\'s detected structure — never assume a fixed stack.',
+    '',
+    'PKM summary (JSON):',
+    JSON.stringify(summary),
+    '',
+    'Discovered module paths for reference:',
+    JSON.stringify(modulePaths),
+  ].join('\n');
+}
+
+/**
+ * Build the capability-map stage prompt from PKM knowledge.
+ * Filters documentation-only modules to focus on product structure.
+ */
+export function buildCapabilityMapStagePrompt(knowledge: ProjectKnowledge): string {
+  const allModules = knowledge.analysis.modules ?? [];
+  const productModules = allModules.filter((module) => module.type !== 'documentation');
+  const modulePaths = productModules.map((module) => module.relativePath);
+  const summary = buildPkmSummaryPayload(knowledge);
+  const prompt = assembleCapabilityMapPrompt(summary, modulePaths);
+  if (prompt.length <= MAX_AI_PROMPT_CHARS) {
+    return prompt;
+  }
+  return assembleCapabilityMapPrompt(buildPkmSummaryPayload(knowledge, PKM_SUMMARY_COMPACT_LIMITS), modulePaths);
+}
+
+function assembleRouterPrompt(
+  summary: PkmSummaryPayload,
+  plannedDocPaths: readonly string[],
+): string {
+  const limits = ROUTER_LIMITS;
+  return [
+    'You are generating task-routing reading paths for AI coding agents.',
+    'Inputs come from the Project Knowledge Model (PKM) — not from source files.',
+    'Respond with valid JSON only. No markdown fences, comments, or prose outside the JSON object.',
+    '',
+    'Required JSON shape:',
+    JSON.stringify(ROUTER_JSON_SCHEMA, null, 2),
+    '',
+    'Rules:',
+    `- routes: at most ${limits.maxRoutes} task types.`,
+    '- taskType: a short label for the kind of task (e.g. "new-feature", "bug-fix", "architecture-change").',
+    '- summary: one sentence describing what to do for this task type.',
+    `- readingPath: ordered list of up to ${limits.maxReadingPathItems} planned doc paths from the list below; start with AI_START_HERE.md and CONTEXT_ROUTER.md when appropriate.`,
+    '- Only include paths from the plannedDocPaths list below.',
+    '- Do not invent paths, task types, or routes not grounded in the PKM.',
+    '- Prefer concrete doc paths over vague area names.',
+    '',
+    'PKM summary (JSON):',
+    JSON.stringify(summary),
+    '',
+    'Planned documentation paths:',
+    JSON.stringify(plannedDocPaths),
+  ].join('\n');
+}
+
+/**
+ * Build the router stage prompt from PKM knowledge and the planned doc paths.
+ */
+export function buildRouterStagePrompt(
+  knowledge: ProjectKnowledge,
+  plannedDocPaths: readonly string[],
+): string {
+  const summary = buildPkmSummaryPayload(knowledge);
+  const prompt = assembleRouterPrompt(summary, plannedDocPaths);
+  if (prompt.length <= MAX_AI_PROMPT_CHARS) {
+    return prompt;
+  }
+  return assembleRouterPrompt(buildPkmSummaryPayload(knowledge, PKM_SUMMARY_COMPACT_LIMITS), plannedDocPaths);
 }

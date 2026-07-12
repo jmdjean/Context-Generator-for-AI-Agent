@@ -1,6 +1,7 @@
 import { PlannedDocument } from '../domain/documentation-plan';
 import { AI_READINESS_TEMPLATE } from '../readiness/ai-readiness-renderer';
 import {
+  CAPABILITY_STUB_TEMPLATE,
   MARKDOWN_TEMPLATES,
   MODULE_DOCUMENT_TEMPLATE,
   MODULE_DOCUMENT_TEMPLATE_OUTPUT_PATH,
@@ -15,6 +16,7 @@ const PATH_REGISTERED_TEMPLATES: ReadonlyArray<TemplateDefinition> = [
 const REGISTERED_TEMPLATES: ReadonlyArray<TemplateDefinition> = [
   ...PATH_REGISTERED_TEMPLATES,
   MODULE_DOCUMENT_TEMPLATE,
+  CAPABILITY_STUB_TEMPLATE,
 ];
 
 function assertUniqueTemplateRegistry(templates: ReadonlyArray<TemplateDefinition>): void {
@@ -63,6 +65,10 @@ export function resolveTemplateForDocument(
 
   if (document.generatorKind === 'staged-module' || document.stage === 'module') {
     return MODULE_DOCUMENT_TEMPLATE;
+  }
+
+  if (document.generatorKind === 'capability-stub') {
+    return CAPABILITY_STUB_TEMPLATE;
   }
 
   return undefined;

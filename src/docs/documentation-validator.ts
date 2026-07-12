@@ -12,6 +12,7 @@ import {
   MAX_READINESS_SCORE,
   MIN_READINESS_SCORE,
 } from '../readiness/ai-readiness-model';
+import { selectModulesForProductAiFanOut } from '../analyzers/module-constants';
 import { resolvePathWithinRoot } from '../utils/fs';
 import { GENERATED_FILE_MARKER } from './document-template';
 import { MODULE_DOCUMENTATION_PLAN_PATH } from './documentation-planner';
@@ -40,6 +41,7 @@ const EXPECTED_PLAYBOOK_PATHS: readonly string[] = [
   'DOCUMENTATION_MAINTENANCE.md',
   'DOCUMENTATION_STATUS.md',
   'PROJECT_MAP.md',
+  'code/index.md',
   MODULE_DOCUMENTATION_PLAN_PATH,
 ];
 
@@ -99,7 +101,7 @@ export function validateStagedDocumentationCoverage(
   const plannedPaths = new Set(
     getDocumentationPlan(knowledge).documents.map((document) => document.relativePath),
   );
-  const modules = knowledge.analysis.modules ?? [];
+  const modules = selectModulesForProductAiFanOut(knowledge.analysis.modules ?? []);
 
   for (const playbookPath of EXPECTED_PLAYBOOK_PATHS) {
     if (!plannedPaths.has(playbookPath)) {

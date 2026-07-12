@@ -50,6 +50,41 @@ export const ARCHITECTURE_STAGE_JSON_SCHEMA = {
   agentGuidance: 'string[]',
 } as const;
 
+export const CAPABILITY_MAP_LIMITS = {
+  maxFeatures: 8,
+  maxDomains: 8,
+  maxIntegrations: 8,
+  maxEntryPaths: 5,
+  maxRelatedModules: 5,
+  maxNameLength: 80,
+  maxSummaryLength: 300,
+} as const;
+
+export const ROUTER_LIMITS = {
+  maxRoutes: 12,
+  maxReadingPathItems: 8,
+  maxTaskTypeLength: 80,
+  maxSummaryLength: 300,
+} as const;
+
+/**
+ * Capability-map JSON schema used in prompts.
+ * Items are capped per CAPABILITY_MAP_LIMITS — prefer concrete entryPaths/relatedModules.
+ */
+export const CAPABILITY_MAP_JSON_SCHEMA = {
+  features: 'Array<{ name: string; summary: string; entryPaths: string[]; relatedModules: string[] }>',
+  domains: 'Array<{ name: string; summary: string; entryPaths: string[]; relatedModules: string[] }>',
+  integrations: 'Array<{ name: string; summary: string; entryPaths: string[]; relatedModules: string[] }>',
+} as const;
+
+/**
+ * Router JSON schema used in prompts.
+ * readingPath items are real planned doc paths derived from the PKM module list.
+ */
+export const ROUTER_JSON_SCHEMA = {
+  routes: 'Array<{ taskType: string; summary: string; readingPath: string[] }>',
+} as const;
+
 export const MODULE_DOCUMENTATION_LIMITS = {
   maxArrayItems: 6,
   maxSummaryLength: 1_000,

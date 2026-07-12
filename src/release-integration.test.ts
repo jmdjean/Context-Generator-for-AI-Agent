@@ -276,6 +276,7 @@ describe('Release integration — Staged documentation workflow (Fixture A)', ()
     'DOCUMENTATION_MAINTENANCE.md',
     'DOCUMENTATION_STATUS.md',
     'PROJECT_MAP.md',
+    'code/index.md',
     'module-documentation-plan.md',
   ] as const;
 
@@ -292,7 +293,7 @@ describe('Release integration — Staged documentation workflow (Fixture A)', ()
   it('persists stagedDocumentation.modulePlan after module discovery', () => {
     const pkm = readJson(path.join(knowledgeDir, 'project-knowledge.json')) as {
       analysis: {
-        modules?: Array<{ relativePath: string; name: string }>;
+        modules?: Array<{ relativePath: string; name: string; type?: string }>;
         stagedDocumentation?: {
           modulePlan?: {
             status: string;
@@ -305,9 +306,12 @@ describe('Release integration — Staged documentation workflow (Fixture A)', ()
     const modules = pkm.analysis.modules ?? [];
     assert.ok(modules.length > 0, 'Expected discovered modules for staged planning');
 
+    // Documentation-only modules are excluded from the module plan (they don't need AI cards)
+    const productModules = modules.filter((m) => m.type !== 'documentation');
+
     const modulePlan = pkm.analysis.stagedDocumentation?.modulePlan;
     assert.ok(modulePlan, 'stagedDocumentation.modulePlan missing from PKM');
-    assert.equal(modulePlan.entries.length, modules.length);
+    assert.equal(modulePlan.entries.length, productModules.length);
 
     const moduleIds = new Set(modules.map((module) => module.relativePath));
     for (const entry of modulePlan.entries) {
@@ -442,7 +446,7 @@ describe('Release integration — Fixture B (Monorepo)', () => {
   it('emits one module card per discovered module from staged modulePlan', () => {
     const pkm = readJson(path.join(knowledgeDir, 'project-knowledge.json')) as {
       analysis: {
-        modules?: Array<{ relativePath: string }>;
+        modules?: Array<{ relativePath: string; type?: string }>;
         stagedDocumentation?: {
           modulePlan?: { entries: Array<{ documentPath: string }> };
         };
@@ -450,9 +454,10 @@ describe('Release integration — Fixture B (Monorepo)', () => {
     };
 
     const modules = pkm.analysis.modules ?? [];
+    const productModules = modules.filter((m) => m.type !== 'documentation');
     const entries = pkm.analysis.stagedDocumentation?.modulePlan?.entries ?? [];
     assert.ok(modules.length >= 2, `Expected >=2 modules, got ${modules.length}`);
-    assert.equal(entries.length, modules.length);
+    assert.equal(entries.length, productModules.length);
 
     for (const entry of entries) {
       assert.ok(

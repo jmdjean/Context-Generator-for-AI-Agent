@@ -48,6 +48,7 @@ const SECTION_DOCUMENT_IMPACT: Readonly<
     { path: 'PROJECT_MAP.md', reason: 'Modules changed' },
     { path: 'DOCUMENTATION_STATUS.md', reason: 'Modules changed' },
     { path: 'module-documentation-plan.md', reason: 'Modules changed' },
+    { path: 'code/index.md', reason: 'Modules changed' },
   ],
   dependencyGraph: [
     { path: 'dependency-map.md', reason: 'Dependency graph changed' },
@@ -84,6 +85,8 @@ const SECTION_DOCUMENT_IMPACT: Readonly<
     { path: 'module-documentation-plan.md', reason: 'Staged documentation changed' },
     { path: 'DOCUMENTATION_STATUS.md', reason: 'Staged documentation changed' },
     { path: 'DOCUMENTATION_MAINTENANCE.md', reason: 'Staged documentation changed' },
+    { path: 'code/index.md', reason: 'Staged documentation changed' },
+    { path: 'CONTEXT_ROUTER.md', reason: 'Staged documentation changed' },
   ],
   documentation: [],
 };

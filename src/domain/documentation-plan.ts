@@ -22,6 +22,7 @@ export type DocumentGeneratorKind =
   | 'staged-architecture'
   | 'staged-module-plan'
   | 'staged-module'
+  | 'capability-stub'
   | 'generic';
 
 export interface PlannedDocument {

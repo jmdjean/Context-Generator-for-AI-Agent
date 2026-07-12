@@ -7,6 +7,7 @@ import {
   PlannedDocument,
 } from '../domain/documentation-plan';
 import {
+  CapabilityMapStageKnowledge,
   ModuleDocumentationPlanEntry,
   ModuleDocumentationPlanKnowledge,
   ModuleKnowledge,
@@ -15,6 +16,7 @@ import {
   StagedDocumentationStageExecution,
   StagedDocumentationStatus,
 } from '../knowledge';
+import { selectModulesForProductAiFanOut } from '../analyzers/module-constants';
 import { AI_READINESS_DOCUMENT_PATH } from '../readiness/ai-readiness-model';
 
 export const MODULE_DOCUMENTATION_PLAN_PATH = 'module-documentation-plan.md';
@@ -184,6 +186,17 @@ const PLAYBOOK_ROUTING_DOCUMENTS: ReadonlyArray<PlannedDocument> = [
     order: 5,
     dependsOn: ['folder-structure.md', 'architecture.md'],
   },
+  {
+    title: 'Code Index',
+    relativePath: 'code/index.md',
+    purpose: 'Entry-point index to all code documentation in this repository',
+    priority: 'recommended',
+    source: 'playbook',
+    stage: 'routing',
+    generatorKind: 'deterministic',
+    order: 6,
+    dependsOn: ['PROJECT_MAP.md'],
+  },
 ];
 
 const MODULE_PLAN_DOCUMENT: PlannedDocument = {
@@ -344,6 +357,50 @@ export function createDocumentationPlan(
   };
 }
 
+export function sanitizeCapabilitySlug(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return slug.length > 0 ? slug : 'capability';
+}
+
+export function buildCapabilityStubDocuments(
+  capabilityMap: CapabilityMapStageKnowledge,
+): PlannedDocument[] {
+  const docs: PlannedDocument[] = [];
+
+  for (const feature of capabilityMap.features.slice(0, 8)) {
+    const slug = sanitizeCapabilitySlug(feature.name);
+    docs.push({
+      title: feature.name,
+      relativePath: `features/${slug}/index.md`,
+      purpose: feature.summary || `Feature documentation for ${feature.name}`,
+      priority: 'recommended',
+      source: 'playbook',
+      stage: 'routing',
+      generatorKind: 'capability-stub',
+      dependsOn: ['code/index.md'],
+    });
+  }
+
+  for (const integration of capabilityMap.integrations.slice(0, 8)) {
+    const slug = sanitizeCapabilitySlug(integration.name);
+    docs.push({
+      title: integration.name,
+      relativePath: `integrations/${slug}/index.md`,
+      purpose: integration.summary || `Integration documentation for ${integration.name}`,
+      priority: 'recommended',
+      source: 'playbook',
+      stage: 'routing',
+      generatorKind: 'capability-stub',
+      dependsOn: ['code/index.md'],
+    });
+  }
+
+  return docs;
+}
+
 export function sanitizeModuleDocumentSlug(moduleRelativePath: string, moduleName: string): string {
   const posixPath = moduleRelativePath.replace(/\\/g, '/');
   const raw = (
@@ -379,7 +436,8 @@ function sortModulesForDocumentation(modules: readonly ModuleKnowledge[]): Modul
 export function buildModuleDocumentationPlanEntries(
   modules: readonly ModuleKnowledge[],
 ): ModuleDocumentationPlanEntry[] {
-  return sortModulesForDocumentation(modules).map((module, index) => ({
+  const productModules = selectModulesForProductAiFanOut([...modules]);
+  return sortModulesForDocumentation(productModules).map((module, index) => ({
     moduleId: module.relativePath,
     moduleName: module.name,
     moduleRelativePath: module.relativePath,
@@ -420,14 +478,15 @@ function isExpandableModulePlanDocument(document: PlannedDocument): boolean {
 
 /**
  * Expands an early baseline plan with playbook routing docs, a module-plan doc,
- * and one document per discovered module. Idempotent for already-expanded plans.
+ * one document per discovered module, and optional capability stubs. Idempotent for already-expanded plans.
  */
 export function expandDocumentationPlanWithModules(
   plan: DocumentationPlan,
   modules: readonly ModuleKnowledge[],
+  capabilityStubs: readonly PlannedDocument[] = [],
 ): DocumentationPlan {
   const retained = plan.documents.filter((document) => !isExpandableModulePlanDocument(document));
-  const expanded = [...retained, ...buildModulePlanDocuments(modules)];
+  const expanded = [...retained, ...buildModulePlanDocuments(modules), ...capabilityStubs];
 
   return {
     ...plan,
@@ -483,8 +542,16 @@ export function expandProjectKnowledgeWithModuleDocumentationPlan(
   knowledge: ProjectKnowledge,
 ): ModuleDocumentationPlanExpansionResult {
   const modules = knowledge.analysis.modules ?? [];
+  const capabilityMap = knowledge.analysis.stagedDocumentation?.capabilityMap;
+  const capabilityStubs =
+    capabilityMap?.status === 'completed' ? buildCapabilityStubDocuments(capabilityMap) : [];
+
   const previousCount = knowledge.documentation.plan.documents.length;
-  const expandedPlan = expandDocumentationPlanWithModules(knowledge.documentation.plan, modules);
+  const expandedPlan = expandDocumentationPlanWithModules(
+    knowledge.documentation.plan,
+    modules,
+    capabilityStubs,
+  );
   const generatedAt = expandedPlan.generatedAt;
   const modulePlan = buildModuleDocumentationPlanKnowledge(modules, generatedAt);
 

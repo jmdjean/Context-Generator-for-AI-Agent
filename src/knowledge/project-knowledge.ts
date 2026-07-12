@@ -249,6 +249,8 @@ export type StagedDocumentationStatus =
 
 export type StagedDocumentationStageId =
   | 'architecture'
+  | 'capability-map'
+  | 'router'
   | 'module-plan'
   | 'module-documentation';
 
@@ -357,12 +359,59 @@ export interface ModuleDocumentationResultsKnowledge {
   warnings: string[];
 }
 
+/** One feature, domain, or integration item from the capability-map stage. */
+export interface CapabilityMapItem {
+  name: string;
+  summary: string;
+  entryPaths: string[];
+  relatedModules: string[];
+}
+
+/**
+ * Capability-map stage output. Lists features, domains, and integrations
+ * derived from detected structure — never invented from product assumptions.
+ */
+export interface CapabilityMapStageKnowledge {
+  status: StagedDocumentationStatus;
+  features: CapabilityMapItem[];
+  domains: CapabilityMapItem[];
+  integrations: CapabilityMapItem[];
+  generatedAt?: string;
+  provider?: string;
+  model?: string;
+  warnings: string[];
+  error?: string;
+}
+
+/** One routing entry from the router stage. */
+export interface RouterStageEntry {
+  taskType: string;
+  summary: string;
+  readingPath: string[];
+}
+
+/**
+ * Router stage output. Maps task types to ordered doc reading paths grounded
+ * in real module paths — never a fixed product taxonomy.
+ */
+export interface RouterStageKnowledge {
+  status: StagedDocumentationStatus;
+  routes: RouterStageEntry[];
+  generatedAt?: string;
+  provider?: string;
+  model?: string;
+  warnings: string[];
+  error?: string;
+}
+
 /**
  * Staged multi-agent documentation state. Absent until staged AI/planning
  * stages run. AI content here is enrichment, not deterministic truth.
  */
 export interface StagedDocumentationKnowledge {
   architecture?: ArchitectureStageKnowledge;
+  capabilityMap?: CapabilityMapStageKnowledge;
+  router?: RouterStageKnowledge;
   modulePlan?: ModuleDocumentationPlanKnowledge;
   moduleResults?: ModuleDocumentationResultsKnowledge;
   /** One entry per staged pipeline step for partial progress visibility. */

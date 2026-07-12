@@ -2,8 +2,11 @@ import { PlannedDocument } from '../domain/documentation-plan';
 import { renderDeterministicDocument } from '../docs/document-template';
 import { renderAgentNavigationDocument } from '../docs/markdown-renderers/agent-navigation-renderer';
 import { renderAiContextDocument } from '../docs/markdown-renderers/ai-context-renderer';
+import { renderAgentsDocument } from '../docs/markdown-renderers/agents-renderer';
 import { renderAiStartHereDocument } from '../docs/markdown-renderers/ai-start-here-renderer';
 import { renderArchitectureDocument } from '../docs/markdown-renderers/architecture-renderer';
+import { renderCapabilityStubDocument } from '../docs/markdown-renderers/capability-stub-renderer';
+import { renderCodeIndexDocument } from '../docs/markdown-renderers/code-index-renderer';
 import { renderContextRouterDocument } from '../docs/markdown-renderers/context-router-renderer';
 import { renderConventionsDocument } from '../docs/markdown-renderers/conventions-renderer';
 import { renderDependencyMapDocument } from '../docs/markdown-renderers/dependency-map-renderer';
@@ -36,6 +39,7 @@ function createMarkdownTemplate(
 
 export const GENERIC_MARKDOWN_TEMPLATE_ID = 'markdown.generic';
 export const MODULE_DOCUMENT_TEMPLATE_ID = 'markdown.module-document';
+export const CAPABILITY_STUB_TEMPLATE_ID = 'markdown.capability-stub';
 
 /** Sentinel outputPath — module docs are resolved by generatorKind, not path. */
 export const MODULE_DOCUMENT_TEMPLATE_OUTPUT_PATH = 'code/components/<module>.md';
@@ -46,6 +50,17 @@ export const MODULE_DOCUMENT_TEMPLATE: TemplateDefinition = createMarkdownTempla
   'Renders per-module cards from deterministic module knowledge and staged moduleResults.',
   MODULE_DOCUMENT_TEMPLATE_OUTPUT_PATH,
   (document, context) => renderModuleDocument(document, context.knowledge),
+);
+
+/** Sentinel outputPath — capability stubs are resolved by generatorKind, not path. */
+export const CAPABILITY_STUB_TEMPLATE_OUTPUT_PATH = 'features/<slug>/index.md';
+
+export const CAPABILITY_STUB_TEMPLATE: TemplateDefinition = createMarkdownTemplate(
+  CAPABILITY_STUB_TEMPLATE_ID,
+  'Capability Stub',
+  'Renders a feature or integration stub from the capability map or module list.',
+  CAPABILITY_STUB_TEMPLATE_OUTPUT_PATH,
+  (document, context) => renderCapabilityStubDocument(document, context.knowledge),
 );
 
 export const MARKDOWN_TEMPLATES: ReadonlyArray<TemplateDefinition> = [
@@ -99,9 +114,16 @@ export const MARKDOWN_TEMPLATES: ReadonlyArray<TemplateDefinition> = [
     (document, context) => renderImplementationGuideDocument(document, context.knowledge),
   ),
   createMarkdownTemplate(
+    'markdown.agents',
+    'Agents Document',
+    'Renders AGENTS.md workflow table, hard rules, and orientation flow for AI coding agents.',
+    'AGENTS.md',
+    (document, context) => renderAgentsDocument(document, context.knowledge),
+  ),
+  createMarkdownTemplate(
     'markdown.ai-start-here',
     'AI Start Here Document',
-    'Renders AI_START_HERE.md orientation from PKM modules, technologies, and conventions.',
+    'Renders AI_START_HERE.md orientation from PKM modules, technologies, conventions, and staged architecture.',
     'AI_START_HERE.md',
     (document, context) => renderAiStartHereDocument(document, context.knowledge),
   ),
@@ -139,6 +161,13 @@ export const MARKDOWN_TEMPLATES: ReadonlyArray<TemplateDefinition> = [
     'Renders module-documentation-plan.md from analysis.stagedDocumentation.modulePlan.',
     'module-documentation-plan.md',
     (document, context) => renderModuleDocumentationPlanDocument(document, context.knowledge),
+  ),
+  createMarkdownTemplate(
+    'markdown.code-index',
+    'Code Index Document',
+    'Renders code/index.md with capability areas from the capability map, or module list when no AI data is present.',
+    'code/index.md',
+    (document, context) => renderCodeIndexDocument(document, context.knowledge),
   ),
 ];
 

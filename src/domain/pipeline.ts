@@ -114,6 +114,22 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
+    name: 'Generate Capability Map',
+    description:
+      'Optionally run an AI stage to inventory features, domains, and integrations from the PKM module list. Results are stored in ProjectKnowledge.analysis.stagedDocumentation.capabilityMap for router and playbook renderers. Skips when no product modules exist.',
+    input: 'ProjectKnowledge (analysis.modules, stagedDocumentation.architecture)',
+    output: 'CapabilityMapStageKnowledge in analysis.stagedDocumentation',
+    status: 'pending',
+  },
+  {
+    name: 'Generate Router Stage',
+    description:
+      'Optionally run an AI stage to derive ordered reading-path routes per task type from the PKM and planned doc paths. Results are stored in ProjectKnowledge.analysis.stagedDocumentation.router for CONTEXT_ROUTER.md rendering.',
+    input: 'ProjectKnowledge (stagedDocumentation.capabilityMap, documentation.plan)',
+    output: 'RouterStageKnowledge in analysis.stagedDocumentation',
+    status: 'pending',
+  },
+  {
     name: 'Generate Module Documentation Plan',
     description:
       'Produce a module-by-module documentation plan after modules are known and mirror it into ProjectKnowledge.analysis.stagedDocumentation.modulePlan. Expands the documentation plan with playbook routing docs and one document per discovered module. Downstream stages consume this plan instead of scraping Markdown.',
