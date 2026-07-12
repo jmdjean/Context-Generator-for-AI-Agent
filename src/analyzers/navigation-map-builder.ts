@@ -30,11 +30,12 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
       'Changing module boundaries, pipeline structure, or how stages and generators interact.',
     recommendedKnowledge: ['modules', 'folderContexts', 'dependencyGraph', 'conventions'],
     recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
       'architecture.md',
       'folder-structure.md',
       'dependency-map.md',
       'conventions.md',
-      'ai-context.md',
     ],
     warnings: [
       'Review dependency graph before changing module boundaries.',
@@ -58,11 +59,12 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
       'navigationMap',
     ],
     recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
       'architecture.md',
       'folder-structure.md',
       'implementation-guide.md',
       'conventions.md',
-      'agent-navigation.md',
     ],
     warnings: [
       'Add new behavior through the correct module boundary.',
@@ -79,7 +81,13 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
     description:
       'Correcting incorrect behavior in existing code without changing architecture or contracts.',
     recommendedKnowledge: ['modules', 'dependencyGraph', 'conventions'],
-    recommendedDocuments: ['implementation-guide.md', 'dependency-map.md', 'conventions.md'],
+    recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
+      'implementation-guide.md',
+      'dependency-map.md',
+      'conventions.md',
+    ],
     warnings: [
       'Fix the root cause instead of patching generated output.',
       'Avoid changing unrelated modules.',
@@ -93,7 +101,12 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
     taskType: 'test-change',
     description: 'Adding, updating, or reorganizing tests for existing or new behavior.',
     recommendedKnowledge: ['conventions', 'modules', 'folderContexts'],
-    recommendedDocuments: ['conventions.md', 'implementation-guide.md'],
+    recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
+      'conventions.md',
+      'implementation-guide.md',
+    ],
     warnings: [
       'Preserve existing testing conventions.',
       'Do not weaken assertions or remove tests.',
@@ -107,7 +120,12 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
     taskType: 'documentation-change',
     description: 'Updating Markdown documentation, READMEs, or the generated context layer.',
     recommendedKnowledge: ['documentation', 'conventions', 'navigationMap'],
-    recommendedDocuments: ['README.md', 'agent-navigation.md', 'ai-context.md', 'conventions.md'],
+    recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
+      'DOCUMENTATION_MAINTENANCE.md',
+      'conventions.md',
+    ],
     warnings: [
       'Markdown should reflect PKM.',
       'Do not manually edit generated files unless intentionally supported.',
@@ -122,7 +140,12 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
     description:
       'Changing runtime configuration, compiler options, or tooling configuration files.',
     recommendedKnowledge: ['technologies', 'conventions', 'modules'],
-    recommendedDocuments: ['architecture.md', 'conventions.md', 'implementation-guide.md'],
+    recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
+      'architecture.md',
+      'conventions.md',
+    ],
     warnings: [
       'Check package manager and TypeScript strict mode conventions.',
       'Avoid introducing conflicting tooling.',
@@ -136,7 +159,12 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
     taskType: 'dependency-change',
     description: 'Adding, removing, or upgrading package dependencies.',
     recommendedKnowledge: ['technologies', 'dependencyGraph', 'conventions'],
-    recommendedDocuments: ['dependency-map.md', 'conventions.md', 'implementation-guide.md'],
+    recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
+      'dependency-map.md',
+      'conventions.md',
+    ],
     warnings: [
       'Check impacted modules before changing dependencies.',
       'Keep dependency changes minimal.',
@@ -152,10 +180,10 @@ export const NAVIGATION_RULES: readonly NavigationRule[] = [
       'Building or adjusting agent-facing outputs: agent docs, exporters, rules, or skills.',
     recommendedKnowledge: ['documentation', 'conventions', 'navigationMap', 'modules'],
     recommendedDocuments: [
+      'AI_START_HERE.md',
+      'CONTEXT_ROUTER.md',
       'AGENTS.md',
-      'ai-context.md',
       'agent-navigation.md',
-      'implementation-guide.md',
     ],
     warnings: [
       'Agent-specific outputs must be derived from PKM.',

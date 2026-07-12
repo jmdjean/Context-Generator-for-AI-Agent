@@ -154,12 +154,14 @@ test('every key document has a PKM renderer', () => {
     'ai-context.md',
     'implementation-guide.md',
     'ai-readiness.md',
+    'AGENTS.md',
     'AI_START_HERE.md',
     'CONTEXT_ROUTER.md',
     'DOCUMENTATION_MAINTENANCE.md',
     'DOCUMENTATION_STATUS.md',
     'PROJECT_MAP.md',
     'module-documentation-plan.md',
+    'code/index.md',
   ];
 
   assert.deepEqual([...PKM_RENDERED_DOCUMENT_PATHS].sort(), [...expectedPaths].sort());

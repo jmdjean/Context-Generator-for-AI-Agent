@@ -40,6 +40,7 @@ const EXPECTED_PLAYBOOK_PATHS: readonly string[] = [
   'DOCUMENTATION_MAINTENANCE.md',
   'DOCUMENTATION_STATUS.md',
   'PROJECT_MAP.md',
+  'code/index.md',
   MODULE_DOCUMENTATION_PLAN_PATH,
 ];
 

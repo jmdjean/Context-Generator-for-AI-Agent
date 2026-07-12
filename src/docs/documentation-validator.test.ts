@@ -274,6 +274,7 @@ describe('validateDocumentation', () => {
       'DOCUMENTATION_MAINTENANCE.md',
       'DOCUMENTATION_STATUS.md',
       'PROJECT_MAP.md',
+      'code/index.md',
       'module-documentation-plan.md',
       'code/components/src-core.md',
     ];

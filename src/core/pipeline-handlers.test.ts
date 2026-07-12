@@ -12,6 +12,8 @@ import { DocumentationWriteResult } from '../docs/documentation-writer';
 
 const STAGED_DOCUMENTATION_STEP_NAMES = [
   'Generate Architecture Context',
+  'Generate Capability Map',
+  'Generate Router Stage',
   'Generate Module Documentation Plan',
   'Generate Module Documentation',
 ] as const;
@@ -114,16 +116,20 @@ describe('handleValidateDocumentation', () => {
 });
 
 describe('staged documentation pipeline contracts', () => {
-  it('declares architecture, module-plan, and module-documentation steps in order', () => {
+  it('declares architecture, capability-map, router, module-plan, and module-documentation steps in order', () => {
     const names = ANALYSIS_PIPELINE.map((step) => step.name);
     const architectureIndex = names.indexOf('Generate Architecture Context');
+    const capabilityMapIndex = names.indexOf('Generate Capability Map');
+    const routerIndex = names.indexOf('Generate Router Stage');
     const modulePlanIndex = names.indexOf('Generate Module Documentation Plan');
     const moduleDocsIndex = names.indexOf('Generate Module Documentation');
     const detectChangesIndex = names.indexOf('Detect Changes');
     const navigationIndex = names.indexOf('Build AI Navigation Map');
 
     assert.ok(architectureIndex > navigationIndex);
-    assert.equal(modulePlanIndex, architectureIndex + 1);
+    assert.equal(capabilityMapIndex, architectureIndex + 1);
+    assert.equal(routerIndex, capabilityMapIndex + 1);
+    assert.equal(modulePlanIndex, routerIndex + 1);
     assert.equal(moduleDocsIndex, modulePlanIndex + 1);
     assert.equal(detectChangesIndex, moduleDocsIndex + 1);
     assert.equal(names.includes('Analyze AI Insights'), false);

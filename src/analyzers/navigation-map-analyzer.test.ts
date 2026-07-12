@@ -35,6 +35,9 @@ const PLANNED_DOCUMENT_PATHS = [
   'AGENTS.md',
   'ai-context.md',
   'implementation-guide.md',
+  'AI_START_HERE.md',
+  'CONTEXT_ROUTER.md',
+  'DOCUMENTATION_MAINTENANCE.md',
 ];
 
 function createPlannedDocument(relativePath: string): PlannedDocument {

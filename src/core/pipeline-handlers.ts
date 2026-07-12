@@ -11,7 +11,7 @@ import {
   validateAiReadiness,
   validateDocumentation,
 } from '../docs/documentation-validator';
-import { runArchitectureStage, runModuleDocumentationStage } from '../ai';
+import { runArchitectureStage, runCapabilityMapStage, runModuleDocumentationStage, runRouterStage } from '../ai';
 import {
   buildProjectKnowledge,
   persistAiReadinessKnowledge,
@@ -332,6 +332,92 @@ export async function handleGenerateArchitectureContext(
  */
 export const handleAnalyzeAiInsights = handleGenerateArchitectureContext;
 
+export async function handleGenerateCapabilityMap(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  if (!context.config.enableAiAnalysis) {
+    return {
+      status: 'skipped',
+      message: 'skipped: --ai not provided',
+    };
+  }
+
+  const apiKey = resolveProviderApiKey(context.config);
+  if (!apiKey) {
+    return {
+      status: 'skipped',
+      message: 'skipped: API key missing',
+    };
+  }
+
+  const result = await runCapabilityMapStage(context.projectKnowledge, {
+    apiKey,
+    model: context.config.aiModel,
+    providerId: context.config.aiProvider,
+  });
+
+  context.projectKnowledge = result.knowledge;
+
+  for (const warning of result.warnings) {
+    console.warn(`Warning: ${warning}`);
+  }
+
+  return {
+    status: result.capabilityMapGenerated ? 'completed' : 'skipped',
+    message: result.message,
+  };
+}
+
+export async function handleGenerateRouterStage(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  if (!context.config.enableAiAnalysis) {
+    return {
+      status: 'skipped',
+      message: 'skipped: --ai not provided',
+    };
+  }
+
+  const apiKey = resolveProviderApiKey(context.config);
+  if (!apiKey) {
+    return {
+      status: 'skipped',
+      message: 'skipped: API key missing',
+    };
+  }
+
+  const plannedDocPaths = context.projectKnowledge.documentation.plan.documents.map(
+    (doc) => doc.relativePath,
+  );
+
+  const result = await runRouterStage(context.projectKnowledge, {
+    apiKey,
+    model: context.config.aiModel,
+    providerId: context.config.aiProvider,
+  }, plannedDocPaths);
+
+  context.projectKnowledge = result.knowledge;
+
+  for (const warning of result.warnings) {
+    console.warn(`Warning: ${warning}`);
+  }
+
+  return {
+    status: result.routerGenerated ? 'completed' : 'skipped',
+    message: result.message,
+  };
+}
+
 export async function handleGenerateModuleDocumentationPlan(
   context: PipelineContext,
   step: AnalysisPipelineStep,
@@ -617,6 +703,8 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Analyze Conventions': handleAnalyzeConventions,
   'Build AI Navigation Map': handleBuildNavigationMap,
   'Generate Architecture Context': handleGenerateArchitectureContext,
+  'Generate Capability Map': handleGenerateCapabilityMap,
+  'Generate Router Stage': handleGenerateRouterStage,
   'Generate Module Documentation Plan': handleGenerateModuleDocumentationPlan,
   'Generate Module Documentation': handleGenerateModuleDocumentation,
   'Detect Changes': handleDetectChanges,
