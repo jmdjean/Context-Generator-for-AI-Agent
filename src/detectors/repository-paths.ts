@@ -42,6 +42,35 @@ export function findRepositoryPath(paths: readonly string[], fileName: string): 
   return paths.find((entry) => entry.endsWith(`/${fileName}`));
 }
 
+/** All matching paths for a basename, root first then nested (sorted). */
+export function findAllRepositoryPaths(paths: readonly string[], fileName: string): string[] {
+  const normalizedName = toPosixPath(fileName);
+  const matches = paths.filter(
+    (entry) => entry === normalizedName || entry.endsWith(`/${normalizedName}`),
+  );
+
+  return [...new Set(matches)].sort((left, right) => {
+    if (left === normalizedName) {
+      return -1;
+    }
+    if (right === normalizedName) {
+      return 1;
+    }
+    return left.localeCompare(right);
+  });
+}
+
+export function hasRepositoryPathWithExtension(
+  paths: readonly string[],
+  extension: string,
+): boolean {
+  const normalizedExtension = extension.startsWith('.')
+    ? extension.toLowerCase()
+    : `.${extension.toLowerCase()}`;
+
+  return paths.some((entry) => toPosixPath(entry).toLowerCase().endsWith(normalizedExtension));
+}
+
 export function resolveRepositoryFilePath(rootPath: string, relativePath: string): string {
   return path.join(rootPath, ...relativePath.split('/'));
 }

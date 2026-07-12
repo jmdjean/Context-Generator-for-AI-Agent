@@ -15,6 +15,7 @@ export const KNOWLEDGE_FILE_NAMES = {
   dependencies: 'dependencies.json',
   conventions: 'conventions.json',
   navigationMap: 'navigation-map.json',
+  operationalContext: 'operational-context.json',
   changeSummary: 'change-summary.json',
   documentImpact: 'document-impact.json',
   agentExports: 'agent-exports.json',
@@ -76,6 +77,7 @@ export function listPersistedKnowledgeRelativeFilePaths(
   includeDependencies = true,
   includeConventions = true,
   includeNavigationMap = true,
+  includeOperationalContext = true,
   includeChangeSummary = true,
   includeDocumentImpact = true,
   includeAgentExports = true,
@@ -100,6 +102,9 @@ export function listPersistedKnowledgeRelativeFilePaths(
     }
     if (fileName === KNOWLEDGE_FILE_NAMES.navigationMap) {
       return includeNavigationMap;
+    }
+    if (fileName === KNOWLEDGE_FILE_NAMES.operationalContext) {
+      return includeOperationalContext;
     }
     if (fileName === KNOWLEDGE_FILE_NAMES.changeSummary) {
       return includeChangeSummary;

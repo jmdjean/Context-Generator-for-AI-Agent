@@ -5,6 +5,7 @@ import {
 } from '../knowledge';
 import {
   AI_RESPONSE_JSON_SCHEMA,
+  ARCHITECTURE_STAGE_JSON_SCHEMA,
   MAX_AI_PROMPT_CHARS,
   MODULE_DOCUMENTATION_JSON_SCHEMA,
   MODULE_DOCUMENTATION_LIMITS,
@@ -25,7 +26,7 @@ export const AI_ANALYSIS_SYSTEM_INSTRUCTION =
  * string is owned by the prompt builder with the rest of the prompt surface.
  */
 export const ARCHITECTURE_STAGE_SYSTEM_INSTRUCTION =
-  'You generate architecture documentation context from a deterministic project knowledge model. Output a single JSON object. Never request secrets or source code. Mark conclusions as enrichment, not ground truth.';
+  'You generate architecture documentation context from a deterministic project knowledge model. Output a single JSON object. Never request secrets or source code. Mark conclusions as enrichment, not ground truth. Describe only the detected stack listed in the PKM summary — never assume Angular, Java, C#, Electron, or any framework that is not listed.';
 
 /**
  * Per-module documentation system instruction. Providers remain transport-only.
@@ -119,6 +120,12 @@ export interface PkmSummaryPayload {
     recommendedDocuments: string[];
     confidence: string;
   }>;
+  operationalContext?: {
+    purpose?: string;
+    runCommands: Array<{ name: string; command: string; source: string; moduleRelativePath?: string }>;
+    envVars: Array<{ key: string; source: string }>;
+    confidence: string;
+  };
   truncation: {
     modules: { total: number; included: number };
     folders: { total: number; included: number };
@@ -145,6 +152,7 @@ export function buildPkmSummaryPayload(
   const conventions = prioritizeByConfidence(allConventions, limits.conventions);
   const navigationMap = prioritizeByConfidence(allNavigationEntries, limits.navigationEntries);
   const dependencyEdges = highConfidenceEdges.slice(0, limits.dependencyEdges);
+  const operational = analysis.operationalContext;
 
   return {
     projectName: metadata.projectName,
@@ -191,6 +199,26 @@ export function buildPkmSummaryPayload(
       recommendedDocuments: entry.recommendedDocuments,
       confidence: entry.confidence,
     })),
+    ...(operational !== undefined
+      ? {
+          operationalContext: {
+            ...(operational.purpose !== undefined ? { purpose: operational.purpose } : {}),
+            runCommands: (operational.runCommands ?? []).slice(0, 20).map((command) => ({
+              name: command.name,
+              command: command.command,
+              source: command.source,
+              ...(command.moduleRelativePath !== undefined
+                ? { moduleRelativePath: command.moduleRelativePath }
+                : {}),
+            })),
+            envVars: (operational.envVars ?? []).slice(0, 40).map((entry) => ({
+              key: entry.key,
+              source: entry.source,
+            })),
+            confidence: operational.confidence,
+          },
+        }
+      : {}),
     truncation: {
       modules: buildTruncationMeta(allModules.length, modules.length),
       folders: buildTruncationMeta(allFolders.length, folders.length),
@@ -234,12 +262,19 @@ function assembleArchitectureStagePrompt(summary: PkmSummaryPayload): string {
     'Respond with valid JSON only. No markdown fences, comments, or prose outside the JSON object.',
     '',
     'Required JSON shape:',
-    JSON.stringify(AI_RESPONSE_JSON_SCHEMA, null, 2),
+    JSON.stringify(ARCHITECTURE_STAGE_JSON_SCHEMA, null, 2),
     '',
     'Rules:',
-    '- architectureSummary: 2-4 sentences describing layers, module boundaries, and how the pipeline fits together.',
-    '- Base conclusions only on the PKM summary below.',
-    '- Do not invent files, modules, or technologies that are not listed.',
+    '- architectureSummary: 2-4 sentences describing layers, module boundaries, and how stages fit together.',
+    '- purpose: ground in operationalContext.purpose when present; otherwise summarize from modules/technologies.',
+    '- layers: name real layers/modules from the summary; do not invent a product architecture.',
+    '- asciiDiagram: optional compact ASCII only when grounded; omit rather than invent.',
+    '- keyConstraints: hard rules visible in conventions, navigation warnings, or module boundaries.',
+    '- envVars / runCommands: copy only from operationalContext; omit the field when empty — never invent scripts or env keys.',
+    '- Base conclusions only on the PKM summary below (technologies, modules, operationalContext, conventions, graph).',
+    '- Describe only this repository\'s detected stack. Never assume Angular, Java, C#, Electron, or any framework not listed in technologies.',
+    '- Do not invent files, modules, technologies, env vars, or run commands that are not listed.',
+    '- Prefer omitting empty arrays over inventing placeholder items.',
     '- Respect truncation metadata: omitted items may exist but were not sent.',
     '- Keep each array to at most 5 concise items.',
     '- agentGuidance must tell agents which docs/PKM sections to load before architecture changes.',

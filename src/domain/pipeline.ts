@@ -74,6 +74,14 @@ export const ANALYSIS_PIPELINE: AnalysisPipelineStep[] = [
     status: 'pending',
   },
   {
+    name: 'Analyze Operational Context',
+    description:
+      'Extract stack-agnostic purpose, detectable run commands/tasks, and environment variable keys from allowlisted README, manifests, and env templates via RepositoryBoundary. Enriches ProjectKnowledge.analysis.operationalContext when signals exist.',
+    input: 'ProjectKnowledge (analysis.modules)',
+    output: 'OperationalContextKnowledge',
+    status: 'pending',
+  },
+  {
     name: 'Analyze Dependency Graph',
     description:
       'Detect import relationships between discovered modules using lightweight file import parsing. Enriches ProjectKnowledge.analysis.dependencyGraph.',

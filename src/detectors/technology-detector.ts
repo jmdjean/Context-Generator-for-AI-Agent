@@ -3,9 +3,10 @@ import * as path from 'node:path';
 import { RepositoryInfo, TechnologyProfile, TechnologyConfidence } from '../domain';
 import { detectPackageManager } from './package-manager-detector';
 import {
-  findRepositoryPath,
+  findAllRepositoryPaths,
   getSearchableRepositoryPaths,
   hasRepositoryPath,
+  hasRepositoryPathWithExtension,
   resolveRepositoryFilePath,
 } from './repository-paths';
 
@@ -59,15 +60,20 @@ function readPackageJson(packageJsonPath: string): PackageJson | null {
   }
 }
 
-function resolvePackageJsonPath(repositoryInfo: RepositoryInfo, searchablePaths: string[]): string | null {
-  const packageJsonRelativePath = findRepositoryPath(searchablePaths, 'package.json');
+function resolvePackageJsonAbsolutePaths(
+  repositoryInfo: RepositoryInfo,
+  searchablePaths: string[],
+): string[] {
+  const relativePaths = findAllRepositoryPaths(searchablePaths, 'package.json');
 
-  if (packageJsonRelativePath === undefined) {
+  if (relativePaths.length === 0) {
     const fallbackPath = path.join(repositoryInfo.rootPath, 'package.json');
-    return fs.existsSync(fallbackPath) ? fallbackPath : null;
+    return fs.existsSync(fallbackPath) ? [fallbackPath] : [];
   }
 
-  return resolveRepositoryFilePath(repositoryInfo.rootPath, packageJsonRelativePath);
+  return relativePaths.map((relativePath) =>
+    resolveRepositoryFilePath(repositoryInfo.rootPath, relativePath),
+  );
 }
 
 function matchDeps(
@@ -79,6 +85,51 @@ function matchDeps(
     .map(([, label]) => label);
 }
 
+function uniqueSorted(values: readonly string[]): string[] {
+  return [...new Set(values)].sort((left, right) => left.localeCompare(right));
+}
+
+function detectNonJsLanguages(searchablePaths: string[]): string[] {
+  const languages: string[] = [];
+
+  if (
+    hasConfigFile(searchablePaths, 'pom.xml') ||
+    hasConfigFile(searchablePaths, 'build.gradle') ||
+    hasConfigFile(searchablePaths, 'build.gradle.kts')
+  ) {
+    languages.push('Java');
+  }
+
+  if (
+    hasRepositoryPathWithExtension(searchablePaths, '.csproj') ||
+    hasRepositoryPathWithExtension(searchablePaths, '.fsproj')
+  ) {
+    languages.push('C#');
+  }
+
+  if (hasConfigFile(searchablePaths, 'go.mod')) {
+    languages.push('Go');
+  }
+
+  if (hasConfigFile(searchablePaths, 'Cargo.toml')) {
+    languages.push('Rust');
+  }
+
+  if (
+    hasConfigFile(searchablePaths, 'pyproject.toml') ||
+    hasConfigFile(searchablePaths, 'setup.cfg')
+  ) {
+    languages.push('Python');
+  }
+
+  return languages;
+}
+
+/**
+ * Detects languages, frameworks, tooling, and package managers from repository
+ * metadata and nested manifests visible in the scanned tree.
+ * Aggregates dependency signals across all package.json files — does not invent frameworks.
+ */
 export function detectTechnologies(repositoryInfo: RepositoryInfo): TechnologyProfile {
   const searchablePaths = getSearchableRepositoryPaths(repositoryInfo);
 
@@ -104,11 +155,18 @@ export function detectTechnologies(repositoryInfo: RepositoryInfo): TechnologyPr
     tooling.push('Docker');
   }
 
-  if (hasPackageJson) {
-    const packageJsonPath = resolvePackageJsonPath(repositoryInfo, searchablePaths);
-    const pkg = packageJsonPath !== null ? readPackageJson(packageJsonPath) : null;
+  languages.push(...detectNonJsLanguages(searchablePaths));
 
-    if (pkg) {
+  if (hasPackageJson) {
+    for (const packageJsonPath of resolvePackageJsonAbsolutePaths(
+      repositoryInfo,
+      searchablePaths,
+    )) {
+      const pkg = readPackageJson(packageJsonPath);
+      if (pkg === null) {
+        continue;
+      }
+
       const allDeps: Record<string, string> = {
         ...(pkg.dependencies ?? {}),
         ...(pkg.devDependencies ?? {}),
@@ -121,9 +179,22 @@ export function detectTechnologies(repositoryInfo: RepositoryInfo): TechnologyPr
   const packageManager = detectPackageManager(repositoryInfo);
   const packageManagers = packageManager !== 'unknown' ? [packageManager] : [];
 
-  const hasExplicitConfig = hasTypeScript || hasDocker;
-  const confidence: TechnologyConfidence =
-    languages.length === 0 ? 'low' : hasExplicitConfig ? 'high' : 'medium';
+  const uniqueLanguages = uniqueSorted(languages);
+  const uniqueFrameworks = uniqueSorted(frameworks);
+  const uniqueTooling = uniqueSorted(tooling);
 
-  return { languages, frameworks, packageManagers, tooling, confidence };
+  const hasExplicitConfig =
+    hasTypeScript ||
+    hasDocker ||
+    uniqueLanguages.some((language) => language !== 'JavaScript');
+  const confidence: TechnologyConfidence =
+    uniqueLanguages.length === 0 ? 'low' : hasExplicitConfig ? 'high' : 'medium';
+
+  return {
+    languages: uniqueLanguages,
+    frameworks: uniqueFrameworks,
+    packageManagers,
+    tooling: uniqueTooling,
+    confidence,
+  };
 }

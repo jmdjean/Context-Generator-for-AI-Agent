@@ -68,10 +68,11 @@ If the key is missing, the step is skipped with a clear warning. Invalid AI resp
 
 `runArchitectureStage()` writes:
 
-- `analysis.stagedDocumentation.architecture` (summary, content, document paths, status, provider/model)
+- `analysis.stagedDocumentation.architecture` (summary, content, orientation fields, document paths, status, provider/model)
 - `analysis.stagedDocumentation.execution` entry for `architecture`
 - legacy `analysis.aiInsights` so existing renderers keep working
 
+Orientation fields (`purpose`, `layers`, `asciiDiagram`, `keyConstraints`, `envVars`, `runCommands`, `risks`, `agentGuidance`) are optional enrichment grounded in the PKM summary and `operationalContext`. Empty arrays are omitted — the prompt forbids inventing env keys, scripts, or stacks not listed in detection.
 **Generate Module Documentation Plan** is deterministic (no AI) and lives in `src/docs/documentation-planner.ts`.
 
 **Generate Module Documentation** runs after the module plan when `--ai` and an API key are available. It calls `runModuleDocumentationStage()` which:
@@ -90,6 +91,14 @@ analysis.stagedDocumentation?.architecture?: {
   status: 'completed' | 'failed' | …;
   summary?: string;
   content?: string;
+  purpose?: string;
+  layers?: string[];
+  asciiDiagram?: string;
+  keyConstraints?: string[];
+  envVars?: string[];
+  runCommands?: string[];
+  risks?: string[];
+  agentGuidance?: string[];
   documentPaths: string[];
   generatedAt?: string;
   provider?: string;

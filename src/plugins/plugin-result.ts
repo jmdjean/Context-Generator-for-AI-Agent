@@ -5,6 +5,7 @@ import {
   FolderKnowledge,
   ModuleKnowledge,
   NavigationMapKnowledge,
+  OperationalContextKnowledge,
   ProjectKnowledge,
 } from '../knowledge';
 
@@ -23,6 +24,7 @@ export interface PluginContributions {
   conventions?: ConventionKnowledge[];
   dependencyGraph?: DependencyGraphKnowledge;
   navigationMap?: NavigationMapKnowledge;
+  operationalContext?: OperationalContextKnowledge;
   aiInsights?: AiInsightsKnowledge;
   /** Reserved for future `DocumentationPlugin` output. Not merged in v1. */
   documentationSections?: DocumentationSectionContribution[];

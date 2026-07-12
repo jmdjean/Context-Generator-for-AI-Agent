@@ -189,6 +189,29 @@ export async function handleAnalyzeModules(
   };
 }
 
+export async function handleAnalyzeOperationalContext(
+  context: PipelineContext,
+  step: AnalysisPipelineStep,
+): Promise<StepHandlerResult> {
+  if (!context.projectKnowledge) {
+    return placeholderResult(step);
+  }
+
+  const { knowledge, stepStatus, message, metrics } = executeAnalyzerPluginStep(
+    ANALYZER_PLUGIN_IDS.operationalContext,
+    context.projectKnowledge,
+    context.config,
+  );
+  context.projectKnowledge = knowledge;
+  context.metrics.runCommandsDetected = metrics.runCommandsDetected ?? 0;
+  context.metrics.envVarsDetected = metrics.envVarsDetected ?? 0;
+
+  return {
+    status: stepStatus,
+    message,
+  };
+}
+
 export async function handleAnalyzeDependencyGraph(
   context: PipelineContext,
   step: AnalysisPipelineStep,
@@ -589,6 +612,7 @@ export const STEP_HANDLERS: Record<string, StepHandler> = {
   'Build Project Knowledge': handleBuildProjectKnowledge,
   'Analyze Folder Knowledge': handleAnalyzeFolderKnowledge,
   'Analyze Modules': handleAnalyzeModules,
+  'Analyze Operational Context': handleAnalyzeOperationalContext,
   'Analyze Dependency Graph': handleAnalyzeDependencyGraph,
   'Analyze Conventions': handleAnalyzeConventions,
   'Build AI Navigation Map': handleBuildNavigationMap,

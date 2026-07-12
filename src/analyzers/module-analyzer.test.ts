@@ -216,4 +216,116 @@ describe('module-analyzer', () => {
     assert.equal(enriched.analysis.modules?.[0]?.relativePath, '.ai-docs');
     assert.equal(enriched.analysis.status, 'partial');
   });
+
+  it('discovers a root package.json module for bridge-server-style repositories', () => {
+    const rootPath = path.join('C:', 'bridge-server');
+    const knowledge = createKnowledge(rootPath, [], { includeTree: true });
+    knowledge.repository.name = 'bridge-server';
+    knowledge.repository.repositoryTree = {
+      name: 'bridge-server',
+      path: rootPath,
+      relativePath: '',
+      type: 'directory',
+      children: [
+        {
+          name: 'package.json',
+          path: path.join(rootPath, 'package.json'),
+          relativePath: 'package.json',
+          type: 'file',
+        },
+        {
+          name: 'src',
+          path: path.join(rootPath, 'src'),
+          relativePath: 'src',
+          type: 'directory',
+          children: [
+            {
+              name: 'index.js',
+              path: path.join(rootPath, 'src', 'index.js'),
+              relativePath: 'src/index.js',
+              type: 'file',
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = analyzeModuleKnowledge(knowledge);
+    const rootModule = result.modules.find((module) => module.relativePath === '.');
+
+    assert.ok(rootModule);
+    assert.equal(rootModule.name, 'bridge-server');
+    assert.equal(rootModule.type, 'application');
+    assert.ok(rootModule.signals.includes('manifest:package.json'));
+    assert.ok(result.modules.some((module) => module.relativePath === '.ai-docs'));
+  });
+
+  it('discovers nested non-JS manifest modules from the repository tree', () => {
+    const rootPath = path.join('C:', 'multi-manifest');
+    const knowledge = createKnowledge(rootPath, [], { includeTree: true });
+    knowledge.repository.name = 'multi-manifest';
+    knowledge.repository.repositoryTree = {
+      name: 'multi-manifest',
+      path: rootPath,
+      relativePath: '',
+      type: 'directory',
+      children: [
+        {
+          name: 'services',
+          path: path.join(rootPath, 'services'),
+          relativePath: 'services',
+          type: 'directory',
+          children: [
+            {
+              name: 'orders',
+              path: path.join(rootPath, 'services', 'orders'),
+              relativePath: 'services/orders',
+              type: 'directory',
+              children: [
+                {
+                  name: 'pom.xml',
+                  path: path.join(rootPath, 'services', 'orders', 'pom.xml'),
+                  relativePath: 'services/orders/pom.xml',
+                  type: 'file',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'tools',
+          path: path.join(rootPath, 'tools'),
+          relativePath: 'tools',
+          type: 'directory',
+          children: [
+            {
+              name: 'worker',
+              path: path.join(rootPath, 'tools', 'worker'),
+              relativePath: 'tools/worker',
+              type: 'directory',
+              children: [
+                {
+                  name: 'Worker.csproj',
+                  path: path.join(rootPath, 'tools', 'worker', 'Worker.csproj'),
+                  relativePath: 'tools/worker/Worker.csproj',
+                  type: 'file',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = analyzeModuleKnowledge(knowledge);
+    const javaModule = result.modules.find((module) => module.relativePath === 'services/orders');
+    const dotnetModule = result.modules.find((module) => module.relativePath === 'tools/worker');
+
+    assert.ok(javaModule);
+    assert.equal(javaModule.type, 'application');
+    assert.ok(javaModule.signals.includes('manifest:pom.xml'));
+    assert.ok(dotnetModule);
+    assert.equal(dotnetModule.type, 'application');
+    assert.ok(dotnetModule.signals.includes('manifest:Worker.csproj'));
+  });
 });

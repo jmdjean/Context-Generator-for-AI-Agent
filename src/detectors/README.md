@@ -1,8 +1,8 @@
 # src/detectors
 
-**Responsibility:** Technology detection — inferring the language stack, frameworks, tooling, and package manager from top-level repository metadata.
+**Responsibility:** Technology detection — inferring the language stack, frameworks, tooling, and package manager from repository metadata and nested project manifests visible in the scanned tree.
 
-This module reads only what `RepositoryInfo` already knows (top-level filenames and `package.json` content). It does not walk directories, parse source files, or call external services.
+This module reads allowlisted config and manifest files under the repository root (via paths from `RepositoryInfo` / the repository tree). It does not scrape arbitrary source files or call external services.
 
 ---
 
@@ -10,35 +10,34 @@ This module reads only what `RepositoryInfo` already knows (top-level filenames 
 
 | File | Role |
 |---|---|
-| `technology-detector.ts` | Builds a `TechnologyProfile` from `RepositoryInfo` |
-| `package-manager-detector.ts` | Detects the package manager from top-level lockfiles |
+| `technology-detector.ts` | Builds a `TechnologyProfile` from `RepositoryInfo` (aggregates nested manifests) |
+| `package-manager-detector.ts` | Detects the package manager from lockfiles |
+| `repository-paths.ts` | Helpers to list/find paths in the repository tree |
 
 ---
 
 ## What technology detection does
 
-`detectTechnologies(repositoryInfo)` inspects the top-level filenames in `RepositoryInfo.detectedFiles` and, when `package.json` is present, reads its `dependencies` and `devDependencies`. From these two sources it populates all four arrays of `TechnologyProfile`:
+`detectTechnologies(repositoryInfo)` inspects searchable paths from `repositoryTree` when present (otherwise top-level `detectedFiles`). It reads **every** `package.json` in that set and aggregates dependency signals:
 
 | Array | Detection source |
 |---|---|
-| `languages` | Config file presence (`tsconfig.json` → TypeScript; no tsconfig + `package.json` → JavaScript; `Dockerfile` / `docker-compose.yml` → Docker) |
-| `frameworks` | Package deps (`@angular/core` → Angular, `react` → React, `vue` → Vue, …) |
-| `tooling` | Config file presence + package deps (`tsconfig.json` → TypeScript; `jest`, `eslint`, `prettier`, …) |
+| `languages` | Config/manifest presence (`tsconfig.json` → TypeScript; nested `pom.xml` → Java; `*.csproj` → C#; `go.mod` → Go; `Cargo.toml` → Rust; `pyproject.toml`/`setup.cfg` → Python; Docker files → Docker) |
+| `frameworks` | Package deps across **all** nested `package.json` files (`express` → Express, `react` → React, …) |
+| `tooling` | Config + package deps (`tsconfig.json` → TypeScript; `jest`, `eslint`, …) |
 | `packageManagers` | Lockfile presence (`pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`, `bun.lockb`) |
 
-The overall `confidence` field is `high` when languages are detected from an explicit config file, `medium` when inferred only from `package.json`, and `low` when nothing is detected.
+Frameworks are never invented: only dependency names present in manifests are reported. Deep framework analysis stays in `src/plugins/technology/`.
+
+The overall `confidence` field is `high` when languages are detected from an explicit config/manifest, `medium` when inferred only from `package.json`, and `low` when nothing is detected.
 
 ---
 
-## Why detection uses only safe top-level metadata
+## Why detection uses the repository tree (not a full source scrape)
 
-Walking the full repository tree is expensive and risky for large repositories. Top-level config files (`tsconfig.json`, `package.json`, lockfiles, `Dockerfile`) reliably identify the primary technology stack of any project. This targeted approach:
+Detection consumes the scanned `repositoryTree` path list (or top-level `detectedFiles` when no tree exists) and reads only known manifest/config filenames. Nested `package.json` files and non-JS project manifests are included so multi-package repos are not reported as “frameworks: none”. Arbitrary source files are never parsed here.
 
-- Keeps detection fast and predictable regardless of project size.
-- Avoids reading files outside the root that could be large binaries or auto-generated.
-- Provides enough signal for the AI stage to choose the right documentation strategy.
-
-Deeper analysis (framework-specific conventions, module boundaries, dependency graphs) belongs in the Analyze Architecture step (step 6), not here.
+Deeper framework-specific analysis belongs in `src/plugins/technology/`, not in this shallow aggregator.
 
 ---
 
@@ -53,11 +52,16 @@ Without technology detection, the AI stage would need to infer the stack from ra
 ## Currently detected
 
 ### Languages
-- `TypeScript` — from `tsconfig.json`
+- `TypeScript` — from `tsconfig.json` (root or nested)
 - `JavaScript` — from `package.json` (only when no `tsconfig.json`)
 - `Docker` — from `Dockerfile` or `docker-compose.yml`
+- `Java` — from nested `pom.xml` / `build.gradle` / `build.gradle.kts`
+- `C#` — from nested `*.csproj` / `*.fsproj`
+- `Go` — from `go.mod`
+- `Rust` — from `Cargo.toml`
+- `Python` — from `pyproject.toml` / `setup.cfg`
 
-### Frameworks (from package deps)
+### Frameworks (from package deps across all nested package.json files)
 Angular, React, Vue, Svelte, Next.js, Nuxt, NestJS, Express
 
 ### Tooling (config files + package deps)
@@ -70,14 +74,14 @@ pnpm, yarn, npm, bun
 
 ## Where future framework-specific analyzers should be added
 
-Shallow package.json-based detection has limits. A project might use React without a detectable pattern, or it might declare a dependency that is unused. Future improvements belong here in `src/detectors/`, not in the pipeline orchestrator or CLI:
+Shallow package.json-based detection has limits. A project might use React without a detectable pattern, or it might declare a dependency that is unused. Framework-specific depth belongs in `src/plugins/technology/`:
 
-- **Deeper config parsing** (e.g. reading `angular.json` to confirm Angular architecture version) → add a new `angular-detector.ts` and call it from `technology-detector.ts`.
+- **Deeper config parsing** (e.g. reading `angular.json`) → technology plugin, not core aggregation.
 - **Language version detection** (Node.js version from `.nvmrc` or `package.engines`) → add a `runtime-detector.ts`.
 - **Monorepo detection** (Turborepo, Nx, Lerna config files) → add a `monorepo-detector.ts`.
 - **Container / infra detection** (Kubernetes manifests, Terraform files) → add an `infra-detector.ts`.
 
-Each new detector should accept `RepositoryInfo` (or a future `RepositoryNode` tree for deeper analysis) and return data that can be merged into `TechnologyProfile` or a new domain type.
+Each new detector should accept `RepositoryInfo` (with `repositoryTree` when available) and return data that can be merged into `TechnologyProfile` or a new domain type.
 
 ---
 

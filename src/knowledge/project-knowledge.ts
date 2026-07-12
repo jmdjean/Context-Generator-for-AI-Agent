@@ -87,6 +87,37 @@ export interface ModuleKnowledge {
   confidence: ModuleKnowledgeConfidence;
 }
 
+export type OperationalContextConfidence = 'high' | 'medium' | 'low';
+
+/** Detected runnable command/task from an allowlisted manifest (never invented). */
+export interface OperationalRunCommand {
+  name: string;
+  command: string;
+  /** Relative path that supplied the command, e.g. `package.json` or `apps/api/package.json`. */
+  source: string;
+  /** Module this command belongs to when known (`.` for repository root). */
+  moduleRelativePath?: string;
+}
+
+/** Environment variable key from a template file — values are never stored. */
+export interface OperationalEnvVar {
+  key: string;
+  source: string;
+}
+
+/**
+ * Stack-agnostic operational facts for agent entry docs.
+ * Absent when no allowlisted signals exist; optional fields omitted when empty.
+ */
+export interface OperationalContextKnowledge {
+  purpose?: string;
+  runCommands?: OperationalRunCommand[];
+  envVars?: OperationalEnvVar[];
+  generatedAt: string;
+  signals: string[];
+  confidence: OperationalContextConfidence;
+}
+
 export type DependencyEdgeType =
   | 'imports'
   | 'contains'
@@ -240,6 +271,10 @@ export interface StagedDocumentationStageExecution {
 /**
  * Architecture-stage output mirrored in PKM so later stages and renderers
  * consume structured data instead of scraping Markdown from disk.
+ *
+ * `summary` / `content` remain the backward-compatible presentation fields.
+ * Orientation fields (`purpose`, `layers`, …) are optional enrichment for
+ * agent entry docs — omit empty arrays rather than inventing facts.
  */
 export interface ArchitectureStageKnowledge {
   status: StagedDocumentationStatus;
@@ -247,6 +282,22 @@ export interface ArchitectureStageKnowledge {
   summary?: string;
   /** Architecture body used by templates and downstream AI stages. */
   content?: string;
+  /** Repo/product purpose grounded in PKM / operational context. */
+  purpose?: string;
+  /** Architectural layers visible in the PKM summary. */
+  layers?: string[];
+  /** Optional compact ASCII diagram; omit when not grounded. */
+  asciiDiagram?: string;
+  /** Hard agent/repo constraints visible in the summary. */
+  keyConstraints?: string[];
+  /** Env keys only — never values; grounded in operationalContext. */
+  envVars?: string[];
+  /** Detectable run/task commands from operationalContext. */
+  runCommands?: string[];
+  /** Structural, dependency, or convention risks. */
+  risks?: string[];
+  /** Guidance for AI coding agents before architecture changes. */
+  agentGuidance?: string[];
   /** Relative document paths this stage intends to feed. */
   documentPaths: string[];
   generatedAt?: string;
@@ -364,6 +415,8 @@ export interface AnalysisKnowledge {
   navigationMap?: NavigationMapKnowledge;
   folderContexts?: FolderKnowledge[];
   modules?: ModuleKnowledge[];
+  /** Purpose, run commands, and env keys from safe config/README reads. */
+  operationalContext?: OperationalContextKnowledge;
   implementationRecommendations?: string[];
 }
 
@@ -376,6 +429,7 @@ export type ChangeSection =
   | 'dependencyGraph'
   | 'conventions'
   | 'navigationMap'
+  | 'operationalContext'
   | 'aiInsights'
   | 'stagedDocumentation'
   | 'documentation';

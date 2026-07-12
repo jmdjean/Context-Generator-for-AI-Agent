@@ -23,9 +23,10 @@ Analyzers consume `ProjectKnowledge` — especially `knowledge.repository.reposi
 | `folder-constants.ts` | Shared classification names, ignore rules, important files, path helpers |
 | `folder-classifier.ts` | Deterministic folder classification from names, paths, and file signals |
 | `folder-analyzer.ts` | Walks the PKM repository tree and produces `FolderKnowledge[]` |
-| `module-constants.ts` | Module path patterns, responsibilities, and structural helpers |
-| `module-classifier.ts` | Maps structural paths to `ModuleType` using deterministic heuristics |
-| `module-analyzer.ts` | Discovers `ModuleKnowledge[]` from folder knowledge |
+| `module-constants.ts` | Module path patterns, multi-ecosystem manifest names, responsibilities, and fan-out helpers |
+| `module-classifier.ts` | Maps structural paths and owned manifests to `ModuleType` using deterministic heuristics |
+| `module-analyzer.ts` | Discovers `ModuleKnowledge[]` from folder knowledge and repository-tree manifest signals |
+| `operational-context-analyzer.ts` | Extracts purpose, run commands, and env keys from allowlisted README/manifest/env templates |
 | `import-parser.ts` | Lightweight regex-based TypeScript/JavaScript import extraction |
 | `dependency-graph-analyzer.ts` | Builds `DependencyGraphKnowledge` from module imports |
 | `convention-classifier.ts` | Deterministic convention detection rules — pure, no I/O |
@@ -46,6 +47,33 @@ Analyzers consume `ProjectKnowledge` — especially `knowledge.repository.reposi
 | Example | `src/utils` → `source`, tooling | `src/knowledge` → `core`, PKM responsibility | `src/core` → `src/knowledge` (`imports`) |
 
 Folder knowledge is exhaustive; module knowledge is selective; the dependency graph connects modules with evidence-backed edges. Agents use modules to choose an entry point, folder knowledge to navigate locally, and the dependency graph to understand impact before edits.
+
+### Manifest-aware module discovery
+
+Path heuristics (`apps/*`, `packages/*`, `libs/*`, `src/*`, …) still win when they match. Additionally, any directory that **owns** a known project manifest becomes a module when path heuristics miss:
+
+| Manifest signal | Typical module type |
+|---|---|
+| Root `package.json` | `application` (module path `.`) |
+| Nested `package.json` | `package` |
+| `*.csproj` / `*.fsproj` | `application` |
+| `pom.xml`, `build.gradle`, `build.gradle.kts` | `application` |
+| `go.mod`, `Cargo.toml` | `application` |
+| `pyproject.toml`, `setup.cfg` | `package` |
+
+Discovery uses repository-tree file names (and folder `importantFiles` basenames as a fallback). It does not scrape arbitrary source files.
+
+Documentation modules (`docs`, configured `docsDir`) remain in `analysis.modules` for maps. Use `isDocumentationOnlyModule` / `selectModulesForProductAiFanOut` so product AI fan-out skips them.
+
+### Operational context
+
+`analyzeOperationalContext(knowledge)` reads only allowlisted files via `RepositoryBoundary`:
+
+- Purpose from the first meaningful README paragraph, falling back to root `package.json` `description`
+- Run commands from root and module `package.json` `scripts` (never invented)
+- Env var **keys** from `.env.example` / `.env.sample` / `.env.template` / `env.example`
+
+When no signals exist, `analysis.operationalContext` stays unset.
 
 ---
 
@@ -192,6 +220,7 @@ The MVP map is fully deterministic: no OpenRouter, no filesystem access at all. 
 |---|---|---|
 | **Analyze Folder Knowledge** | `enrichProjectKnowledgeWithFolderAnalysis()` | `analysis.folderContexts` |
 | **Analyze Modules** | `enrichProjectKnowledgeWithModuleAnalysis()` | `analysis.modules` |
+| **Analyze Operational Context** | `enrichProjectKnowledgeWithOperationalContext()` | `analysis.operationalContext` |
 | **Analyze Dependency Graph** | `enrichProjectKnowledgeWithDependencyGraph()` | `analysis.dependencyGraph` |
 | **Analyze Conventions** | `enrichProjectKnowledgeWithConventions()` | `analysis.conventions` |
 | **Build AI Navigation Map** | `enrichProjectKnowledgeWithNavigationMap()` | `analysis.navigationMap` |

@@ -168,31 +168,32 @@ The project has:
 - A working CLI with full argument parsing and runtime configuration resolution.
 - A complete domain model (`src/domain/`) defining analysis-stage types and the declarative pipeline.
 - A Project Knowledge Model (`src/knowledge/`) with types and `buildProjectKnowledge()`.
-- A pipeline orchestrator (`src/core/`) that runs all 20 steps and returns `PipelineExecutionResult`.
+- A pipeline orchestrator (`src/core/`) that runs all 21 steps and returns `PipelineExecutionResult`.
 - Step 2 (Load Repository Metadata) implemented in `src/scanner/repository-loader.ts`.
 - Step 3 (Scan Repository Structure) implemented in `src/scanner/repository-scanner.ts` — produces `RepositoryNode` tree with ignore rules and safety limits.
 - Step 4 (Detect Technologies) implemented in `src/detectors/technology-detector.ts` and `src/detectors/package-manager-detector.ts`.
 - Step 7 (Generate Documentation Plan) implemented in `src/docs/documentation-planner.ts` — produces a `DocumentationPlan` with core, agent, and technology-specific documents.
 - Step 8 (Build Project Knowledge) implemented in `src/knowledge/knowledge-builder.ts` — assembles `ProjectKnowledge`.
-- Steps 7–11 (analyzer pipeline steps) execute built-in plugins via `PluginManager` in `src/plugins/` — each wraps the corresponding `src/analyzers/` enrich function and returns `PluginContributions` merged by `plugin-merger.ts`.
+- Steps 7–12 (analyzer pipeline steps) execute built-in plugins via `PluginManager` in `src/plugins/` — each wraps the corresponding `src/analyzers/` enrich function and returns `PluginContributions` merged by `plugin-merger.ts`.
 - Step 7 (Analyze Folder Knowledge) — `builtin.folder-analyzer` → `folder-analyzer.ts` → `FolderKnowledge[]` in `analysis.folderContexts`.
 - Step 8 (Analyze Modules) — `builtin.module-analyzer` → `module-analyzer.ts` → `ModuleKnowledge[]` in `analysis.modules`.
-- Step 9 (Analyze Dependency Graph) — `builtin.dependency-analyzer` → `dependency-graph-analyzer.ts` → `DependencyGraphKnowledge` in `analysis.dependencyGraph`.
-- Step 10 (Analyze Conventions) — `builtin.convention-analyzer` → `convention-analyzer.ts` → `ConventionKnowledge[]` in `analysis.conventions`.
-- Step 11 (Build AI Navigation Map) — `builtin.navigation-analyzer` → `navigation-map-analyzer.ts` → `NavigationMapKnowledge` in `analysis.navigationMap`.
+- Step 9 (Analyze Operational Context) — `builtin.operational-context-analyzer` → `operational-context-analyzer.ts` → `OperationalContextKnowledge` in `analysis.operationalContext` when signals exist.
+- Step 10 (Analyze Dependency Graph) — `builtin.dependency-analyzer` → `dependency-graph-analyzer.ts` → `DependencyGraphKnowledge` in `analysis.dependencyGraph`.
+- Step 11 (Analyze Conventions) — `builtin.convention-analyzer` → `convention-analyzer.ts` → `ConventionKnowledge[]` in `analysis.conventions`.
+- Step 12 (Build AI Navigation Map) — `builtin.navigation-analyzer` → `navigation-map-analyzer.ts` → `NavigationMapKnowledge` in `analysis.navigationMap`.
 - Technology placeholder plugins registered: `technology.angular` (detection), `technology.react`, `technology.nest`, `technology.node` (supports only).
-- Step 12 (Generate Architecture Context) optionally enriches the PKM when `--ai` is set and an API key is available. It currently bridges through `src/ai/ai-analysis-service.ts` into `analysis.aiInsights` and will migrate to `analysis.stagedDocumentation.architecture`. The service resolves an `AIProvider` from `src/ai/providers/` (default: `openrouter`, selectable with `--ai-provider`) and sends a compact PKM summary only; invalid responses warn and continue.
-- Steps 13 (Generate Module Documentation Plan) expands the documentation plan with playbook routing docs and one document per discovered module, mirroring entries into `analysis.stagedDocumentation.modulePlan`.
-- Step 14 (Generate Module Documentation) implemented in `src/ai/module-documentation-stage.ts` — sequential per-module AI fan-out when `--ai` is set and an API key is available; persists `analysis.stagedDocumentation.moduleResults` with isolated failure status.
-- Step 13 (Detect Changes) implemented in `src/incremental/` — compares the current PKM against the previously persisted snapshot, records `analysis.changeSummary`, and derives `analysis.documentImpact` for selective regeneration.
-- Step 14 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — renders planned documents through `src/templates/template-engine.ts`, then writes Markdown from `ProjectKnowledge`, regenerating only impacted tool-managed files when `documentImpact` is present (all planned docs on initial run).
-- Step 15 (Validate Documentation) implemented in `src/docs/documentation-validator.ts` — verifies written docs exist, carry the generated-file marker, and reports errors/warnings.
-- Step 16 (Calculate AI Readiness) implemented in `src/readiness/` — computes the deterministic AI Readiness Score from the final current-run PKM and validation result, stores `analysis.aiReadiness`, refreshes `ai-readiness.md`, persists `ai-readiness.json`, and extends validation with structural readiness checks.
-- Step 17 (Export Agent Context) implemented in `src/exporters/` — optional agent export when `--export-agents` is set. Runs generic and/or Cursor exporters based on `--target` (default: `generic`) and stores results in `analysis.agentExports`.
-- Step 18 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/` including `change-summary.json`, `document-impact.json`, `ai-readiness.json`, and `agent-exports.json` when exports ran.
+- Step 13 (Generate Architecture Context) optionally enriches the PKM when `--ai` is set and an API key is available. It currently bridges through `src/ai/ai-analysis-service.ts` into `analysis.aiInsights` and will migrate to `analysis.stagedDocumentation.architecture`. The service resolves an `AIProvider` from `src/ai/providers/` (default: `openrouter`, selectable with `--ai-provider`) and sends a compact PKM summary only; invalid responses warn and continue.
+- Steps 14 (Generate Module Documentation Plan) expands the documentation plan with playbook routing docs and one document per discovered module, mirroring entries into `analysis.stagedDocumentation.modulePlan`.
+- Step 15 (Generate Module Documentation) implemented in `src/ai/module-documentation-stage.ts` — sequential per-module AI fan-out when `--ai` is set and an API key is available; persists `analysis.stagedDocumentation.moduleResults` with isolated failure status.
+- Step 16 (Detect Changes) implemented in `src/incremental/` — compares the current PKM against the previously persisted snapshot, records `analysis.changeSummary`, and derives `analysis.documentImpact` for selective regeneration.
+- Step 17 (Write Documentation) implemented in `src/docs/documentation-writer.ts` — renders planned documents through `src/templates/template-engine.ts`, then writes Markdown from `ProjectKnowledge`, regenerating only impacted tool-managed files when `documentImpact` is present (all planned docs on initial run).
+- Step 18 (Validate Documentation) implemented in `src/docs/documentation-validator.ts` — verifies written docs exist, carry the generated-file marker, and reports errors/warnings.
+- Step 19 (Calculate AI Readiness) implemented in `src/readiness/` — computes the deterministic AI Readiness Score from the final current-run PKM and validation result, stores `analysis.aiReadiness`, refreshes `ai-readiness.md`, persists `ai-readiness.json`, and extends validation with structural readiness checks.
+- Step 20 (Export Agent Context) implemented in `src/exporters/` — optional agent export when `--export-agents` is set. Runs generic and/or Cursor exporters based on `--target` (default: `generic`) and stores results in `analysis.agentExports`.
+- Step 21 (Persist Project Knowledge) implemented in `src/knowledge/knowledge-writer.ts` — writes JSON to `.ai-docs/knowledge/` including `change-summary.json`, `document-impact.json`, `ai-readiness.json`, `operational-context.json`, and `agent-exports.json` when exports ran.
 - A final CLI run summary in `src/core/run-summary.ts` — printed by `run()` after the pipeline completes.
 
-The scanner full tree walk (step 3) is implemented. Optional AI enrichment runs at step 12 after deterministic analyzers (steps 7–11).
+The scanner full tree walk (step 3) is implemented. Optional AI enrichment runs at step 13 after deterministic analyzers (steps 7–12).
 
 ### Plugin architecture rules
 

@@ -7,6 +7,7 @@ import {
   FOLDER_ANALYZER_PLUGIN_ID,
   MODULE_ANALYZER_PLUGIN_ID,
   NAVIGATION_ANALYZER_PLUGIN_ID,
+  OPERATIONAL_CONTEXT_ANALYZER_PLUGIN_ID,
 } from './builtin';
 import { createPluginContext } from './plugin-context';
 import { createConsolePluginLogger } from './plugin-logger';
@@ -86,6 +87,7 @@ export function executeAnalyzerPluginStep(
 export const ANALYZER_PLUGIN_IDS = {
   folder: FOLDER_ANALYZER_PLUGIN_ID,
   module: MODULE_ANALYZER_PLUGIN_ID,
+  operationalContext: OPERATIONAL_CONTEXT_ANALYZER_PLUGIN_ID,
   dependency: DEPENDENCY_ANALYZER_PLUGIN_ID,
   convention: CONVENTION_ANALYZER_PLUGIN_ID,
   navigation: NAVIGATION_ANALYZER_PLUGIN_ID,

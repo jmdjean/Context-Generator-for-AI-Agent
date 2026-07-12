@@ -150,12 +150,13 @@ Built-in plugins return `contributions` (the preferred path). The optional `resu
 
 ## Built-in plugins
 
-These wrap existing analyzers and map to pipeline steps 9–13:
+These wrap existing analyzers and map to pipeline analyzer steps:
 
 | Plugin ID | Pipeline step | Source analyzer |
 |---|---|---|
 | `builtin.folder-analyzer` | Analyze Folder Knowledge | `folder-analyzer.ts` |
 | `builtin.module-analyzer` | Analyze Modules | `module-analyzer.ts` |
+| `builtin.operational-context-analyzer` | Analyze Operational Context | `operational-context-analyzer.ts` |
 | `builtin.dependency-analyzer` | Analyze Dependency Graph | `dependency-graph-analyzer.ts` |
 | `builtin.convention-analyzer` | Analyze Conventions | `convention-analyzer.ts` |
 | `builtin.navigation-analyzer` | Build AI Navigation Map | `navigation-map-analyzer.ts` |

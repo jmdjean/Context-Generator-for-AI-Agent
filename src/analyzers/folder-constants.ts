@@ -33,7 +33,16 @@ export const IMPORTANT_EXACT_FILES = new Set([
   'angular.json',
   'docker-compose.yml',
   'Dockerfile',
+  'pom.xml',
+  'build.gradle',
+  'build.gradle.kts',
+  'go.mod',
+  'Cargo.toml',
+  'pyproject.toml',
+  'setup.cfg',
 ]);
+
+const IMPORTANT_FILE_EXTENSIONS = ['.csproj', '.fsproj'] as const;
 
 export const IMPORTANT_FILE_PREFIXES = [
   'vite.config.',
@@ -105,6 +114,11 @@ export function normalizeFolderName(name: string): string {
 
 export function isImportantFile(fileName: string): boolean {
   if (IMPORTANT_EXACT_FILES.has(fileName)) {
+    return true;
+  }
+
+  const lower = fileName.toLowerCase();
+  if (IMPORTANT_FILE_EXTENSIONS.some((extension) => lower.endsWith(extension))) {
     return true;
   }
 

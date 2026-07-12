@@ -17,6 +17,8 @@ export interface PipelineRunMetrics {
   dependencyEdges: number;
   conventionsDetected: number;
   navigationEntries: number;
+  runCommandsDetected: number;
+  envVarsDetected: number;
   aiInsightsGenerated: boolean;
   aiInsightsAttempted: boolean;
   moduleDocumentationGenerated: boolean;
@@ -39,6 +41,8 @@ export function createEmptyPipelineMetrics(): PipelineRunMetrics {
     dependencyEdges: 0,
     conventionsDetected: 0,
     navigationEntries: 0,
+    runCommandsDetected: 0,
+    envVarsDetected: 0,
     aiInsightsGenerated: false,
     aiInsightsAttempted: false,
     moduleDocumentationGenerated: false,

@@ -70,6 +70,7 @@ After pipeline step **Persist Project Knowledge**, the target repository contain
     ├── dependencies.json        # dependency graph only (when dependency graph analysis ran)
     ├── conventions.json         # convention knowledge only (when convention analysis ran)
     ├── navigation-map.json      # AI navigation map only (when the navigation map was built)
+    ├── operational-context.json # purpose / run commands / env keys (when signals exist)
     ├── change-summary.json      # change summary vs previous PKM (when Detect Changes ran)
     ├── document-impact.json     # selective regeneration decisions (when Detect Changes ran)
     ├── ai-readiness.json        # deterministic AI Readiness Score (when Calculate AI Readiness ran)
@@ -106,6 +107,12 @@ Architectural module context for AI agents lives in `analysis.modules` as `Modul
 | `confidence` | `high`, `medium`, or `low` |
 
 Populated by `src/analyzers/module-analyzer.ts` at pipeline step **Analyze Modules**. Module knowledge is selective (meaningful units only); folder knowledge is exhaustive (every documentable directory). Agents use modules to choose an entry point, then folder knowledge to navigate locally.
+
+### `analysis.operationalContext`
+
+Stack-agnostic purpose, detectable run commands, and env var **keys** (never values) from allowlisted README / manifest / env-template reads. Absent when no signals exist. Populated by `src/analyzers/operational-context-analyzer.ts` at **Analyze Operational Context**. Persisted to `analysis.json` and `operational-context.json`.
+
+---
 
 ### `DependencyGraphKnowledge`
 

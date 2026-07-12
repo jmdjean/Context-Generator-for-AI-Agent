@@ -4,10 +4,12 @@ import { dependencyAnalyzerPlugin } from './dependency-analyzer-plugin';
 import { folderAnalyzerPlugin } from './folder-analyzer-plugin';
 import { moduleAnalyzerPlugin } from './module-analyzer-plugin';
 import { navigationAnalyzerPlugin } from './navigation-analyzer-plugin';
+import { operationalContextAnalyzerPlugin } from './operational-context-analyzer-plugin';
 
 export const BUILTIN_ANALYZER_PLUGIN_ORDER: ReadonlyArray<string> = [
   folderAnalyzerPlugin.id,
   moduleAnalyzerPlugin.id,
+  operationalContextAnalyzerPlugin.id,
   dependencyAnalyzerPlugin.id,
   conventionAnalyzerPlugin.id,
   navigationAnalyzerPlugin.id,
@@ -16,6 +18,7 @@ export const BUILTIN_ANALYZER_PLUGIN_ORDER: ReadonlyArray<string> = [
 export const BUILTIN_ANALYZER_PLUGINS: ReadonlyArray<AnalyzerPlugin> = [
   folderAnalyzerPlugin,
   moduleAnalyzerPlugin,
+  operationalContextAnalyzerPlugin,
   dependencyAnalyzerPlugin,
   conventionAnalyzerPlugin,
   navigationAnalyzerPlugin,
@@ -36,3 +39,6 @@ export {
 export {
   NAVIGATION_ANALYZER_PLUGIN_ID,
 } from './navigation-analyzer-plugin';
+export {
+  OPERATIONAL_CONTEXT_ANALYZER_PLUGIN_ID,
+} from './operational-context-analyzer-plugin';

@@ -10,6 +10,7 @@ import {
 import { createRepositoryBoundary, RepositoryBoundary } from '../scanner/repository-boundary';
 import { toPosixPath } from './folder-constants';
 import { ParsedImport, parseImportsFromRepository } from './import-parser';
+import { modulePathContainsRelativePath } from './module-constants';
 
 export interface DependencyGraphAnalysisResult {
   dependencyGraph: DependencyGraphKnowledge;
@@ -91,10 +92,8 @@ function findModuleForFile(
   moduleIndex: ModuleIndex,
 ): ModuleKnowledge | undefined {
   const normalized = toPosixPath(filePath);
-  return moduleIndex.sortedByPathLength.find(
-    (module) =>
-      normalized === module.relativePath ||
-      normalized.startsWith(`${module.relativePath}/`),
+  return moduleIndex.sortedByPathLength.find((module) =>
+    modulePathContainsRelativePath(module.relativePath, normalized),
   );
 }
 
@@ -115,7 +114,7 @@ function findModuleForResolvedPath(
   }
 
   const containingModule = moduleIndex.sortedByPathLength.find((module) =>
-    normalized.startsWith(`${module.relativePath}/`),
+    modulePathContainsRelativePath(module.relativePath, normalized),
   );
   if (containingModule !== undefined) {
     return { module: containingModule, confidence: 'high' };

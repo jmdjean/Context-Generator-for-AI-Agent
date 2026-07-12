@@ -15,6 +15,7 @@ import {
   FolderKnowledge,
   ModuleKnowledge,
   NavigationMapKnowledge,
+  OperationalContextKnowledge,
   ProjectKnowledge,
   RepositoryKnowledge,
   StagedDocumentationKnowledge,
@@ -77,6 +78,10 @@ interface PersistedConventionsKnowledge extends PersistedKnowledgeHeader {
 
 interface PersistedNavigationMapKnowledge extends PersistedKnowledgeHeader {
   navigationMap: NavigationMapKnowledge;
+}
+
+interface PersistedOperationalContextKnowledge extends PersistedKnowledgeHeader {
+  operationalContext: OperationalContextKnowledge;
 }
 
 interface PersistedChangeSummaryKnowledge extends PersistedKnowledgeHeader {
@@ -191,6 +196,14 @@ function buildKnowledgeFiles(
       navigationMap: knowledge.analysis.navigationMap,
     };
     files.push([KNOWLEDGE_FILE_NAMES.navigationMap, navigationMapPayload]);
+  }
+
+  if (knowledge.analysis.operationalContext !== undefined) {
+    const operationalContextPayload: PersistedOperationalContextKnowledge = {
+      ...header,
+      operationalContext: knowledge.analysis.operationalContext,
+    };
+    files.push([KNOWLEDGE_FILE_NAMES.operationalContext, operationalContextPayload]);
   }
 
   if (knowledge.analysis.changeSummary !== undefined) {
@@ -313,6 +326,17 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
     fs.unlinkSync(navigationMapPath);
   }
 
+  const operationalContextPath = resolveKnowledgeFilePath(
+    rootPath,
+    docsDir,
+    KNOWLEDGE_FILE_NAMES.operationalContext,
+  );
+  const hasOperationalContext = knowledge.analysis.operationalContext !== undefined;
+
+  if (!hasOperationalContext && fs.existsSync(operationalContextPath)) {
+    fs.unlinkSync(operationalContextPath);
+  }
+
   const changeSummaryPath = resolveKnowledgeFilePath(
     rootPath,
     docsDir,
@@ -374,6 +398,7 @@ export function persistProjectKnowledge(knowledge: ProjectKnowledge): KnowledgeP
       hasDependencyGraph,
       hasConventions,
       hasNavigationMap,
+      hasOperationalContext,
       hasChangeSummary,
       hasDocumentImpact,
       hasAgentExports,

@@ -24,7 +24,7 @@ Status key: ✅ pass · ❌ fail · ⏳ pending
 - ✅ Validators do not mutate files
 - ✅ CLI is thin — delegates to `config/` and `core/` immediately
 - ✅ Obsolete placeholder steps 5 & 6 removed from `ANALYSIS_PIPELINE`
-- ✅ Pipeline declares 20 steps, all with real implementations or documented optional skips
+- ✅ Pipeline declares 21 steps, all with real implementations or documented optional skips
 
 ---
 

@@ -88,21 +88,22 @@ The full pipeline is defined declaratively in `src/domain/pipeline.ts` as `ANALY
  6. Build Project Knowledge    RepositoryInfo + profile + plan → ProjectKnowledge     ✅
  7. Analyze Folder Knowledge  ProjectKnowledge                → FolderKnowledge[]    ✅
  8. Analyze Modules           ProjectKnowledge                → ModuleKnowledge[]    ✅
- 9. Analyze Dependency Graph  ProjectKnowledge                → DependencyGraphKnowledge ✅
-10. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
-11. Build AI Navigation Map   ProjectKnowledge                → NavigationMapKnowledge ✅
-12. Generate Architecture Context  ProjectKnowledge + RuntimeConfig → stagedDocumentation.architecture ✅ (optional; also writes legacy aiInsights)
-13. Generate Module Documentation Plan  ProjectKnowledge → stagedDocumentation.modulePlan + expanded DocumentationPlan ✅
-14. Generate Module Documentation  ProjectKnowledge → stagedDocumentation.moduleResults  ○ (wired; implementation pending)
-15. Detect Changes             ProjectKnowledge + previous PKM → ChangeSummary + DocumentImpact ✅
-16. Write Documentation        ProjectKnowledge + DocumentImpact → .ai-docs/*.md        ✅
-17. Validate Documentation     DocumentModel[], file paths     → validation report    ✅
-18. Calculate AI Readiness     ProjectKnowledge + validation    → AIReadinessKnowledge ✅
-19. Export Agent Context       ProjectKnowledge + RuntimeConfig → agent export files  ✅ (optional)
-20. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
+ 9. Analyze Operational Context ProjectKnowledge              → OperationalContextKnowledge ✅
+10. Analyze Dependency Graph  ProjectKnowledge                → DependencyGraphKnowledge ✅
+11. Analyze Conventions       ProjectKnowledge                → ConventionKnowledge[] ✅
+12. Build AI Navigation Map   ProjectKnowledge                → NavigationMapKnowledge ✅
+13. Generate Architecture Context  ProjectKnowledge + RuntimeConfig → stagedDocumentation.architecture ✅ (optional; also writes legacy aiInsights)
+14. Generate Module Documentation Plan  ProjectKnowledge → stagedDocumentation.modulePlan + expanded DocumentationPlan ✅
+15. Generate Module Documentation  ProjectKnowledge → stagedDocumentation.moduleResults  ✅ (optional; skips without `--ai`)
+16. Detect Changes             ProjectKnowledge + previous PKM → ChangeSummary + DocumentImpact ✅
+17. Write Documentation        ProjectKnowledge + DocumentImpact → .ai-docs/*.md        ✅
+18. Validate Documentation     DocumentModel[], file paths     → validation report    ✅
+19. Calculate AI Readiness     ProjectKnowledge + validation    → AIReadinessKnowledge ✅
+20. Export Agent Context       ProjectKnowledge + RuntimeConfig → agent export files  ✅ (optional)
+21. Persist Project Knowledge  ProjectKnowledge                → .ai-docs/knowledge/  ✅
 ```
 
-Steps 1–11, 13, 15–18, and 20 always run on a successful default pass. Step 12 skips unless `--ai` is set with an API key; step 14 skips unless `--ai` is set with an API key (and is also skipped when `--skip-module-docs` is passed). Step 19 skips unless `--export-agents` is set. Step 6 assembles the PKM in memory; steps 7–11 execute built-in analyzer plugins via `PluginManager` (wrapping `src/analyzers/`); step 12 writes `analysis.stagedDocumentation.architecture` (and legacy `aiInsights`) from a compact PKM summary; step 13 expands the documentation plan with playbook and per-module entries; step 15 compares against the previous persisted PKM (including `stagedDocumentation`) and records `analysis.changeSummary` plus `analysis.documentImpact`; step 16 writes Markdown selectively from the PKM; step 18 computes the deterministic AI Readiness Score; step 19 optionally runs agent exporters; step 20 persists JSON.
+Steps 1–12, 14, 16–19, and 21 always run on a successful default pass. Step 13 skips unless `--ai` is set with an API key; step 15 skips unless `--ai` is set with an API key (and is also skipped when `--skip-module-docs` is passed). Step 20 skips unless `--export-agents` is set. Step 6 assembles the PKM in memory; steps 7–12 execute built-in analyzer plugins via `PluginManager` (wrapping `src/analyzers/`); step 13 writes `analysis.stagedDocumentation.architecture` (and legacy `aiInsights`) from a compact PKM summary; step 14 expands the documentation plan with playbook and per-module entries; step 16 compares against the previous persisted PKM (including `stagedDocumentation`) and records `analysis.changeSummary` plus `analysis.documentImpact`; step 17 writes Markdown selectively from the PKM; step 19 computes the deterministic AI Readiness Score; step 20 optionally runs agent exporters; step 21 persists JSON.
 
 ---
 

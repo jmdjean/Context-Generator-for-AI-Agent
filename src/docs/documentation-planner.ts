@@ -345,9 +345,10 @@ export function createDocumentationPlan(
 }
 
 export function sanitizeModuleDocumentSlug(moduleRelativePath: string, moduleName: string): string {
-  const raw = (moduleRelativePath.length > 0 ? moduleRelativePath : moduleName)
-    .replace(/\\/g, '/')
-    .replace(/^\/+|\/+$/g, '');
+  const posixPath = moduleRelativePath.replace(/\\/g, '/');
+  const raw = (
+    posixPath === '.' || posixPath.length === 0 ? moduleName : posixPath
+  ).replace(/^\/+|\/+$/g, '');
   const slug = raw
     .replace(/[^a-zA-Z0-9/_-]+/g, '-')
     .replace(/\/+/g, '__')

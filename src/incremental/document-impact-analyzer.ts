@@ -65,6 +65,11 @@ const SECTION_DOCUMENT_IMPACT: Readonly<
     { path: 'ai-context.md', reason: 'Navigation map changed' },
     { path: 'CONTEXT_ROUTER.md', reason: 'Navigation map changed' },
   ],
+  operationalContext: [
+    { path: 'AI_START_HERE.md', reason: 'Operational context changed' },
+    { path: 'architecture.md', reason: 'Operational context changed' },
+    { path: 'ai-context.md', reason: 'Operational context changed' },
+  ],
   aiInsights: [
     { path: 'architecture.md', reason: 'AI insights changed' },
     { path: 'ai-context.md', reason: 'AI insights changed' },

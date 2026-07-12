@@ -2,9 +2,11 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   collectRepositoryRelativePaths,
+  findAllRepositoryPaths,
   findRepositoryPath,
   getSearchableRepositoryPaths,
   hasRepositoryPath,
+  hasRepositoryPathWithExtension,
 } from './repository-paths';
 import { RepositoryInfo, RepositoryNode } from '../domain';
 
@@ -33,6 +35,12 @@ describe('repository-paths', () => {
             relativePath: 'packages/app/tsconfig.json',
             type: 'file',
           },
+          {
+            name: 'package.json',
+            path: '/tmp/project/packages/app/package.json',
+            relativePath: 'packages/app/package.json',
+            type: 'file',
+          },
         ],
       },
     ],
@@ -42,6 +50,7 @@ describe('repository-paths', () => {
     assert.deepEqual(collectRepositoryRelativePaths(tree), [
       'package.json',
       'packages/app/tsconfig.json',
+      'packages/app/package.json',
     ]);
   });
 
@@ -52,11 +61,28 @@ describe('repository-paths', () => {
     assert.equal(findRepositoryPath(paths, 'tsconfig.json'), 'packages/app/tsconfig.json');
   });
 
+  it('lists all package.json paths with root first', () => {
+    const paths = collectRepositoryRelativePaths(tree);
+
+    assert.deepEqual(findAllRepositoryPaths(paths, 'package.json'), [
+      'package.json',
+      'packages/app/package.json',
+    ]);
+  });
+
   it('detects nested config files by relative path', () => {
     const paths = collectRepositoryRelativePaths(tree);
 
     assert.equal(hasRepositoryPath(paths, 'tsconfig.json'), true);
     assert.equal(hasRepositoryPath(paths, 'Dockerfile'), false);
+  });
+
+  it('detects files by extension across nested paths', () => {
+    assert.equal(
+      hasRepositoryPathWithExtension(['apps/desktop/DesktopApp.csproj'], '.csproj'),
+      true,
+    );
+    assert.equal(hasRepositoryPathWithExtension(['services/orders/pom.xml'], '.csproj'), false);
   });
 
   it('falls back to top-level detected files when no tree exists', () => {

@@ -171,6 +171,18 @@ function resolveMetrics(
       metrics.navigationEntries,
       knowledge.analysis.navigationMap?.entries.length,
     ),
+    runCommandsDetected: resolveMetricValue(
+      result,
+      'Analyze Operational Context',
+      metrics.runCommandsDetected,
+      knowledge.analysis.operationalContext?.runCommands?.length,
+    ),
+    envVarsDetected: resolveMetricValue(
+      result,
+      'Analyze Operational Context',
+      metrics.envVarsDetected,
+      knowledge.analysis.operationalContext?.envVars?.length,
+    ),
     aiInsightsGenerated:
       stepCompleted(result, 'Generate Architecture Context') && metrics.aiInsightsGenerated,
     aiInsightsAttempted: metrics.aiInsightsAttempted,

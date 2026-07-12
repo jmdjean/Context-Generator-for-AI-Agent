@@ -14,7 +14,17 @@ import {
   inferModuleResponsibility,
   shouldIgnoreModulePath,
 } from './module-classifier';
-import { isDocumentationModulePath } from './module-constants';
+import {
+  isDocumentationModulePath,
+  isModuleManifestFileName,
+  isRepositoryRootModulePath,
+  listOwnedModuleManifests,
+} from './module-constants';
+
+function normalizeModuleRelativePath(relativePath: string): string {
+  const posixPath = toPosixPath(relativePath);
+  return isRepositoryRootModulePath(posixPath) ? '.' : posixPath;
+}
 
 export interface ModuleAnalysisResult {
   modules: ModuleKnowledge[];
@@ -45,6 +55,30 @@ function collectImportantFiles(children: RepositoryNode[] | undefined): string[]
   return children
     .filter((child) => child.type === 'file' && isImportantFile(child.name))
     .map((child) => child.relativePath)
+    .sort();
+}
+
+function collectChildFileNames(children: RepositoryNode[] | undefined): string[] {
+  if (children === undefined) {
+    return [];
+  }
+
+  return children.filter((child) => child.type === 'file').map((child) => child.name).sort();
+}
+
+function resolveOwnedFileNames(folder: FolderKnowledge, treeNode?: RepositoryNode): string[] {
+  const fromTree = collectChildFileNames(treeNode?.children);
+  if (fromTree.length > 0) {
+    return fromTree;
+  }
+
+  return folder.importantFiles
+    .map((filePath) => {
+      const posix = toPosixPath(filePath);
+      const segments = posix.split('/');
+      return segments[segments.length - 1] ?? posix;
+    })
+    .filter((name) => name.length > 0)
     .sort();
 }
 
@@ -171,15 +205,17 @@ function createDocsDirFolderKnowledge(
 function toClassificationInput(
   folder: FolderKnowledge,
   docsDir: string,
+  ownedFileNames: readonly string[] = [],
 ): ModuleClassificationInput {
   return {
-    relativePath: toPosixPath(folder.relativePath),
+    relativePath: normalizeModuleRelativePath(folder.relativePath),
     name: folder.name,
     docsDir,
     folderClassification: folder.classification,
     folderConfidence: folder.confidence,
-    hasImportantFiles: folder.importantFiles.length > 0,
+    hasImportantFiles: folder.importantFiles.length > 0 || ownedFileNames.length > 0,
     hasChildFolders: folder.childFolders.length > 0,
+    ownedFileNames,
   };
 }
 
@@ -190,19 +226,27 @@ function collectTreeModuleFolders(
   folderIndex: Map<string, FolderKnowledge>,
   collected: Map<string, FolderKnowledge>,
   classificationCache: Map<string, ModuleClassificationResult | undefined>,
+  treeIndex: Map<string, RepositoryNode>,
 ): void {
   if (node.type !== 'directory') {
     return;
   }
 
   const relativePath = toPosixPath(node.relativePath);
+  treeIndex.set(relativePath, node);
+
   if (
     relativePath.length > 0 &&
     !folderIndex.has(relativePath) &&
     !collected.has(relativePath)
   ) {
     const syntheticFolder = folderKnowledgeFromNode(node, depth);
-    const classification = classifyModuleForFolder(syntheticFolder, docsDir, classificationCache);
+    const classification = classifyModuleForFolder(
+      syntheticFolder,
+      docsDir,
+      classificationCache,
+      treeIndex,
+    );
     if (classification !== undefined) {
       collected.set(relativePath, syntheticFolder);
     }
@@ -221,6 +265,7 @@ function collectTreeModuleFolders(
         folderIndex,
         collected,
         classificationCache,
+        treeIndex,
       );
     }
   }
@@ -230,16 +275,54 @@ function classifyModuleForFolder(
   folder: FolderKnowledge,
   docsDir: string,
   cache: Map<string, ModuleClassificationResult | undefined>,
+  treeIndex: Map<string, RepositoryNode>,
 ): ModuleClassificationResult | undefined {
-  const relativePath = toPosixPath(folder.relativePath);
+  const relativePath = normalizeModuleRelativePath(folder.relativePath);
   const cached = cache.get(relativePath);
   if (cached !== undefined || cache.has(relativePath)) {
     return cached;
   }
 
-  const result = classifyModule(toClassificationInput(folder, docsDir));
+  const ownedFileNames = resolveOwnedFileNames(
+    folder,
+    treeIndex.get(relativePath) ?? (relativePath === '.' ? treeIndex.get('') : undefined),
+  );
+  const result = classifyModule(toClassificationInput(folder, docsDir, ownedFileNames));
   cache.set(relativePath, result);
   return result;
+}
+
+function createRootFolderKnowledge(
+  knowledge: ProjectKnowledge,
+  treeRoot: RepositoryNode,
+): FolderKnowledge {
+  const importantFiles = collectImportantFiles(treeRoot.children);
+  const childFolders = collectChildFolders(treeRoot.children);
+  const ownedManifests = listOwnedModuleManifests(collectChildFileNames(treeRoot.children));
+
+  return {
+    path: knowledge.repository.rootPath,
+    // Use '.' so module ids, document paths, and plan entries stay non-empty.
+    relativePath: '.',
+    name: knowledge.repository.name,
+    depth: 0,
+    classification: ownedManifests.length > 0 ? 'source' : 'unknown',
+    responsibility: '',
+    importantFiles,
+    childFolders,
+    signals: ['folder-name:repository-root', 'source:repository-tree'],
+    confidence: ownedManifests.length > 0 ? 'high' : 'medium',
+  };
+}
+
+function directoryOwnsManifest(node: RepositoryNode): boolean {
+  if (node.children === undefined) {
+    return false;
+  }
+
+  return node.children.some(
+    (child) => child.type === 'file' && isModuleManifestFileName(child.name),
+  );
 }
 
 function collectModuleFolderCandidates(
@@ -249,9 +332,14 @@ function collectModuleFolderCandidates(
   const folderContexts = knowledge.analysis.folderContexts ?? [];
   const folderIndex = indexFoldersByPath(folderContexts);
   const collected = new Map<string, FolderKnowledge>();
+  const treeIndex = new Map<string, RepositoryNode>();
 
   for (const folder of folderContexts) {
-    collected.set(toPosixPath(folder.relativePath), folder);
+    const relativePath = normalizeModuleRelativePath(folder.relativePath);
+    collected.set(relativePath, {
+      ...folder,
+      relativePath,
+    });
   }
 
   const docsDirCandidate = createDocsDirFolderKnowledge(knowledge, folderIndex);
@@ -261,6 +349,13 @@ function collectModuleFolderCandidates(
 
   const repositoryTree = knowledge.repository.repositoryTree;
   if (repositoryTree !== undefined && repositoryTree.type === 'directory') {
+    treeIndex.set('', repositoryTree);
+    treeIndex.set('.', repositoryTree);
+
+    if (directoryOwnsManifest(repositoryTree) && !collected.has('.')) {
+      collected.set('.', createRootFolderKnowledge(knowledge, repositoryTree));
+    }
+
     if (repositoryTree.children !== undefined) {
       for (const child of repositoryTree.children) {
         if (child.type === 'directory') {
@@ -271,10 +366,16 @@ function collectModuleFolderCandidates(
             folderIndex,
             collected,
             classificationCache,
+            treeIndex,
           );
         }
       }
     }
+  }
+
+  // Ensure classification cache is populated with tree-aware owned files for all candidates.
+  for (const folder of collected.values()) {
+    classifyModuleForFolder(folder, knowledge.metadata.docsDir, classificationCache, treeIndex);
   }
 
   return [...collected.values()];
@@ -304,7 +405,7 @@ function buildModuleSignals(
   classificationSignals: string[],
   folder: FolderKnowledge,
 ): string[] {
-  const relativePath = toPosixPath(folder.relativePath);
+  const relativePath = normalizeModuleRelativePath(folder.relativePath);
   const signals = [
     ...classificationSignals,
     `module-key:${relativePath}`,
@@ -331,7 +432,7 @@ function buildModuleKnowledge(
   modulePaths: Set<string>,
   classification: ModuleClassificationResult,
 ): ModuleKnowledge {
-  const relativePath = toPosixPath(folder.relativePath);
+  const relativePath = normalizeModuleRelativePath(folder.relativePath);
 
   return {
     name: folder.name,
@@ -371,15 +472,16 @@ export function analyzeModuleKnowledge(knowledge: ProjectKnowledge): ModuleAnaly
   const modulePaths = new Set<string>();
 
   for (const folder of folderCandidates) {
-    const classification = classifyModuleForFolder(folder, docsDir, classificationCache);
+    const relativePath = normalizeModuleRelativePath(folder.relativePath);
+    const classification = classificationCache.get(relativePath);
     if (classification !== undefined) {
-      modulePaths.add(toPosixPath(folder.relativePath));
+      modulePaths.add(relativePath);
     }
   }
 
   const modules: ModuleKnowledge[] = [];
   for (const folder of folderCandidates) {
-    const relativePath = toPosixPath(folder.relativePath);
+    const relativePath = normalizeModuleRelativePath(folder.relativePath);
     const classification = classificationCache.get(relativePath);
     if (classification === undefined) {
       continue;

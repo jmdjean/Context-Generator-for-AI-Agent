@@ -151,4 +151,53 @@ describe('module-classifier', () => {
       /AI-readable project context/,
     );
   });
+
+  it('classifies root and nested folders from owned manifests when path heuristics miss', () => {
+    const rootPackage = classifyModule({
+      relativePath: '.',
+      name: 'bridge-server',
+      docsDir: '.ai-docs',
+      ownedFileNames: ['package.json', 'README.md'],
+    });
+    const javaService = classifyModule({
+      relativePath: 'services/orders',
+      name: 'orders',
+      docsDir: '.ai-docs',
+      ownedFileNames: ['pom.xml'],
+    });
+    const dotnetApp = classifyModule({
+      relativePath: 'tools/worker',
+      name: 'worker',
+      docsDir: '.ai-docs',
+      ownedFileNames: ['Worker.csproj'],
+    });
+    const withoutManifest = classifyModule({
+      relativePath: 'services/orders',
+      name: 'orders',
+      docsDir: '.ai-docs',
+      ownedFileNames: ['README.md'],
+    });
+
+    assert.equal(rootPackage?.type, 'application');
+    assert.ok(rootPackage?.signals.includes('manifest:package.json'));
+    assert.ok(rootPackage?.signals.includes('path:repository-root'));
+    assert.equal(javaService?.type, 'application');
+    assert.ok(javaService?.signals.includes('manifest:pom.xml'));
+    assert.equal(dotnetApp?.type, 'application');
+    assert.ok(dotnetApp?.signals.includes('manifest:Worker.csproj'));
+    assert.equal(withoutManifest, undefined);
+  });
+
+  it('prefers path heuristics over manifest signals when both apply', () => {
+    const result = classifyModule({
+      relativePath: 'packages/core',
+      name: 'core',
+      docsDir: '.ai-docs',
+      ownedFileNames: ['package.json'],
+    });
+
+    assert.equal(result?.type, 'package');
+    assert.ok(result?.signals.includes('container:packages'));
+    assert.equal(result?.signals.some((signal) => signal.startsWith('manifest:')), false);
+  });
 });

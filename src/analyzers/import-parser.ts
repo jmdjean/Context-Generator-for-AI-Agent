@@ -9,6 +9,7 @@ import {
   TEST_FILE_PATTERN,
   toPosixPath,
 } from './folder-constants';
+import { modulePathContainsRelativePath } from './module-constants';
 
 export const IMPORT_SOURCE_FILE_EXTENSIONS = new Set([
   '.ts',
@@ -56,10 +57,7 @@ function isImportSourceFile(fileName: string): boolean {
 
 function isUnderModulePath(relativePath: string, modulePaths: readonly string[]): boolean {
   const posixPath = toPosixPath(relativePath);
-  return modulePaths.some(
-    (modulePath) =>
-      posixPath === modulePath || posixPath.startsWith(`${modulePath}/`),
-  );
+  return modulePaths.some((modulePath) => modulePathContainsRelativePath(modulePath, posixPath));
 }
 
 function shouldIgnoreImportFile(relativePath: string, docsDir: string): boolean {

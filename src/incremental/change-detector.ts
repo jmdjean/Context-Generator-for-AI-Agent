@@ -10,6 +10,7 @@ import {
   FolderKnowledge,
   ModuleKnowledge,
   NavigationEntry,
+  OperationalContextKnowledge,
   ProjectKnowledge,
   StagedDocumentationKnowledge,
 } from '../knowledge/project-knowledge';
@@ -188,6 +189,33 @@ function normalizeNavigationEntries(entries: NavigationEntry[] | undefined): str
     .sort((left, right) => left.taskType.localeCompare(right.taskType));
 
   return stableSerialize(normalized);
+}
+
+function normalizeOperationalContext(
+  operationalContext: OperationalContextKnowledge | undefined,
+): string {
+  if (operationalContext === undefined) {
+    return stableSerialize(null);
+  }
+
+  return stableSerialize({
+    purpose: operationalContext.purpose ?? null,
+    runCommands: (operationalContext.runCommands ?? [])
+      .map((command) => ({
+        name: command.name,
+        command: command.command,
+        source: command.source,
+        moduleRelativePath: command.moduleRelativePath ?? null,
+      }))
+      .sort((left, right) =>
+        `${left.source}:${left.name}`.localeCompare(`${right.source}:${right.name}`),
+      ),
+    envVars: (operationalContext.envVars ?? [])
+      .map((entry) => ({ key: entry.key, source: entry.source }))
+      .sort((left, right) => `${left.source}:${left.key}`.localeCompare(`${right.source}:${right.key}`)),
+    signals: sortedCopy(operationalContext.signals),
+    confidence: operationalContext.confidence,
+  });
 }
 
 function normalizeModules(modules: ModuleKnowledge[] | undefined): string {
@@ -501,6 +529,13 @@ export function detectChanges(
     normalizeNavigationEntries(current.analysis.navigationMap?.entries)
   ) {
     changedSections.push('navigationMap');
+  }
+
+  if (
+    normalizeOperationalContext(previous.analysis.operationalContext) !==
+    normalizeOperationalContext(current.analysis.operationalContext)
+  ) {
+    changedSections.push('operationalContext');
   }
 
   if (

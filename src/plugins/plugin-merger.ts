@@ -128,6 +128,22 @@ function mergeNavigationContributions(
   return analysis;
 }
 
+function mergeOperationalContextContributions(
+  knowledge: ProjectKnowledge,
+  operationalContext: PluginContributions['operationalContext'],
+): ProjectKnowledge['analysis'] {
+  const analysis = { ...knowledge.analysis };
+
+  if (operationalContext === undefined) {
+    return analysis;
+  }
+
+  analysis.status = resolvePartialStatus(analysis.status, true);
+  analysis.operationalContext = operationalContext;
+
+  return analysis;
+}
+
 export function mergePluginContributions(
   knowledge: ProjectKnowledge,
   contributions: PluginContributions,
@@ -155,6 +171,13 @@ export function mergePluginContributions(
 
   if (contributions.navigationMap !== undefined) {
     analysis = mergeNavigationContributions({ ...knowledge, analysis }, contributions.navigationMap);
+  }
+
+  if (contributions.operationalContext !== undefined) {
+    analysis = mergeOperationalContextContributions(
+      { ...knowledge, analysis },
+      contributions.operationalContext,
+    );
   }
 
   if (contributions.aiInsights !== undefined) {

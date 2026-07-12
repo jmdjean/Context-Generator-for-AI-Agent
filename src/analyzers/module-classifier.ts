@@ -15,10 +15,12 @@ import {
   KNOWN_MODULE_RESPONSIBILITIES,
   MONOREPO_MODULE_CONTAINERS,
   SOURCE_MODULE_CONTAINERS,
+  inferModuleTypeFromManifests,
   isDirectChildOfContainer,
   isDocumentationModulePath,
   isMonorepoContainerChild,
   isSourceContainerChild,
+  listOwnedModuleManifests,
   resolveDocumentationModuleResponsibility,
 } from './module-constants';
 
@@ -30,6 +32,8 @@ export interface ModuleClassificationInput {
   folderConfidence?: FolderKnowledgeConfidence;
   hasImportantFiles?: boolean;
   hasChildFolders?: boolean;
+  /** Child file basenames used for multi-ecosystem manifest detection. */
+  ownedFileNames?: readonly string[];
 }
 
 export interface ModuleClassificationResult {
@@ -103,6 +107,36 @@ function classifyDocumentationModule(
   };
 }
 
+function classifyManifestOwnedModule(
+  input: ModuleClassificationInput,
+): ModuleClassificationResult | undefined {
+  const ownedFileNames =
+    input.ownedFileNames !== undefined
+      ? input.ownedFileNames
+      : [];
+  const manifests = listOwnedModuleManifests(ownedFileNames);
+  const moduleType = inferModuleTypeFromManifests(manifests, input.relativePath);
+  if (moduleType === undefined) {
+    return undefined;
+  }
+
+  const relativePath = toPosixPath(input.relativePath);
+  const pathSignal =
+    relativePath.length === 0 || relativePath === '.'
+      ? 'path:repository-root'
+      : `path:${relativePath}`;
+
+  return {
+    type: moduleType,
+    confidence: 'high',
+    signals: [
+      pathSignal,
+      ...manifests.map((manifest) => `manifest:${manifest}`),
+      `module-type:${moduleType}`,
+    ],
+  };
+}
+
 export function shouldIgnoreModulePath(relativePath: string, docsDir: string): boolean {
   const posixPath = toPosixPath(relativePath);
   const knowledgePath = getKnowledgeDirectoryRelativePath(docsDir);
@@ -167,14 +201,14 @@ export function classifyModule(
     return undefined;
   }
 
-  const classifiers: Array<(relativePath: string) => ModuleClassificationResult | undefined> = [
+  const pathClassifiers: Array<(relativePath: string) => ModuleClassificationResult | undefined> = [
     (relativePath) => classifyDocumentationModule(relativePath, input.docsDir),
     classifyDirectSourceModule,
     classifyMonorepoChild,
     classifySourceChild,
   ];
 
-  for (const classifier of classifiers) {
+  for (const classifier of pathClassifiers) {
     const result = classifier(input.relativePath);
     if (result !== undefined) {
       return {
@@ -182,6 +216,14 @@ export function classifyModule(
         confidence: refineModuleConfidence(result.confidence, input),
       };
     }
+  }
+
+  const manifestResult = classifyManifestOwnedModule(input);
+  if (manifestResult !== undefined) {
+    return {
+      ...manifestResult,
+      confidence: refineModuleConfidence(manifestResult.confidence, input),
+    };
   }
 
   return undefined;
@@ -213,11 +255,17 @@ function responsibilityForType(
       ) {
         return 'Represents an application entrypoint inside the monorepo.';
       }
+      if (posixPath.length === 0 || posixPath === '.') {
+        return 'Represents the repository root application module.';
+      }
       return `Represents the ${name} application module.`;
     case 'library':
       return 'Represents a reusable library module.';
     case 'package':
-      return 'Represents a publishable package module in the monorepo.';
+      if (posixPath.length === 0 || posixPath === '.') {
+        return 'Represents the repository root package module.';
+      }
+      return 'Represents a publishable or installable package module.';
     case 'feature':
       return `Represents the ${name} feature module.`;
     case 'component-group':

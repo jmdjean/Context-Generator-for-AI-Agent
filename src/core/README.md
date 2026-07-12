@@ -127,6 +127,7 @@ executePipeline(config)
   ├─ Build Project Knowledge      → knowledge/knowledge-builder → ProjectKnowledge     ✅
   ├─ Analyze Folder Knowledge     → analyzers/folder-analyzer → FolderKnowledge[]      ✅
   ├─ Analyze Modules              → analyzers/module-analyzer → ModuleKnowledge[]     ✅
+  ├─ Analyze Operational Context  → analyzers/operational-context-analyzer → operationalContext ✅
   ├─ Analyze Dependency Graph     → analyzers/dependency-graph-analyzer → DependencyGraph ✅
   ├─ Analyze Conventions          → analyzers/convention-analyzer → ConventionKnowledge[] ✅
   ├─ Build AI Navigation Map      → analyzers/navigation-map-analyzer → NavigationMap ✅

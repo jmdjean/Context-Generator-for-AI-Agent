@@ -53,9 +53,11 @@ describe('knowledge-paths', () => {
       true,
       true,
       true,
+      true,
     );
     const withoutStaged = listPersistedKnowledgeRelativeFilePaths(
       '.ai-docs',
+      true,
       true,
       true,
       true,

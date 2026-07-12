@@ -1,0 +1,10 @@
+{
+  "name": "bridge-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root-level package fixture for manifest module discovery",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  }
+}

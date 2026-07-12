@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { AIProvider } from './providers/ai-provider';
-import { buildPkmSummaryPayload } from './prompt-builder';
+import {
+  ARCHITECTURE_STAGE_SYSTEM_INSTRUCTION,
+  buildArchitectureStagePrompt,
+  buildPkmSummaryPayload,
+} from './prompt-builder';
 import {
   enrichProjectKnowledgeWithAiInsights,
   extractJsonPayload,
@@ -114,6 +118,21 @@ function buildMinimalKnowledge(): ProjectKnowledge {
         ],
         generatedAt: '2026-01-01T00:00:00.000Z',
       },
+      operationalContext: {
+        purpose: 'Generates AI-readable documentation from repositories.',
+        runCommands: [
+          {
+            name: 'build',
+            command: 'npm run build',
+            source: 'package.json',
+            moduleRelativePath: '.',
+          },
+        ],
+        envVars: [{ key: 'OPENROUTER_API_KEY', source: '.env.example' }],
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        signals: ['purpose:README.md', 'scripts:package.json', 'env:.env.example'],
+        confidence: 'high',
+      },
     },
   };
 }
@@ -136,6 +155,40 @@ describe('buildPkmSummaryPayload', () => {
     const summary = buildPkmSummaryPayload(buildMinimalKnowledge());
     assert.equal(summary.modules[0]?.confidence, 'high');
     assert.equal(summary.modules[1]?.confidence, 'low');
+  });
+
+  it('includes operationalContext and real modules in the compact summary', () => {
+    const summary = buildPkmSummaryPayload(buildMinimalKnowledge());
+
+    assert.equal(
+      summary.operationalContext?.purpose,
+      'Generates AI-readable documentation from repositories.',
+    );
+    assert.equal(summary.operationalContext?.runCommands[0]?.command, 'npm run build');
+    assert.equal(summary.operationalContext?.envVars[0]?.key, 'OPENROUTER_API_KEY');
+    assert.ok(summary.modules.some((module) => module.relativePath === 'src/core'));
+    assert.ok(!summary.modules.some((module) => module.relativePath === '.ai-docs'));
+  });
+});
+
+describe('buildArchitectureStagePrompt', () => {
+  it('embeds orientation schema, operational facts, and no-invent stack rules', () => {
+    const prompt = buildArchitectureStagePrompt(buildMinimalKnowledge());
+
+    assert.match(prompt, /"purpose"/);
+    assert.match(prompt, /"layers"/);
+    assert.match(prompt, /"asciiDiagram"/);
+    assert.match(prompt, /"keyConstraints"/);
+    assert.match(prompt, /"envVars"/);
+    assert.match(prompt, /"runCommands"/);
+    assert.match(prompt, /operationalContext/);
+    assert.match(prompt, /OPENROUTER_API_KEY/);
+    assert.match(prompt, /npm run build/);
+    assert.match(prompt, /src\/core/);
+    assert.match(prompt, /never invent/i);
+    assert.match(prompt, /omit the field when empty/i);
+    assert.match(prompt, /Never assume Angular, Java, C#, Electron/i);
+    assert.match(ARCHITECTURE_STAGE_SYSTEM_INSTRUCTION, /never assume Angular, Java, C#, Electron/i);
   });
 });
 
@@ -174,6 +227,32 @@ describe('parseAiInsightsResponse', () => {
     assert.equal(parsed?.risks?.length, 1);
   });
 
+  it('accepts richer architecture orientation fields and omits empty arrays', () => {
+    const parsed = parseAiInsightsResponse(
+      JSON.stringify({
+        architectureSummary: 'CLI pipeline centered on the PKM.',
+        purpose: 'Generate AI-readable docs.',
+        layers: ['scanner', 'analyzers', 'docs'],
+        asciiDiagram: 'scanner -> knowledge -> docs',
+        keyConstraints: ['PKM is source of truth'],
+        envVars: ['OPENROUTER_API_KEY'],
+        runCommands: ['npm run build'],
+        risks: ['Orchestrator coupling'],
+        agentGuidance: ['Read AGENTS.md first'],
+        recommendations: [],
+      }),
+    );
+
+    assert.ok(parsed);
+    assert.equal(parsed?.purpose, 'Generate AI-readable docs.');
+    assert.deepEqual(parsed?.layers, ['scanner', 'analyzers', 'docs']);
+    assert.equal(parsed?.asciiDiagram, 'scanner -> knowledge -> docs');
+    assert.deepEqual(parsed?.keyConstraints, ['PKM is source of truth']);
+    assert.deepEqual(parsed?.envVars, ['OPENROUTER_API_KEY']);
+    assert.deepEqual(parsed?.runCommands, ['npm run build']);
+    assert.equal(parsed?.recommendations, undefined);
+  });
+
   it('accepts fenced JSON and trims oversized arrays', () => {
     const parsed = parseAiInsightsResponse(
       '```json\n' +
@@ -195,6 +274,7 @@ describe('parseAiInsightsResponse', () => {
       undefined,
     );
     assert.equal(parseAiInsightsResponse(JSON.stringify({})), undefined);
+    assert.equal(parseAiInsightsResponse(JSON.stringify({ layers: [1, 2] })), undefined);
   });
 
   it('ignores unknown fields and keeps valid content', () => {
@@ -261,6 +341,41 @@ describe('runArchitectureStage', () => {
       true,
     );
     assert.match(provider.prompts[0] ?? '', /architecture-stage documentation context/);
+  });
+
+  it('stores richer orientation fields on staged architecture', async () => {
+    const provider = buildFakeProvider(
+      JSON.stringify({
+        architectureSummary: 'CLI pipeline with PKM enrichment.',
+        purpose: 'Generate AI-readable documentation.',
+        layers: ['scanner', 'knowledge', 'docs'],
+        asciiDiagram: 'scan -> PKM -> docs',
+        keyConstraints: ['Do not invent frameworks'],
+        envVars: ['OPENROUTER_API_KEY'],
+        runCommands: ['npm run build'],
+        risks: ['Orchestrator coupling'],
+        agentGuidance: ['Start from AGENTS.md'],
+      }),
+    );
+
+    const result = await runArchitectureStage(buildMinimalKnowledge(), {
+      apiKey: 'test-key',
+      model: 'openai/gpt-4.1-mini',
+      provider,
+    });
+
+    const architecture = result.knowledge.analysis.stagedDocumentation?.architecture;
+    assert.equal(result.architectureGenerated, true);
+    assert.equal(architecture?.purpose, 'Generate AI-readable documentation.');
+    assert.deepEqual(architecture?.layers, ['scanner', 'knowledge', 'docs']);
+    assert.equal(architecture?.asciiDiagram, 'scan -> PKM -> docs');
+    assert.deepEqual(architecture?.keyConstraints, ['Do not invent frameworks']);
+    assert.deepEqual(architecture?.envVars, ['OPENROUTER_API_KEY']);
+    assert.deepEqual(architecture?.runCommands, ['npm run build']);
+    assert.deepEqual(architecture?.risks, ['Orchestrator coupling']);
+    assert.deepEqual(architecture?.agentGuidance, ['Start from AGENTS.md']);
+    assert.match(architecture?.content ?? '', /Environment variables:/);
+    assert.match(provider.prompts[0] ?? '', /Never assume Angular, Java, C#, Electron/i);
   });
 
   it('records failed architecture status without dropping the PKM on invalid JSON', async () => {

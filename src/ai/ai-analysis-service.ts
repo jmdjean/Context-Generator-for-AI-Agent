@@ -3,7 +3,7 @@ import {
   ArchitectureStageKnowledge,
   ProjectKnowledge,
 } from '../knowledge';
-import { sanitizeAiInsightText } from '../utils/ai-text-sanitizer';
+import { sanitizeAiInsightMetadata, sanitizeAiInsightText } from '../utils/ai-text-sanitizer';
 import { AI_INSIGHTS_LIMITS } from './constants';
 import { AIProvider } from './providers/ai-provider';
 import { createAiProvider, DEFAULT_AI_PROVIDER_ID } from './providers/provider-factory';
@@ -44,6 +44,12 @@ export interface ArchitectureStageServiceResult {
 
 interface ParsedAiInsightsResponse {
   architectureSummary?: string;
+  purpose?: string;
+  layers?: string[];
+  asciiDiagram?: string;
+  keyConstraints?: string[];
+  envVars?: string[];
+  runCommands?: string[];
   risks?: string[];
   recommendations?: string[];
   agentGuidance?: string[];
@@ -70,9 +76,36 @@ function trimToMaxLength(value: string, maxLength: number): string {
   return `${trimmed.slice(0, maxLength - 1)}…`;
 }
 
+/** Preserve env keys / command strings / ASCII diagrams — markdown italic stripping would mangle `_API_`. */
+function trimIdentifierToMaxLength(value: string, maxLength: number): string {
+  const trimmed = sanitizeAiInsightMetadata(value);
+  if (trimmed.length <= maxLength) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, maxLength - 1)}…`;
+}
+
+function trimAsciiDiagram(value: string, maxLength: number): string {
+  const trimmed = value
+    .replace(/\r\n/g, '\n')
+    .replace(/<[^>]*>/g, '')
+    .trim();
+  if (trimmed.length <= maxLength) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, maxLength - 1)}…`;
+}
+
 function normalizeStringArray(values: string[]): string[] {
   return values
     .map((item) => trimToMaxLength(item, AI_INSIGHTS_LIMITS.maxItemLength))
+    .filter((item) => item.length > 0)
+    .slice(0, AI_INSIGHTS_LIMITS.maxArrayItems);
+}
+
+function normalizeIdentifierArray(values: string[]): string[] {
+  return values
+    .map((item) => trimIdentifierToMaxLength(item, AI_INSIGHTS_LIMITS.maxItemLength))
     .filter((item) => item.length > 0)
     .slice(0, AI_INSIGHTS_LIMITS.maxArrayItems);
 }
@@ -118,7 +151,30 @@ export function parseAiInsightsResponse(raw: string): ParsedAiInsightsResponse |
     );
   }
 
-  for (const field of ['risks', 'recommendations', 'agentGuidance'] as const) {
+  if (record['purpose'] !== undefined) {
+    if (!isNonEmptyString(record['purpose'])) {
+      return undefined;
+    }
+    result.purpose = trimToMaxLength(record['purpose'], AI_INSIGHTS_LIMITS.maxPurposeLength);
+  }
+
+  if (record['asciiDiagram'] !== undefined) {
+    if (!isNonEmptyString(record['asciiDiagram'])) {
+      return undefined;
+    }
+    result.asciiDiagram = trimAsciiDiagram(
+      record['asciiDiagram'],
+      AI_INSIGHTS_LIMITS.maxAsciiDiagramLength,
+    );
+  }
+
+  for (const field of [
+    'layers',
+    'keyConstraints',
+    'risks',
+    'recommendations',
+    'agentGuidance',
+  ] as const) {
     if (record[field] === undefined) {
       continue;
     }
@@ -131,8 +187,27 @@ export function parseAiInsightsResponse(raw: string): ParsedAiInsightsResponse |
     }
   }
 
+  for (const field of ['envVars', 'runCommands'] as const) {
+    if (record[field] === undefined) {
+      continue;
+    }
+    if (!isStringArray(record[field])) {
+      return undefined;
+    }
+    const normalized = normalizeIdentifierArray(record[field]);
+    if (normalized.length > 0) {
+      result[field] = normalized;
+    }
+  }
+
   const hasContent =
     result.architectureSummary !== undefined ||
+    result.purpose !== undefined ||
+    result.asciiDiagram !== undefined ||
+    (result.layers?.length ?? 0) > 0 ||
+    (result.keyConstraints?.length ?? 0) > 0 ||
+    (result.envVars?.length ?? 0) > 0 ||
+    (result.runCommands?.length ?? 0) > 0 ||
     (result.risks?.length ?? 0) > 0 ||
     (result.recommendations?.length ?? 0) > 0 ||
     (result.agentGuidance?.length ?? 0) > 0;
@@ -154,8 +229,9 @@ function buildAiInsights(
     model,
   };
 
-  if (parsed.architectureSummary !== undefined) {
-    insights.architectureSummary = parsed.architectureSummary;
+  const architectureSummary = parsed.architectureSummary ?? parsed.purpose;
+  if (architectureSummary !== undefined) {
+    insights.architectureSummary = architectureSummary;
   }
   if (parsed.risks !== undefined) {
     insights.risks = parsed.risks;
@@ -175,15 +251,46 @@ function buildArchitectureContent(parsed: ParsedAiInsightsResponse): string {
 
   if (parsed.architectureSummary !== undefined) {
     sections.push(parsed.architectureSummary);
+  } else if (parsed.purpose !== undefined) {
+    sections.push(parsed.purpose);
   }
+
+  if (parsed.purpose !== undefined && parsed.architectureSummary !== undefined) {
+    sections.push(['Purpose:', parsed.purpose].join('\n'));
+  }
+
+  if (parsed.layers !== undefined && parsed.layers.length > 0) {
+    sections.push(['Layers:', ...parsed.layers.map((item) => `- ${item}`)].join('\n'));
+  }
+
+  if (parsed.asciiDiagram !== undefined) {
+    sections.push(['Diagram:', '```', parsed.asciiDiagram, '```'].join('\n'));
+  }
+
+  if (parsed.keyConstraints !== undefined && parsed.keyConstraints.length > 0) {
+    sections.push(
+      ['Key constraints:', ...parsed.keyConstraints.map((item) => `- ${item}`)].join('\n'),
+    );
+  }
+
+  if (parsed.envVars !== undefined && parsed.envVars.length > 0) {
+    sections.push(['Environment variables:', ...parsed.envVars.map((item) => `- ${item}`)].join('\n'));
+  }
+
+  if (parsed.runCommands !== undefined && parsed.runCommands.length > 0) {
+    sections.push(['Run commands:', ...parsed.runCommands.map((item) => `- ${item}`)].join('\n'));
+  }
+
   if (parsed.risks !== undefined && parsed.risks.length > 0) {
     sections.push(['Risks:', ...parsed.risks.map((item) => `- ${item}`)].join('\n'));
   }
+
   if (parsed.recommendations !== undefined && parsed.recommendations.length > 0) {
     sections.push(
       ['Recommendations:', ...parsed.recommendations.map((item) => `- ${item}`)].join('\n'),
     );
   }
+
   if (parsed.agentGuidance !== undefined && parsed.agentGuidance.length > 0) {
     sections.push(
       ['Agent guidance:', ...parsed.agentGuidance.map((item) => `- ${item}`)].join('\n'),
@@ -191,6 +298,36 @@ function buildArchitectureContent(parsed: ParsedAiInsightsResponse): string {
   }
 
   return sections.join('\n\n');
+}
+
+function assignOptionalOrientationFields(
+  architecture: ArchitectureStageKnowledge,
+  parsed: ParsedAiInsightsResponse,
+): void {
+  if (parsed.purpose !== undefined) {
+    architecture.purpose = parsed.purpose;
+  }
+  if (parsed.layers !== undefined) {
+    architecture.layers = parsed.layers;
+  }
+  if (parsed.asciiDiagram !== undefined) {
+    architecture.asciiDiagram = parsed.asciiDiagram;
+  }
+  if (parsed.keyConstraints !== undefined) {
+    architecture.keyConstraints = parsed.keyConstraints;
+  }
+  if (parsed.envVars !== undefined) {
+    architecture.envVars = parsed.envVars;
+  }
+  if (parsed.runCommands !== undefined) {
+    architecture.runCommands = parsed.runCommands;
+  }
+  if (parsed.risks !== undefined) {
+    architecture.risks = parsed.risks;
+  }
+  if (parsed.agentGuidance !== undefined) {
+    architecture.agentGuidance = parsed.agentGuidance;
+  }
 }
 
 function buildArchitectureStageKnowledge(params: {
@@ -209,9 +346,13 @@ function buildArchitectureStageKnowledge(params: {
     warnings: [],
   };
 
-  if (params.parsed.architectureSummary !== undefined) {
-    architecture.summary = params.parsed.architectureSummary;
+  const summary =
+    params.parsed.architectureSummary ?? params.parsed.purpose;
+  if (summary !== undefined) {
+    architecture.summary = summary;
   }
+
+  assignOptionalOrientationFields(architecture, params.parsed);
 
   return architecture;
 }

@@ -22,7 +22,14 @@ export {
 export {
   DIRECT_SOURCE_MODULES,
   MONOREPO_MODULE_CONTAINERS,
+  MODULE_MANIFEST_EXACT_NAMES,
   isDocumentationModulePath,
+  isDocumentationOnlyModule,
+  isModuleManifestFileName,
+  isRepositoryRootModulePath,
+  listOwnedModuleManifests,
+  modulePathContainsRelativePath,
+  selectModulesForProductAiFanOut,
 } from './module-constants';
 export {
   analyzeModuleKnowledge,
@@ -60,6 +67,15 @@ export {
   enrichProjectKnowledgeWithConventions,
   type ConventionAnalysisResult,
 } from './convention-analyzer';
+export {
+  analyzeOperationalContext,
+  enrichProjectKnowledgeWithOperationalContext,
+  extractDescriptionFromPackageJson,
+  extractEnvKeysFromTemplate,
+  extractPurposeFromReadme,
+  extractRunCommandsFromPackageJson,
+  type OperationalContextAnalysisResult,
+} from './operational-context-analyzer';
 export {
   NAVIGATION_RULES,
   buildNavigationEntry,

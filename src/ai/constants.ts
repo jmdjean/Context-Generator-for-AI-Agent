@@ -17,11 +17,34 @@ export const PKM_SUMMARY_COMPACT_LIMITS = {
 export const AI_INSIGHTS_LIMITS = {
   maxArrayItems: 5,
   maxArchitectureSummaryLength: 2_000,
+  maxAsciiDiagramLength: 1_500,
+  maxPurposeLength: 800,
   maxItemLength: 500,
 } as const;
 
+/**
+ * Legacy insights shape kept for `aiInsights` consumers. Architecture stage
+ * uses {@link ARCHITECTURE_STAGE_JSON_SCHEMA} and still maps these fields.
+ */
 export const AI_RESPONSE_JSON_SCHEMA = {
   architectureSummary: 'string (2-4 sentences)',
+  risks: 'string[]',
+  recommendations: 'string[]',
+  agentGuidance: 'string[]',
+} as const;
+
+/**
+ * Stack-agnostic architecture orientation fields. Prefer omitting empty arrays
+ * over inventing env keys, scripts, or frameworks not present in the PKM.
+ */
+export const ARCHITECTURE_STAGE_JSON_SCHEMA = {
+  architectureSummary: 'string (2-4 sentences) — preferred summary for content consumers',
+  purpose: 'string — repo/product purpose grounded in operationalContext or modules',
+  layers: 'string[] — architectural layers visible in the PKM',
+  asciiDiagram: 'string — optional compact ASCII diagram; omit if not grounded',
+  keyConstraints: 'string[] — hard agent/repo constraints visible in the summary',
+  envVars: 'string[] — env keys only from operationalContext; omit if none',
+  runCommands: 'string[] — run/task commands from operationalContext; omit if none',
   risks: 'string[]',
   recommendations: 'string[]',
   agentGuidance: 'string[]',
